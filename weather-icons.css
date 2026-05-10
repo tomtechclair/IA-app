@@ -1,0 +1,117 @@
+/* Apple Weather Icons - Style officiel */
+
+.weather-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.weather-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Sun */
+.icon-sun svg {
+    animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Rain drops animation */
+.icon-rain .drop-1,
+.icon-rain .drop-2,
+.icon-rain .drop-3 {
+    animation: rain-fall 1.2s ease-in infinite;
+}
+
+.icon-rain .drop-2 {
+    animation-delay: 0.4s;
+}
+
+.icon-rain .drop-3 {
+    animation-delay: 0.8s;
+}
+
+@keyframes rain-fall {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(6px); opacity: 0; }
+}
+
+/* Snow flakes animation */
+.icon-snow .flake-1,
+.icon-snow .flake-2,
+.icon-snow .flake-3 {
+    animation: snow-fall 2s ease-in-out infinite;
+}
+
+.icon-snow .flake-2 {
+    animation-delay: 0.7s;
+}
+
+.icon-snow .flake-3 {
+    animation-delay: 1.4s;
+}
+
+@keyframes snow-fall {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(4px) rotate(180deg); }
+}
+
+/* Cloud float animation */
+.icon-cloud .cloud-shape,
+.icon-cloud-sun .cloud-shape,
+.icon-rain .cloud-shape,
+.icon-thunder .cloud-shape,
+.icon-snow .cloud-shape {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+/* Lightning flash */
+.icon-thunder .bolt {
+    animation: flash 2s ease-in-out infinite;
+}
+
+@keyframes flash {
+    0%, 90%, 100% { opacity: 0; }
+    95% { opacity: 1; }
+}
+
+/* Hourly and daily icon sizing */
+.hourly-item .weather-icon,
+.daily-item .weather-icon {
+    width: 40px;
+    height: 40px;
+}
+
+/* Hero icon sizing */
+.weather-hero .condition.has-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.weather-hero .condition .weather-icon {
+    width: 40px;
+    height: 40px;
+}
+
+/* Responsive sizing */
+@media (max-width: 375px) {
+    .hourly-item .weather-icon,
+    .daily-item .weather-icon {
+        width: 24px;
+        height: 24px;
+    }
+}

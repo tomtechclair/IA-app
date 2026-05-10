@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Weather</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="weather-icons.css">
+</head>
+<body>
+    <div class="app">
+        <div class="background">
+            <div class="bg-layer bg-blue"></div>
+        </div>
+        
+        <div class="scroll-container">
+            <!-- Hero Section -->
+            <div class="hero">
+                <div class="nav">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="city-input" value="Paris" placeholder="Rechercher">
+                    </div>
+                    <button class="menu-btn">☰</button>
+                </div>
+                
+                <div class="weather-hero">
+                    <h1 class="city">Paris</h1>
+                    <div class="big-temp">22°</div>
+                    <div class="condition">Ensoleillé</div>
+                    <div class="high-low">
+                        <span>H:24°</span>
+                        <span>L:16°</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards -->
+            <div class="cards">
+                <!-- Hourly -->
+                <div class="card">
+                    <div class="card-label">
+                        <span>🕐</span>
+                        <span>PRÉVISIONS HORAIRES</span>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="hourly-scroll" id="hourly-list"></div>
+                </div>
+
+                <!-- Daily -->
+                <div class="card">
+                    <div class="card-label">
+                        <span>📅</span>
+                        <span>PRÉVISIONS SUR 10 JOURS</span>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="daily-list" id="daily-list"></div>
+                </div>
+
+                <!-- Details Grid -->
+                <div class="grid-2">
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>💧</span>
+                            <span>HUMIDITÉ</span>
+                        </div>
+                        <div class="detail-big" id="humidity">45%</div>
+                        <div class="detail-small">Le point de rosée est de 13°</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>🌬️</span>
+                            <span>VENT</span>
+                        </div>
+                        <div class="detail-big" id="wind">12 <span class="unit">km/h</span></div>
+                        <div class="detail-small">Direction Nord-Ouest</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>👁️</span>
+                            <span>VISIBILITÉ</span>
+                        </div>
+                        <div class="detail-big">10 <span class="unit">km</span></div>
+                        <div class="detail-small">Excellent</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>🌡️</span>
+                            <span>RESSENTI</span>
+                        </div>
+                        <div class="detail-big" id="feels-like">24°</div>
+                        <div class="detail-small">Ressenti similaire</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>☀️</span>
+                            <span>INDICE UV</span>
+                        </div>
+                        <div class="detail-big">5</div>
+                        <div class="detail-small">Modéré</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>🌅</span>
+                            <span>PRESSION</span>
+                        </div>
+                        <div class="detail-big">1015 <span class="unit">hPa</span></div>
+                        <div class="detail-small">Stable</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="weather-icons.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
