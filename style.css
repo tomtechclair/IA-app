@@ -200,85 +200,20 @@ body {
 }
 
 
-/* Weather Icon Animations */
+/* Weather Icon Styles - No Animations */
 .weather-icon {
-    animation: float 3s ease-in-out infinite;
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+    transition: all 0.3s ease;
 }
 
 .weather-icon svg {
-    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
-    transition: all 0.4s ease;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+    transition: all 0.3s ease;
 }
 
 .weather-icon:hover svg {
-    filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.6));
-    transform: scale(1.1) rotate(5deg);
-}
-
-@keyframes float {
-    0%, 100% { 
-        transform: translateY(0px) rotate(0deg); 
-    }
-    25% { 
-        transform: translateY(-3px) rotate(1deg); 
-    }
-    50% { 
-        transform: translateY(-5px) rotate(0deg); 
-    }
-    75% { 
-        transform: translateY(-3px) rotate(-1deg); 
-    }
-}
-
-/* Sun Animation */
-.sun-icon {
-    animation: rotate 20s linear infinite;
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Cloud Animation */
-.cloud-icon {
-    animation: drift 4s ease-in-out infinite;
-}
-
-@keyframes drift {
-    0%, 100% { transform: translateX(0px); }
-    50% { transform: translateX(10px); }
-}
-
-/* Rain Animation */
-.rain-icon {
-    animation: rain 1s ease-in-out infinite;
-}
-
-@keyframes rain {
-    0%, 100% { transform: translateY(0px); opacity: 0.8; }
-    50% { transform: translateY(2px); opacity: 1; }
-}
-
-/* Snow Animation */
-.snow-icon {
-    animation: snow 3s ease-in-out infinite;
-}
-
-@keyframes snow {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-3px) rotate(180deg); }
-}
-
-/* Lightning Animation */
-.lightning-icon {
-    animation: lightning 2s ease-in-out infinite;
-}
-
-@keyframes lightning {
-    0%, 90%, 100% { opacity: 1; filter: brightness(1); }
-    95% { opacity: 0.8; filter: brightness(1.5); }
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
+    transform: scale(1.05);
 }
 
 /* Loading Animation */
