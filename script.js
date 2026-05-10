@@ -367,22 +367,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Charger Paris par défaut immédiatement
-    loadWeather('Paris');
-    
-    // Essayer géolocalisation en arrière-plan
+    // Essayer la géolocalisation en PREMIER
     if (navigator.geolocation) {
-        setTimeout(() => {
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    console.log('Géolocalisation réussie');
-                    loadWeather({ lat: pos.coords.latitude, lon: pos.coords.longitude });
-                },
-                (err) => {
-                    console.log('Géolocalisation non disponible:', err.message);
-                },
-                { timeout: 10000 }
-            );
-        }, 1000);
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                console.log('Géolocalisation réussie - chargement position actuelle');
+                loadWeather({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+            },
+            (err) => {
+                console.log('Géolocalisation refusée ou impossible:', err.message);
+                // Fallback sur Paris uniquement si géolocalisation échoue
+                loadWeather('Paris');
+            },
+            { timeout: 10000, enableHighAccuracy: false }
+        );
+    } else {
+        // Pas de géolocalisation disponible
+        loadWeather('Paris');
     }
 });
