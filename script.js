@@ -7,12 +7,58 @@ const API_CONFIG = {
 
 let currentCity = 'Paris';
 let currentCoords = { lat: 48.8566, lon: 2.3522 };
+let hasInitialized = false;
 
-// Géolocalisation
-async function getUserLocation() {
+// Géolocalisation par IP (sans permission, automatique)
+async function getLocationByIP() {
+    try {
+        // Essayer ipapi.co (sans clé API, gratuit pour usage non commercial)
+        const response = await fetch('https://ipapi.co/json/', {
+            headers: { 'Accept': 'application/json' }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.latitude && data.longitude) {
+                return {
+                    lat: data.latitude,
+                    lon: data.longitude,
+                    city: data.city || data.region || 'Position actuelle'
+                };
+            }
+        }
+        
+        throw new Error('IP geolocation failed');
+    } catch (error) {
+        console.warn('IP geolocation failed:', error);
+        
+        // Fallback vers ipinfo.io
+        try {
+            const response = await fetch('https://ipinfo.io/json');
+            const data = await response.json();
+            
+            if (data.loc) {
+                const [lat, lon] = data.loc.split(',').map(Number);
+                return {
+                    lat: lat,
+                    lon: lon,
+                    city: data.city || 'Position actuelle'
+                };
+            }
+            
+            throw new Error('ipinfo failed');
+        } catch (ipinfoError) {
+            console.warn('ipinfo fallback failed:', ipinfoError);
+            return null;
+        }
+    }
+}
+
+// Géolocalisation GPS (avec permission - utilisé uniquement si l'utilisateur clique sur le bouton GPS)
+async function getLocationByGPS() {
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
-            reject(new Error('Géolocalisation non supportée'));
+            reject(new Error('GPS non supporté'));
             return;
         }
         
@@ -20,17 +66,18 @@ async function getUserLocation() {
             (position) => {
                 resolve({
                     lat: position.coords.latitude,
-                    lon: position.coords.longitude
+                    lon: position.coords.longitude,
+                    city: 'Position GPS'
                 });
             },
             (error) => {
-                console.warn('Erreur géolocalisation:', error.message);
+                console.warn('Erreur GPS:', error.message);
                 reject(error);
             },
             {
                 enableHighAccuracy: true,
                 timeout: 10000,
-                maximumAge: 0
+                maximumAge: 60000
             }
         );
     });
@@ -48,7 +95,7 @@ async function reverseGeocode(lat, lon) {
             return data.name;
         }
         
-        // Fallback vers Nominatim si Open-Meteo ne retourne pas de nom
+        // Fallback vers Nominatim
         const nominatimResponse = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=fr`
         );
@@ -66,30 +113,70 @@ async function reverseGeocode(lat, lon) {
     }
 }
 
-// Initialisation avec géolocalisation
+// Initialisation automatique (IP d'abord, sans permission)
 async function initializeWeather() {
+    if (hasInitialized) return;
+    hasInitialized = true;
+    
     try {
-        // Essayer d'obtenir la position
-        const position = await getUserLocation();
-        currentCoords = position;
+        // 1. Essayer la géolocalisation par IP (automatique, sans permission)
+        const ipLocation = await getLocationByIP();
         
-        // Obtenir le nom de la ville
-        const cityName = await reverseGeocode(position.lat, position.lon);
-        currentCity = cityName;
-        
-        // Charger la météo pour cette position
-        await updateWeather(cityName);
-        
-        // Mettre à jour l'input avec le nom de la ville
-        const cityInput = document.getElementById('city-input');
-        if (cityInput) {
-            cityInput.value = cityName;
+        if (ipLocation) {
+            currentCoords = { lat: ipLocation.lat, lon: ipLocation.lon };
+            
+            // Obtenir le nom de la ville via reverse geocoding pour plus de précision
+            const cityName = await reverseGeocode(ipLocation.lat, ipLocation.lon);
+            currentCity = cityName;
+            
+            // Charger la météo
+            await updateWeather(cityName);
+            
+            // Mettre à jour l'input
+            const cityInput = document.getElementById('city-input');
+            if (cityInput) {
+                cityInput.value = cityName;
+            }
+            
+            return;
         }
         
+        throw new Error('IP geolocation unavailable');
+        
     } catch (error) {
-        console.warn('Géolocalisation échouée, utilisation de Paris par défaut:', error);
+        console.warn('Géolocalisation automatique échouée, utilisation de Paris par défaut:', error);
         // Fallback sur Paris
         await updateWeather('Paris');
+    }
+}
+
+// Fonction pour activer la géolocalisation GPS précise (bouton)
+async function enableGPSLocation() {
+    try {
+        const gpsPosition = await getLocationByGPS();
+        
+        if (gpsPosition) {
+            currentCoords = { lat: gpsPosition.lat, lon: gpsPosition.lon };
+            
+            // Obtenir le nom de la ville
+            const cityName = await reverseGeocode(gpsPosition.lat, gpsPosition.lon);
+            currentCity = cityName;
+            
+            // Charger la météo
+            await updateWeather(cityName);
+            
+            // Mettre à jour l'input
+            const cityInput = document.getElementById('city-input');
+            if (cityInput) {
+                cityInput.value = cityName;
+            }
+            
+            return true;
+        }
+    } catch (error) {
+        console.error('GPS non disponible:', error);
+        alert('GPS non disponible. Veuillez autoriser la géolocalisation dans les paramètres de votre navigateur.');
+        return false;
     }
 }
 
