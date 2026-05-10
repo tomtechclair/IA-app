@@ -4,7 +4,6 @@ const API_CONFIG = {
 };
 
 let currentCity = 'Paris';
-let currentCoords = { lat: 48.8566, lon: 2.3522 };
 let isFirstLoad = true;
 
 const weatherCodes = {
@@ -40,28 +39,7 @@ function getWeatherInfo(code) {
     return weatherCodes[code] || { condition: 'Inconnu', bg: 'bg-blue' };
 }
 
-async function searchCityCoords(cityName) {
-    try {
-        const response = await fetch(
-            `${API_CONFIG.geoUrl}/search?name=${encodeURIComponent(cityName)}&count=1&language=fr&format=json`
-        );
-        const data = await response.json();
-        
-        if (data.results && data.results.length > 0) {
-            return {
-                name: data.results[0].name,
-                lat: data.results[0].latitude,
-                lon: data.results[0].longitude
-            };
-        }
-        return null;
-    } catch (error) {
-        console.error('Erreur geocoding:', error);
-        return null;
-    }
-}
-
-async function fetchWeatherData(lat, lon) {
+async function loadWeather(cityName, lat, lon) {
     try {
         const url = `${API_CONFIG.baseUrl}/forecast?` +
             `latitude=${lat}&longitude=${lon}&` +
@@ -71,44 +49,55 @@ async function fetchWeatherData(lat, lon) {
             `timezone=auto&forecast_days=10`;
         
         const response = await fetch(url);
-        if (!response.ok) throw new Error('HTTP ' + response.status);
+        if (!response.ok) {
+            console.error('API error:', response.status);
+            return false;
+        }
+        
         const data = await response.json();
-        return data;
+        if (!data || !data.current) {
+            console.error('Invalid data');
+            return false;
+        }
+        
+        displayWeather(data, cityName);
+        return true;
+        
     } catch (error) {
-        console.error('Erreur API meteo:', error);
-        return null;
+        console.error('Load weather error:', error);
+        return false;
     }
 }
 
 function displayWeather(data, cityName) {
-    if (!data || !data.current) {
-        console.error('Donnees invalides');
-        return;
-    }
-    
     const current = data.current;
-    const isDay = current.is_day === 1;
-    const weatherInfo = getWeatherInfo(current.weather_code);
+    const weatherInfo = getWeatherInfo(current.weather_code || 0);
     
     // Ville
-    document.querySelector('.city').textContent = cityName;
-    const cityInput = document.getElementById('city-input');
-    if (cityInput) cityInput.value = cityName;
+    const cityEl = document.querySelector('.city');
+    if (cityEl) cityEl.textContent = cityName;
+    
+    const inputEl = document.getElementById('city-input');
+    if (inputEl) inputEl.value = cityName;
     
     // Temperature
-    document.querySelector('.big-temp').textContent = `${Math.round(current.temperature_2m)}°`;
-    
-    // Condition
-    const conditionEl = document.querySelector('.condition');
-    if (conditionEl) {
-        conditionEl.textContent = weatherInfo.condition;
+    const tempEl = document.querySelector('.big-temp');
+    if (tempEl && current.temperature_2m !== undefined) {
+        tempEl.textContent = `${Math.round(current.temperature_2m)}°`;
     }
     
+    // Condition
+    const condEl = document.querySelector('.condition');
+    if (condEl) condEl.textContent = weatherInfo.condition;
+    
     // High/Low
-    if (data.daily && data.daily.temperature_2m_max && data.daily.temperature_2m_min) {
-        document.querySelector('.high-low').innerHTML = 
-            `<span>H:${Math.round(data.daily.temperature_2m_max[0])}°</span>` +
-            `<span>L:${Math.round(data.daily.temperature_2m_min[0])}°</span>`;
+    const highLowEl = document.querySelector('.high-low');
+    if (highLowEl && data.daily) {
+        const max = data.daily.temperature_2m_max ? data.daily.temperature_2m_max[0] : null;
+        const min = data.daily.temperature_2m_min ? data.daily.temperature_2m_min[0] : null;
+        if (max !== null && min !== null) {
+            highLowEl.innerHTML = `<span>H:${Math.round(max)}°</span><span>L:${Math.round(min)}°</span>`;
+        }
     }
     
     // Details
@@ -122,15 +111,14 @@ function displayWeather(data, cityName) {
         windEl.innerHTML = `${Math.round(current.wind_speed_10m)} <span class="unit">km/h</span>`;
     }
     
-    const feelsLikeEl = document.getElementById('feels-like');
-    if (feelsLikeEl && current.apparent_temperature !== undefined) {
-        feelsLikeEl.textContent = `${Math.round(current.apparent_temperature)}°`;
+    const feelsEl = document.getElementById('feels-like');
+    if (feelsEl && current.apparent_temperature !== undefined) {
+        feelsEl.textContent = `${Math.round(current.apparent_temperature)}°`;
     }
     
-    const visibilityKm = current.visibility ? Math.round(current.visibility / 1000) : 10;
     const detailBigs = document.querySelectorAll('.detail-big');
-    if (detailBigs.length > 2) {
-        detailBigs[2].innerHTML = `${visibilityKm} <span class="unit">km</span>`;
+    if (detailBigs.length > 2 && current.visibility !== undefined) {
+        detailBigs[2].innerHTML = `${Math.round(current.visibility / 1000)} <span class="unit">km</span>`;
     }
     
     // UV
@@ -146,20 +134,19 @@ function displayWeather(data, cityName) {
     }
     
     // Hourly
-    displayHourly(data.hourly, current.weather_code, isDay);
+    displayHourly(data.hourly, current.weather_code);
     
     // Daily
     displayDaily(data.daily);
     
     // Background
-    updateBackground(weatherInfo.bg);
+    const bg = document.querySelector('.bg-layer');
+    if (bg) bg.className = `bg-layer ${weatherInfo.bg}`;
 }
 
-function displayHourly(hourly, currentCode, isDayNow) {
-    if (!hourly || !hourly.time) return;
-    
-    const hourlyList = document.getElementById('hourly-list');
-    if (!hourlyList) return;
+function displayHourly(hourly, currentCode) {
+    const list = document.getElementById('hourly-list');
+    if (!list || !hourly || !hourly.time) return;
     
     const now = new Date();
     const currentHour = now.getHours();
@@ -170,11 +157,11 @@ function displayHourly(hourly, currentCode, isDayNow) {
         if (hourIndex >= hourly.time.length) break;
         
         const hour = (currentHour + i) % 24;
-        const code = hourly.weather_code[hourIndex];
+        const code = hourly.weather_code[hourIndex] || currentCode;
         const isDay = hourly.is_day ? hourly.is_day[hourIndex] === 1 : (hour >= 6 && hour <= 20);
         
         const iconHTML = typeof getWeatherIcon3D === 'function' 
-            ? getWeatherIcon3D(code || currentCode, isDay, 36) 
+            ? getWeatherIcon3D(code, isDay, 36) 
             : '';
         
         html += `
@@ -185,14 +172,12 @@ function displayHourly(hourly, currentCode, isDayNow) {
             </div>
         `;
     }
-    hourlyList.innerHTML = html;
+    list.innerHTML = html;
 }
 
 function displayDaily(daily) {
-    if (!daily || !daily.time) return;
-    
-    const dailyList = document.getElementById('daily-list');
-    if (!dailyList) return;
+    const list = document.getElementById('daily-list');
+    if (!list || !daily || !daily.time) return;
     
     const minTemp = Math.min(...(daily.temperature_2m_min || [0]));
     const maxTemp = Math.max(...(daily.temperature_2m_max || [30]));
@@ -228,109 +213,95 @@ function displayDaily(daily) {
             </div>
         `;
     }
-    dailyList.innerHTML = html;
+    list.innerHTML = html;
 }
 
-function updateBackground(bgClass) {
-    const bg = document.querySelector('.bg-layer');
-    if (bg) bg.className = `bg-layer ${bgClass}`;
-}
-
-async function updateWeather(cityName) {
+// Search and geolocation
+async function searchCity(name) {
     try {
-        let lat, lon, name;
+        const response = await fetch(
+            `${API_CONFIG.geoUrl}/search?name=${encodeURIComponent(name)}&count=1&language=fr&format=json`
+        );
+        const data = await response.json();
         
-        if (typeof cityName === 'object' && cityName.lat && cityName.lon) {
-            lat = cityName.lat;
-            lon = cityName.lon;
-            name = cityName.name || 'Position actuelle';
-        } else {
-            const cityData = await searchCityCoords(cityName);
-            if (!cityData) {
-                if (!isFirstLoad) alert('Ville non trouvee');
-                return;
-            }
-            lat = cityData.lat;
-            lon = cityData.lon;
-            name = cityData.name;
+        if (data.results && data.results.length > 0) {
+            return {
+                name: data.results[0].name,
+                lat: data.results[0].latitude,
+                lon: data.results[0].longitude
+            };
         }
-        
-        currentCity = name;
-        currentCoords = { lat, lon };
-        
-        const weatherData = await fetchWeatherData(lat, lon);
-        
-        if (weatherData) {
-            displayWeather(weatherData, name);
-        } else if (!isFirstLoad) {
-            alert('Erreur lors du chargement des donnees meteo');
-        }
-        
+        return null;
     } catch (error) {
-        console.error('Erreur:', error);
-        if (!isFirstLoad) alert('Erreur de connexion');
+        console.error('Search error:', error);
+        return null;
     }
 }
 
-function searchCity() {
-    const input = document.getElementById('city-input');
-    const city = input ? input.value.trim() : '';
-    if (city) {
-        isFirstLoad = false;
-        updateWeather(city);
-    }
-}
-
-// Geolocation
-function initGeolocation() {
-    if (!navigator.geolocation) {
-        updateWeather('Paris');
+async function loadCity(cityName) {
+    isFirstLoad = false;
+    
+    if (typeof cityName === 'object' && cityName.lat && cityName.lon) {
+        const success = await loadWeather(cityName.name || 'Position actuelle', cityName.lat, cityName.lon);
+        if (success) {
+            currentCity = cityName.name || 'Position actuelle';
+        }
         return;
     }
     
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            updateWeather({
-                lat: position.coords.latitude,
-                lon: position.coords.longitude,
-                name: 'Position actuelle'
-            });
-        },
-        (error) => {
-            console.warn('Geolocation error:', error.message);
-            updateWeather('Paris');
-        },
-        {
-            enableHighAccuracy: false,
-            timeout: 10000,
-            maximumAge: 300000
+    const cityData = await searchCity(cityName);
+    if (cityData) {
+        const success = await loadWeather(cityData.name, cityData.lat, cityData.lon);
+        if (success) {
+            currentCity = cityData.name;
         }
-    );
+    }
 }
 
-// Event listeners
+function handleSearch() {
+    const input = document.getElementById('city-input');
+    const city = input ? input.value.trim() : '';
+    if (city && city !== currentCity) {
+        loadCity(city);
+    }
+}
+
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    const cityInput = document.getElementById('city-input');
-    if (cityInput) {
-        cityInput.addEventListener('keypress', (e) => {
+    // Input events
+    const input = document.getElementById('city-input');
+    if (input) {
+        input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                searchCity();
-                cityInput.blur();
+                handleSearch();
+                input.blur();
             }
         });
         
-        cityInput.addEventListener('blur', () => {
-            if (cityInput.value.trim() !== currentCity) {
-                searchCity();
+        input.addEventListener('blur', () => {
+            if (input.value.trim() !== currentCity) {
+                handleSearch();
             }
         });
     }
     
-    // Init storm background if available
-    if (typeof initStormBackground === 'function') {
-        initStormBackground();
+    // Try geolocation, fallback to Paris
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                loadCity({
+                    lat: pos.coords.latitude,
+                    lon: pos.coords.longitude,
+                    name: 'Position actuelle'
+                });
+            },
+            () => {
+                // Fallback to Paris on error
+                loadCity('Paris');
+            },
+            { timeout: 8000 }
+        );
+    } else {
+        loadCity('Paris');
     }
-    
-    // Try geolocation first, fallback to Paris
-    initGeolocation();
 });
