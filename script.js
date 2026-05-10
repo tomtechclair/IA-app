@@ -8,6 +8,91 @@ const API_CONFIG = {
 let currentCity = 'Paris';
 let currentCoords = { lat: 48.8566, lon: 2.3522 };
 
+// Géolocalisation
+async function getUserLocation() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error('Géolocalisation non supportée'));
+            return;
+        }
+        
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                resolve({
+                    lat: position.coords.latitude,
+                    lon: position.coords.longitude
+                });
+            },
+            (error) => {
+                console.warn('Erreur géolocalisation:', error.message);
+                reject(error);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    });
+}
+
+// Reverse geocoding (obtenir le nom de la ville depuis les coordonnées)
+async function reverseGeocode(lat, lon) {
+    try {
+        const response = await fetch(
+            `${API_CONFIG.geoUrl}/get?latitude=${lat}&longitude=${lon}&language=fr`
+        );
+        const data = await response.json();
+        
+        if (data.name) {
+            return data.name;
+        }
+        
+        // Fallback vers Nominatim si Open-Meteo ne retourne pas de nom
+        const nominatimResponse = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=fr`
+        );
+        const nominatimData = await nominatimResponse.json();
+        
+        if (nominatimData.address) {
+            const address = nominatimData.address;
+            return address.city || address.town || address.village || address.suburb || 'Position actuelle';
+        }
+        
+        return 'Position actuelle';
+    } catch (error) {
+        console.error('Erreur reverse geocoding:', error);
+        return 'Position actuelle';
+    }
+}
+
+// Initialisation avec géolocalisation
+async function initializeWeather() {
+    try {
+        // Essayer d'obtenir la position
+        const position = await getUserLocation();
+        currentCoords = position;
+        
+        // Obtenir le nom de la ville
+        const cityName = await reverseGeocode(position.lat, position.lon);
+        currentCity = cityName;
+        
+        // Charger la météo pour cette position
+        await updateWeather(cityName);
+        
+        // Mettre à jour l'input avec le nom de la ville
+        const cityInput = document.getElementById('city-input');
+        if (cityInput) {
+            cityInput.value = cityName;
+        }
+        
+    } catch (error) {
+        console.warn('Géolocalisation échouée, utilisation de Paris par défaut:', error);
+        // Fallback sur Paris
+        await updateWeather('Paris');
+    }
+}
+
 const weatherCodes = {
     0: { condition: 'Ensoleillé', bg: 'bg-blue' },
     1: { condition: 'Partiellement nuageux', bg: 'bg-blue' },
@@ -86,18 +171,36 @@ async function updateWeather(cityName) {
     if (searchBtn) searchBtn.style.opacity = '0.5';
     
     try {
-        const cityData = await searchCityCoords(cityName);
+        let cityData;
+        let lat, lon;
         
-        if (!cityData) {
-            alert('Ville non trouvée. Essayez un autre nom.');
-            if (searchBtn) searchBtn.style.opacity = '1';
-            return;
+        // Si c'est un objet avec lat/lon (géolocalisation), l'utiliser directement
+        if (typeof cityName === 'object' && cityName.lat && cityName.lon) {
+            lat = cityName.lat;
+            lon = cityName.lon;
+            cityData = {
+                name: cityName.name || 'Position actuelle',
+                lat: lat,
+                lon: lon
+            };
+        } else {
+            // Rechercher les coordonnées par nom de ville
+            cityData = await searchCityCoords(cityName);
+            
+            if (!cityData) {
+                alert('Ville non trouvée. Essayez un autre nom.');
+                if (searchBtn) searchBtn.style.opacity = '1';
+                return;
+            }
+            
+            lat = cityData.lat;
+            lon = cityData.lon;
         }
         
         currentCity = cityData.name;
-        currentCoords = { lat: cityData.lat, lon: cityData.lon };
+        currentCoords = { lat: lat, lon: lon };
         
-        const weatherData = await fetchWeatherData(cityData.lat, cityData.lon);
+        const weatherData = await fetchWeatherData(lat, lon);
         
         if (!weatherData) {
             alert('Erreur lors de la récupération des données météo.');
@@ -261,5 +364,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    updateWeather('Paris');
+    initializeWeather();
 });
