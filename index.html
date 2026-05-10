@@ -2,427 +2,160 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jarvis - Votre Assistant Intelligent</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Weather</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="weather-icons.css">
 </head>
 <body>
-    
-    <!-- Navigation -->
-    <nav class="navbar" id="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <span class="logo-text">tomclair</span><span class="logo-dot">.tech</span>
-            </div>
-            <div class="nav-links">
-                <a href="#hero" class="nav-link active">Accueil</a>
-                <a href="#features" class="nav-link">Fonctionnalités</a>
-                <a href="#installation" class="nav-link">Installation</a>
-                <a href="#tech" class="nav-link">Technique</a>
-                <a href="#weather" class="nav-link">Météo</a>
-                <a href="#faq" class="nav-link">FAQ</a>
-                <a href="#contact" class="nav-link">Contact</a>
-            </div>
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
+    <div class="app">
+        <div class="background">
+            <div class="bg-layer bg-blue"></div>
         </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero" id="hero">
-        <div class="hero-content">
-            <div class="hero-title">
-                <span class="title-line">Bienvenue sur</span>
-                <span class="title-line gradient-text">tomclair.tech</span>
-            </div>
-            <p class="hero-subtitle">Découvrez Jarvis, votre assistant intelligent personnel</p>
-            <div class="hero-actions">
-                <a href="JARVIS_Setup_v4.zip" class="btn btn-primary" download>
-                    <i class="fa-solid fa-download"></i>
-                    <span>Télécharger Jarvis v4</span>
-                </a>
-                <a href="#features" class="btn btn-secondary">
-                    <i class="fa-solid fa-play"></i>
-                    <span>DÉCOUVRIR</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="features" id="features">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">FONCTIONNALITÉS</span>
-                <h2 class="section-title">Ce Que Fait Jarvis</h2>
-                <p class="section-subtitle">Une assistant intelligent qui simplifie votre quotidien</p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-microphone"></i>
-                    </div>
-                    <h3>Reconnaissance Vocale</h3>
-                    <p>Contrôlez Jarvis avec votre voix, commands naturels et intuitifs</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-brain"></i>
-                    </div>
-                    <h3>Intelligence Artificielle</h3>
-                    <p>Apprentissage continu et réponses intelligentes personnalisées</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <h3>Automatisation</h3>
-                    <p>Exécutez des tâches complexes et routines automatiques</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </div>
-                    <h3>Sécurité</h3>
-                    <p>Protection des données et chiffrement de bout en bout</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-mobile-alt"></i>
-                    </div>
-                    <h3>Multi-plateforme</h3>
-                    <p>Compatible Windows, Mac, Linux et mobile</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-cloud"></i>
-                    </div>
-                    <h3>Cloud Sync</h3>
-                    <p>Synchronisation automatique de vos préférences et données</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Tech Section -->
-    <section class="tech" id="tech">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">TECHNOLOGIE</span>
-                <h2 class="section-title">L'Architecture Jarvis</h2>
-                <p class="section-subtitle">La technologie derrière un assistant intelligent</p>
-            </div>
-            <div class="tech-grid">
-                <div class="tech-card">
-                    <div class="tech-icon">
-                        <i class="fa-solid fa-code"></i>
-                    </div>
-                    <h3>Machine Learning</h3>
-                    <p>Algorithmes avancés pour l'apprentissage et l'adaptation</p>
-                </div>
-                <div class="tech-card">
-                    <div class="tech-icon">
-                        <i class="fa-solid fa-network-wired"></i>
-                    </div>
-                    <h3>Neural Network</h3>
-                    <p>Réseaux de neurones pour comprendre le contexte et les nuances</p>
-                </div>
-                <div class="tech-card">
-                    <div class="tech-icon">
-                        <i class="fa-solid fa-microchip"></i>
-                    </div>
-                    <h3>NLP Processing</h3>
-                    <p>Traitement du langage naturel pour des conversations fluides</p>
-                </div>
-                <div class="tech-card">
-                    <div class="tech-icon">
-                        <i class="fa-solid fa-database"></i>
-                    </div>
-                    <h3>Big Data</h3>
-                    <p>Analyse de grandes quantités de données pour des réponses précises</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="faq" id="faq">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">FAQ</span>
-                <h2 class="section-title">Questions Fréquentes</h2>
-                <p class="section-subtitle">Tout ce que vous devez savoir sur Jarvis</p>
-            </div>
-            <div class="faq-grid">
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Comment installer Jarvis ?</h3>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Téléchargez le fichier JARVIS_Setup_v4.zip, décompressez-le et suivez les instructions d'installation.</p>
-                    </div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Quelles sont les configurations requises ?</h3>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Windows 10/11, 4GB RAM minimum, et une connexion internet pour les fonctionnalités avancées.</p>
-                    </div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Est-ce que Jarvis est gratuit ?</h3>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Jarvis propose une version gratuite avec des fonctionnalités de base et des options premium avancées.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Installation Guide Section -->
-    <section class="installation-guide" id="installation">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">INSTALLATION</span>
-                <h2 class="section-title">Comment Obtenir et Faire Fonctionner Jarvis</h2>
-                <p class="section-subtitle">Guide complet pour installer et configurer votre assistant intelligent</p>
-            </div>
-            
-            <div class="installation-steps">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>Télécharger Jarvis</h3>
-                        <p>Cliquez sur le bouton de téléchargement pour obtenir JARVIS_Setup_v4.zip</p>
-                        <div class="step-features">
-                            <span><i class="fa-solid fa-check"></i> Fichier complet</span>
-                            <span><i class="fa-solid fa-check"></i> Version v4.0</span>
-                            <span><i class="fa-solid fa-check"></i> 1.9MB</span>
+        
+        <div class="scroll-container">
+            <!-- Hero Section -->
+            <div class="hero">
+                <div class="nav">
+                    <div class="search-container">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="city-input" value="Paris" placeholder="Rechercher une ville..." autocomplete="off">
+                            <button class="search-clear" id="search-clear" style="display: none;">✕</button>
+                        </div>
+                        <div class="search-suggestions" id="search-suggestions"></div>
+                        <div class="quick-cities">
+                            <span class="quick-city" data-city="Paris">Paris</span>
+                            <span class="quick-city" data-city="Lyon">Lyon</span>
+                            <span class="quick-city" data-city="Marseille">Marseille</span>
+                            <span class="quick-city" data-city="Bordeaux">Bordeaux</span>
+                            <span class="quick-city" data-city="Lille">Lille</span>
                         </div>
                     </div>
-                </div>
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>Décompresser</h3>
-                        <p>Extraire tous les fichiers dans un dossier dédié sur votre bureau</p>
-                        <div class="step-features">
-                            <span><i class="fa-solid fa-check"></i> Format ZIP</span>
-                            <span><i class="fa-solid fa-check"></i> Extraction automatique</span>
-                            <span><i class="fa-solid fa-check"></i> Vérification intégrité</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>Installer</h3>
-                        <p>Lancer le fichier d'installation et suivre les instructions à l'écran</p>
-                        <div class="step-features">
-                            <span><i class="fa-solid fa-check"></i> Installation guidée</span>
-                            <span><i class="fa-solid fa-check"></i> Configuration automatique</span>
-                            <span><i class="fa-solid fa-check"></i> Raccourcis créés</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="step-card">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <h3>Configurer</h3>
-                        <p>Personnaliser les paramètres selon vos préférences et besoins</p>
-                        <div class="step-features">
-                            <span><i class="fa-solid fa-check"></i> Paramètres vocaux</span>
-                            <span><i class="fa-solid fa-check"></i> API keys</span>
-                            <span><i class="fa-solid fa-check"></i> Routines personnalisées</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="requirements-section">
-                <h3>Configuration Requise</h3>
-                <div class="requirements-grid">
-                    <div class="req-item">
-                        <i class="fa-solid fa-windows"></i>
-                        <div>
-                            <h4>Système</h4>
-                            <p>Windows 10/11</p>
-                        </div>
-                    </div>
-                    <div class="req-item">
-                        <i class="fa-solid fa-memory"></i>
-                        <div>
-                            <h4>Mémoire</h4>
-                            <p>4GB RAM minimum</p>
-                        </div>
-                    </div>
-                    <div class="req-item">
-                        <i class="fa-solid fa-microchip"></i>
-                        <div>
-                            <h4>Processeur</h4>
-                            <p>Intel i3 ou équivalent</p>
-                        </div>
-                    </div>
-                    <div class="req-item">
-                        <i class="fa-solid fa-wifi"></i>
-                        <div>
-                            <h4>Internet</h4>
-                            <p>Connexion stable requise</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="troubleshooting-section">
-                <h3>Problèmes Communs & Solutions</h3>
-                <div class="troubleshooting-grid">
-                    <div class="trouble-item">
-                        <h4>🔧 "Jarvis ne démarre pas"</h4>
-                        <p>Vérifiez que Windows Defender ne bloque pas l'exécution</p>
-                    </div>
-                    <div class="trouble-item">
-                        <h4>🎤 "Microphone non détecté"</h4>
-                        <p>Vérifiez les permissions microphone dans Windows</p>
-                    </div>
-                    <div class="trouble-item">
-                        <h4>🔑 "Erreur API clé"</h4>
-                        <p>Configurez vos clés API dans les paramètres</p>
-                    </div>
-                    <div class="trouble-item">
-                        <h4>🌐 "Connexion impossible"</h4>
-                        <p>Vérifiez votre connexion internet et pare-feu</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Weather Section -->
-    <section class="weather-section" id="weather">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">MÉTÉO</span>
-                <h2 class="section-title">Météo en Temps Réel</h2>
-                <p class="section-subtitle">Consultez les conditions météorologiques de n'importe quelle ville</p>
-            </div>
-            
-            <div class="weather-container">
-                <div class="weather-search">
-                    <div class="search-box">
-                        <input type="text" id="city-search" placeholder="Rechercher une ville..." autocomplete="off">
-                        <button id="search-btn" class="search-button">
-                            <i class="fas fa-search"></i>
-                        </button>
-                        <div id="search-suggestions" class="search-suggestions"></div>
-                    </div>
-                    <div class="quick-cities">
-                        <span class="quick-city" data-city="Paris">Paris</span>
-                        <span class="quick-city" data-city="Lyon">Lyon</span>
-                        <span class="quick-city" data-city="Marseille">Marseille</span>
-                        <span class="quick-city" data-city="Bordeaux">Bordeaux</span>
-                        <span class="quick-city" data-city="Lille">Lille</span>
-                    </div>
+                    <button class="menu-btn">☰</button>
                 </div>
                 
-                <div class="weather-display" id="weather-display">
-                    <div class="weather-main">
-                        <div class="weather-location">
-                            <h3 id="location">Paris, France</h3>
-                            <button id="refresh-btn" class="refresh-btn" title="Actualiser">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
-                        <div class="weather-temp-icon">
-                            <div class="weather-icon-container">
-                                <i id="weather-icon" class="fas fa-sun"></i>
-                            </div>
-                            <div class="temperature">
-                                <span id="temperature">22</span>°C
-                            </div>
-                        </div>
-                        <div class="weather-description" id="description">Ensoleillé</div>
+                <div class="weather-hero">
+                    <h1 class="city">Paris</h1>
+                    <div class="big-temp">22°</div>
+                    <div class="condition">Ensoleillé</div>
+                    <div class="high-low">
+                        <span>H:24°</span>
+                        <span>L:16°</span>
                     </div>
-                    
-                    <div class="weather-details">
-                        <div class="detail-item">
-                            <i class="fas fa-tint"></i>
-                            <div class="detail-info">
-                                <span class="detail-label">Humidité</span>
-                                <span id="humidity" class="detail-value">65%</span>
-                            </div>
+                </div>
+            </div>
+
+            <!-- Cards -->
+            <div class="cards">
+                <!-- Hourly -->
+                <div class="card">
+                    <div class="card-label">
+                        <span>🕐</span>
+                        <span>PRÉVISIONS HORAIRES</span>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="hourly-scroll" id="hourly-list"></div>
+                </div>
+
+                <!-- Daily -->
+                <div class="card">
+                    <div class="card-label">
+                        <span>📅</span>
+                        <span>PRÉVISIONS SUR 10 JOURS</span>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="daily-list" id="daily-list"></div>
+                </div>
+
+                <!-- Details Grid -->
+                <div class="grid-2">
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>💧</span>
+                            <span>HUMIDITÉ</span>
                         </div>
-                        <div class="detail-item">
-                            <i class="fas fa-wind"></i>
-                            <div class="detail-info">
-                                <span class="detail-label">Vent</span>
-                                <span id="wind" class="detail-value">15 km/h</span>
-                            </div>
+                        <div class="detail-big" id="humidity">45%</div>
+                        <div class="detail-small">Le point de rosée est de 13°</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>🌬️</span>
+                            <span>VENT</span>
                         </div>
-                        <div class="detail-item">
-                            <i class="fas fa-compress-arrows-alt"></i>
-                            <div class="detail-info">
-                                <span class="detail-label">Pression</span>
-                                <span id="pressure" class="detail-value">1013 hPa</span>
-                            </div>
+                        <div class="detail-big" id="wind">12 <span class="unit">km/h</span></div>
+                        <div class="detail-small">Direction Nord-Ouest</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>👁️</span>
+                            <span>VISIBILITÉ</span>
                         </div>
-                        <div class="detail-item">
-                            <i class="fas fa-eye"></i>
-                            <div class="detail-info">
-                                <span class="detail-label">Visibilité</span>
-                                <span id="visibility" class="detail-value">10 km</span>
-                            </div>
+                        <div class="detail-big">10 <span class="unit">km</span></div>
+                        <div class="detail-small">Excellent</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>🌡️</span>
+                            <span>RESSENTI</span>
                         </div>
+                        <div class="detail-big" id="feels-like">24°</div>
+                        <div class="detail-small">Ressenti similaire</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>☀️</span>
+                            <span>INDICE UV</span>
+                        </div>
+                        <div class="detail-big">5</div>
+                        <div class="detail-small">Modéré</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>🌅</span>
+                            <span>PRESSION</span>
+                        </div>
+                        <div class="detail-big">1015 <span class="unit">hPa</span></div>
+                        <div class="detail-small">Stable</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>🌅</span>
+                            <span>LEVER SOLEIL</span>
+                        </div>
+                        <div class="detail-big" id="sunrise">06:45</div>
+                        <div class="detail-small">Matin</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>🌇</span>
+                            <span>COUCHER SOLEIL</span>
+                        </div>
+                        <div class="detail-big" id="sunset">20:30</div>
+                        <div class="detail-small">Soir</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label">
+                            <span>☁️</span>
+                            <span>NUAGEUX</span>
+                        </div>
+                        <div class="detail-big" id="cloudiness">10%</div>
+                        <div class="detail-small">Dégagé</div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Contact Section -->
-    <section class="contact-section" id="contact">
-        <div class="container">
-            <h2>Contactez-Nous</h2>
-            <form class="contact-form" id="contactForm" action="https://api.web3forms.com/submit" method="POST">
-                <input type="hidden" name="access_key" value="42e1bd3d-5ef8-42c7-bb4b-cd7335bfbe16">
-                <input type="hidden" name="subject" value="Nouveau message depuis tomclair.tech">
-                <div class="form-group">
-                    <label for="name">Nom</label>
-                    <input type="text" id="name" name="name" required placeholder="Votre nom">
-                </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required placeholder="votre@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="message">Message</label>
-                    <textarea id="message" name="message" rows="5" required placeholder="Votre message..."></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">ENVOYER</button>
-            </form>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2027 tomclair.tech - Tous droits réservés</p>
-        </div>
-    </footer>
-
+    <script src="weather-icons.js"></script>
     <script src="script.js"></script>
-    <script src="weather.js"></script>
 </body>
 </html>
