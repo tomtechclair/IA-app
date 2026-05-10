@@ -6,12 +6,71 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Optimisations de performance -->
+    <meta http-equiv="Cache-Control" content="max-age=31536000, public">
+    <meta name="theme-color" content="#00BFFF">
+    <link rel="preconnect" href="https://api.openweathermap.org">
+    <link rel="dns-prefetch" href="https://api.openweathermap.org">
+    
     <title>Weather</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="weather-icons-new.css">
+    
+    <!-- Chargement critique CSS inline -->
+    <style>
+        /* CSS critique pour le premier affichage */
+        body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;background:#00BFFF;color:#fff;overflow-x:hidden}
+        .app{position:relative;min-height:100vh}
+        .hero{padding:20px;text-align:center}
+        .city{font-size:2.5rem;font-weight:300;margin-bottom:10px}
+        .big-temp{font-size:4rem;font-weight:200;margin-bottom:5px}
+        .condition{font-size:1.2rem;opacity:0.9}
+        .bg-layer{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#00BFFF 0%,#87CEEB 50%,#FFD700 100%);transition:all 1s ease-in-out}
+        .loading{display:flex;justify-content:center;align-items:center;height:50vh}
+        .spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.3);border-top:3px solid #fff;border-radius:50%;animation:spin 1s linear infinite}
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    </style>
+    
+    <!-- Chargement différé des styles -->
+    <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="weather-icons.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- Script de performance -->
+    <script>
+        // Optimisation du chargement
+        if('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(console.log);
+        }
+        
+        // Préchargement des ressources critiques
+        function preloadCritical() {
+            const criticalResources = [
+                'weather-icons.js',
+                'script.js'
+            ];
+            
+            criticalResources.forEach(src => {
+                const link = document.createElement('link');
+                link.rel = 'preload';
+                link.as = 'script';
+                link.href = src;
+                document.head.appendChild(link);
+            });
+        }
+        
+        // Démarrer le préchargement
+        if(document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', preloadCritical);
+        } else {
+            preloadCritical();
+        }
+    </script>
 </head>
 <body>
     <div class="app">
+        <div class="background">
+            <div class="bg-layer bg-blue"></div>
+        </div>
+        
         <div class="scroll-container">
             <!-- Hero Section -->
             <div class="hero">
@@ -40,6 +99,22 @@
 
             <!-- Cards -->
             <div class="cards">
+                <!-- Next Hour Forecast -->
+                <div class="card">
+                    <div class="card-label">
+                        <span>🕐</span>
+                        <span>PRÉVISIONS POUR LA PROCHAINE HEURE</span>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="next-hour-forecast">
+                        <div class="rain-chart" id="rain-chart"></div>
+                        <div class="rain-info">
+                            <div class="rain-percentage" id="rain-percentage">0%</div>
+                            <div class="rain-text">Pluie dans l'heure</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Hourly -->
                 <div class="card">
                     <div class="card-label">
@@ -139,6 +214,7 @@
         </div>
     </div>
 
+    <script src="weather-icons.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
