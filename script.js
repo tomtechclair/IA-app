@@ -273,6 +273,13 @@ function showWeatherError(message) {
 async function updateWeatherByCoords(lat, lon) {
     try {
         currentCoords = { lat, lon };
+        
+        // Mettre à jour l'interface pour montrer la recherche
+        const cityElement = document.querySelector('.city');
+        const conditionElement = document.querySelector('.condition');
+        if (cityElement) cityElement.textContent = 'Localisation...';
+        if (conditionElement) conditionElement.textContent = 'Recherche des données météo';
+        
         const weatherData = await fetchWeatherData(lat, lon);
         
         if (!weatherData) {
@@ -281,7 +288,7 @@ async function updateWeatherByCoords(lat, lon) {
         }
         
         // Trouver le nom de la ville le plus proche (simplifié)
-        currentCity = 'Localisation';
+        currentCity = 'Votre position';
         document.getElementById('city-input').value = currentCity;
         
         await displayWeatherData(weatherData);
@@ -300,16 +307,8 @@ async function updateWeather(cityName) {
         const cityData = await searchCityCoords(cityName);
         
         if (!cityData) {
-            if (isFirstLoad) {
-                // Silencieux l'erreur au premier chargement
-                console.log('Ville non trouvée, utilisation des données simulées');
-                const simulatedData = getSimulatedWeatherData();
-                await displayWeatherData(simulatedData);
-                startAutoRefresh();
-                return;
-            } else {
-                showWeatherError('Ville non trouvée. Vérifiez l\'orthographe ou essayez une autre ville.');
-            }
+            // Toujours afficher l'erreur, même au premier chargement
+            showWeatherError('Ville non trouvée. Vérifiez l\'orthographe ou essayez une autre ville.');
             if (searchBtn) searchBtn.style.opacity = '1';
             return;
         }
@@ -320,16 +319,8 @@ async function updateWeather(cityName) {
         const weatherData = await fetchWeatherData(cityData.lat, cityData.lon);
         
         if (!weatherData) {
-            if (isFirstLoad) {
-                // Silencieux l'erreur au premier chargement
-                console.log('Erreur API, utilisation des données simulées');
-                const simulatedData = getSimulatedWeatherData();
-                await displayWeatherData(simulatedData);
-                startAutoRefresh();
-                return;
-            } else {
-                showWeatherError('Erreur lors de la récupération des données météo. Vérifiez votre connexion internet.');
-            }
+            // Toujours afficher l'erreur, même au premier chargement
+            showWeatherError('Erreur lors de la récupération des données météo. Vérifiez votre connexion internet.');
             if (searchBtn) searchBtn.style.opacity = '1';
             return;
         }
@@ -346,14 +337,24 @@ async function updateWeather(cityName) {
 async function displayWeatherData(weatherData) {
     const searchBtn = document.querySelector('.menu-btn');
     if (searchBtn) searchBtn.style.opacity = '0.5';
-    
+
     try {
-        // Vérifier que les données existent
-        if (!weatherData || !weatherData.current) {
-            throw new Error('Données météo invalides');
+        // Vérification robuste des données
+        if (!weatherData) {
+            throw new Error('Aucune donnée météo reçue');
         }
-        
+
+        if (!weatherData.current) {
+            throw new Error('Données météo actuelles manquantes');
+        }
+
         const current = weatherData.current;
+        
+        // Validation des données essentielles
+        if (current.temperature_2m === undefined || current.temperature_2m === null) {
+            throw new Error('Température non disponible');
+        }
+
         const weatherInfo = getWeatherInfo(current.weather_code || 0);
         const isDay = current.is_day === 1;
         
