@@ -213,6 +213,9 @@ async function updateWeather(cityName) {
             cloudinessElement.textContent = `${cloudiness}%`;
         }
         
+        // Next hour forecast with rain chart
+        updateNextHourForecast(weatherData);
+        
         // Hourly forecast - nouvelles icônes SVG
         const hourly = weatherData.hourly;
         const now = new Date();
@@ -431,6 +434,47 @@ function setupSearchListeners() {
             hideSuggestions();
         }
     });
+}
+
+function updateNextHourForecast(weatherData) {
+    const rainChart = document.getElementById('rain-chart');
+    const rainPercentage = document.getElementById('rain-percentage');
+    
+    if (!rainChart || !rainPercentage) return;
+    
+    // Simuler les données de pluie pour la prochaine heure
+    const hourly = weatherData.hourly;
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // Créer un graphique avec 12 barres représentant les 5 prochaines minutes par barre
+    let chartHTML = '';
+    let rainProbability = 0;
+    
+    for (let i = 0; i < 12; i++) {
+        const hourIndex = currentHour + Math.floor(i / 12);
+        if (hourIndex >= hourly.time.length) break;
+        
+        const weatherCode = hourly.weather_code[hourIndex] || 0;
+        let barHeight = 5; // hauteur par défaut en px
+        
+        // Calculer la probabilité de pluie basée sur le code météo
+        if (weatherCode >= 51 && weatherCode <= 67) {
+            barHeight = Math.random() * 30 + 20; // 20-50px
+            rainProbability = Math.max(rainProbability, 60);
+        } else if (weatherCode >= 80 && weatherCode <= 82) {
+            barHeight = Math.random() * 40 + 30; // 30-70px
+            rainProbability = Math.max(rainProbability, 80);
+        } else if (weatherCode >= 95 && weatherCode <= 99) {
+            barHeight = Math.random() * 20 + 50; // 50-70px
+            rainProbability = Math.max(rainProbability, 90);
+        }
+        
+        chartHTML += `<div class="rain-bar" style="height: ${barHeight}px"></div>`;
+    }
+    
+    rainChart.innerHTML = chartHTML;
+    rainPercentage.textContent = `${rainProbability}%`;
 }
 
 // Initialize search listeners

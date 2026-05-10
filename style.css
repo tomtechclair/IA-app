@@ -11,6 +11,7 @@ body {
     color: #fff;
     overflow: hidden;
     height: 100vh;
+    font-weight: 300;
 }
 
 .app {
@@ -42,28 +43,28 @@ body {
 
 .bg-blue {
     background: linear-gradient(180deg, 
-        rgba(91, 141, 239, 0.95) 0%, 
-        rgba(45, 123, 246, 0.9) 30%,
-        rgba(30, 91, 181, 0.85) 60%,
-        rgba(20, 60, 120, 0.9) 100%
+        #1a1a2e 0%, 
+        #16213e 30%,
+        #0f3460 60%,
+        #533483 100%
     );
 }
 
 .bg-cloudy {
     background: linear-gradient(180deg, 
-        rgba(143, 168, 200, 0.95) 0%, 
-        rgba(107, 141, 181, 0.9) 30%,
-        rgba(74, 111, 165, 0.85) 60%,
-        rgba(50, 80, 120, 0.9) 100%
+        #2d2d44 0%, 
+        #40407a 30%,
+        #3d5a80 60%,
+        #2c3e50 100%
     );
 }
 
 .bg-rain {
     background: linear-gradient(180deg, 
-        rgba(90, 122, 150, 0.95) 0%, 
-        rgba(61, 90, 128, 0.9) 30%,
-        rgba(44, 74, 110, 0.85) 60%,
-        rgba(30, 50, 80, 0.9) 100%
+        #1e3c72 0%, 
+        #2a5298 30%,
+        #3d5a80 60%,
+        #2c3e50 100%
     );
 }
 
@@ -501,9 +502,9 @@ body {
 /* Hourly */
 .hourly-scroll {
     display: flex;
+    gap: 20px;
     overflow-x: auto;
-    gap: 0;
-    padding: 0 4px;
+    padding: 20px 0;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -516,16 +517,25 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 8px 14px;
-    min-width: 65px;
-    text-align: center;
+    gap: 8px;
+    min-width: 50px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    transition: all 0.3s ease;
 }
 
 .hourly-item .time {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: rgba(255,255,255,0.85);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    font-weight: 300;
+}
+
+.hourly-item .temp {
+    font-size: 14px;
+    font-weight: 400;
+    color: #fff;
 }
 
 .hourly-item .icon {
@@ -533,10 +543,48 @@ body {
     margin-bottom: 10px;
 }
 
-.hourly-item .temp {
-    font-size: 16px;
-    font-weight: 600;
+/* Next Hour Forecast */
+.next-hour-forecast {
+    padding: 20px;
+    text-align: center;
 }
+
+.rain-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 60px;
+    margin-bottom: 15px;
+    gap: 2px;
+}
+
+.rain-bar {
+    flex: 1;
+    background: linear-gradient(180deg, #4a90e2, #7b68ee);
+    border-radius: 2px 2px 0 0;
+    min-height: 5px;
+    transition: all 0.3s ease;
+}
+
+.rain-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.rain-percentage {
+    font-size: 24px;
+    font-weight: 600;
+    color: #4a90e2;
+}
+
+.rain-text {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 300;
+}
+
 
 /* Daily */
 .daily-list {
@@ -548,58 +596,59 @@ body {
 .daily-item {
     display: flex;
     align-items: center;
-    padding: 10px 0;
-    height: 46px;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
 }
 
-.daily-item:not(:last-child) {
-    border-bottom: 0.5px solid rgba(255,255,255,0.1);
+.daily-item:last-child {
+    border-bottom: none;
 }
 
 .daily-item .day {
-    width: 45px;
-    font-size: 16px;
-    font-weight: 400;
+    min-width: 55px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 300;
 }
 
 .daily-item .icon {
-    width: 32px;
-    text-align: center;
-    font-size: 22px;
+    font-size: 24px;
+    margin: 0 8px;
 }
 
 .daily-item .temp-low {
-    width: 38px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    min-width: 22px;
     text-align: right;
-    font-size: 16px;
-    font-weight: 400;
-    opacity: 0.55;
+    font-weight: 300;
 }
 
 .daily-item .temp-bar-container {
     flex: 1;
-    margin: 0 12px;
-    height: 4px;
-    background: rgba(255,255,255,0.15);
+    height: 3px;
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 2px;
     position: relative;
-    overflow: hidden;
+    margin: 0 8px;
 }
 
 .daily-item .temp-bar {
     height: 100%;
+    background: linear-gradient(90deg, #4a90e2, #7b68ee);
     border-radius: 2px;
-    background: rgba(255,255,255,0.5);
     position: absolute;
-    transition: all 0.3s ease;
+    top: 0;
 }
 
 .daily-item .temp-high {
-    width: 38px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    min-width: 22px;
     text-align: left;
-    font-size: 16px;
     font-weight: 400;
-    margin-left: 12px;
 }
 
 /* Grid */
