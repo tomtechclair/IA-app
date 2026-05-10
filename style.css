@@ -695,26 +695,35 @@ body {
     line-height: 1.3;
 }
 
-/* Apple Weather Icons */
-.apple-weather-icon-container {
+/* 3D Weather Icons */
+.weather-icon-3d-container {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     vertical-align: middle;
 }
 
-.apple-weather-icon-container svg {
+.weather-icon-3d-container svg {
     width: 100%;
     height: 100%;
     display: block;
 }
 
+.weather-icon-3d {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    transition: transform 0.3s ease;
+}
+
+.weather-icon-3d:hover {
+    transform: scale(1.1) translateY(-2px);
+}
+
 /* Hourly and Daily Icons */
-.hourly-item .apple-weather-icon-container,
-.daily-item .apple-weather-icon-container {
-    width: 36px;
-    height: 36px;
-    margin: 4px 0;
+.hourly-item .weather-icon-3d-container,
+.daily-item .weather-icon-3d-container {
+    width: 42px;
+    height: 42px;
+    margin: 2px 0;
 }
 
 .hourly-item .icon,
@@ -732,9 +741,9 @@ body {
     gap: 12px;
 }
 
-.weather-hero .condition .apple-weather-icon-container {
-    width: 40px;
-    height: 40px;
+.weather-hero .condition .weather-icon-3d-container {
+    width: 48px;
+    height: 48px;
 }
 
 /* Responsive */
