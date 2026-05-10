@@ -159,8 +159,8 @@ async function updateWeather(cityName) {
                 const code = hourly.weather_code[hourIndex];
                 const hourlyIsDay = hourly.is_day[hourIndex] === 1;
                 
-                const iconHTML = typeof createWeatherIconSVG === 'function' 
-                    ? createWeatherIconSVG(code, hourlyIsDay, 28) 
+                const iconHTML = typeof getWeatherIcon === 'function' 
+                    ? getWeatherIcon(code, hourlyIsDay, 28) 
                     : '';
                 
                 hourlyHTML += `
@@ -189,8 +189,8 @@ async function updateWeather(cityName) {
                 const dayName = i === 0 ? 'Auj.' : days[date.getDay()];
                 const code = daily.weather_code[i];
                 
-                const iconHTML = typeof createWeatherIconSVG === 'function' 
-                    ? createWeatherIconSVG(code, true, 28) 
+                const iconHTML = typeof getWeatherIcon === 'function' 
+                    ? getWeatherIcon(code, true, 28) 
                     : '';
                 
                 const tempLow = daily.temperature_2m_min[i];
