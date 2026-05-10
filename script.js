@@ -142,9 +142,14 @@ function showWeather(data, cityName) {
     // Jours (données réelles Open-Meteo)
     showDaily(data.daily);
     
-    // Fond
-    const bg = $('.bg-layer');
-    if (bg) bg.className = 'bg-layer ' + info.bg;
+    // Fond dynamique iOS-style
+    if (typeof updateWeatherBackground === 'function') {
+        updateWeatherBackground(current.weather_code || 0, isDay);
+    } else {
+        // Fallback sur le fond statique
+        const bg = $('.bg-layer');
+        if (bg) bg.className = 'bg-layer ' + info.bg;
+    }
 }
 
 function showHourly(hourly, currentCode) {
@@ -351,6 +356,11 @@ function doSearch() {
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Initialisation...');
+    
+    // Initialiser le fond dynamique météo
+    if (typeof initWeatherBackground === 'function') {
+        initWeatherBackground();
+    }
     
     // Input events
     const input = $('#city-input');
