@@ -128,7 +128,9 @@ const categoryIcons = {
 function getEnhancedWeatherIcon(code, isDay = true, size = 32) {
     if (typeof appleWeatherIcons !== 'undefined' && appleWeatherIcons.getIcon) {
         const svg = appleWeatherIcons.getIcon(code, isDay);
-        return `<div class="weather-icon-container" style="width: ${size}px; height: ${size}px; display: inline-flex; align-items: center; justify-content: center;">${svg}</div>`;
+        // Add proper styling to SVG
+        const styledSvg = svg.replace('<svg', `<svg style="width: ${size}px; height: ${size}px; display: inline-block;"`);
+        return `<div class="weather-icon-container" style="width: ${size}px; height: ${size}px; display: inline-flex; align-items: center; justify-content: center;">${styledSvg}</div>`;
     }
     // Fallback to original system
     if (typeof createWeatherIconSVG === 'function') {

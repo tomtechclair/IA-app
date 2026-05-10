@@ -198,36 +198,40 @@ function getWindDirectionText(degrees) {
 }
 
 function getSimulatedWeatherData() {
-    // Données simulées en cas d'erreur API
+    // Données simulées en cas d'erreur API - Plus réalistes
     const now = new Date();
     const hour = now.getHours();
     const baseTemp = 15 + Math.sin(hour * Math.PI / 12) * 8;
     
+    // Codes météo plus variés
+    const weatherCodes = [0, 1, 2, 3, 45, 51, 61, 71, 80, 95];
+    const randomWeatherCode = () => weatherCodes[Math.floor(Math.random() * weatherCodes.length)];
+    
     return {
         current: {
-            temperature_2m: baseTemp + Math.random() * 5,
-            relative_humidity_2m: 50 + Math.random() * 30,
-            apparent_temperature: baseTemp + Math.random() * 3,
+            temperature_2m: Math.round((baseTemp + Math.random() * 5) * 10) / 10,
+            relative_humidity_2m: Math.round(45 + Math.random() * 40),
+            apparent_temperature: Math.round((baseTemp + Math.random() * 3) * 10) / 10,
             is_day: hour >= 6 && hour <= 20 ? 1 : 0,
-            weather_code: Math.random() > 0.7 ? (Math.random() > 0.5 ? 0 : 1) : (Math.random() > 0.5 ? 51 : 45),
-            wind_speed_10m: 5 + Math.random() * 20,
-            wind_direction_10m: Math.random() * 360,
-            pressure_msl: 1010 + Math.random() * 20,
-            visibility: 5000 + Math.random() * 10000,
+            weather_code: randomWeatherCode(),
+            wind_speed_10m: Math.round((5 + Math.random() * 20) * 10) / 10,
+            wind_direction_10m: Math.round(Math.random() * 360),
+            pressure_msl: Math.round(1005 + Math.random() * 30),
+            visibility: Math.round(5000 + Math.random() * 10000),
             sunrise: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0).getTime() / 1000,
             sunset: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 0, 0).getTime() / 1000
         },
         hourly: Array.from({length: 24}, (_, i) => ({
             time: new Date(now.getTime() + i * 3600000).getTime(),
-            temperature_2m: baseTemp + Math.random() * 5,
-            weather_code: Math.random() > 0.7 ? 0 : (Math.random() > 0.5 ? 51 : 1),
+            temperature_2m: Math.round((baseTemp + Math.random() * 5) * 10) / 10,
+            weather_code: randomWeatherCode(),
             is_day: (hour + i) % 24 >= 6 && (hour + i) % 24 <= 20 ? 1 : 0
         })),
         daily: Array.from({length: 10}, (_, i) => ({
             time: new Date(now.getTime() + i * 86400000).getTime(),
-            temperature_2m_max: baseTemp + 5 + Math.random() * 3,
-            temperature_2m_min: baseTemp - 3 + Math.random() * 3,
-            weather_code: Math.random() > 0.6 ? 0 : (Math.random() > 0.5 ? 1 : 51),
+            temperature_2m_max: Math.round((baseTemp + 5 + Math.random() * 5) * 10) / 10,
+            temperature_2m_min: Math.round((baseTemp - 3 + Math.random() * 3) * 10) / 10,
+            weather_code: randomWeatherCode(),
             sunrise: new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 6, 0, 0).getTime() / 1000,
             sunset: new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 20, 0, 0).getTime() / 1000
         }))
@@ -375,8 +379,8 @@ async function displayWeatherData(weatherData) {
         
         // Hero icon - nouvelle fonction SVG avec animations
         const heroIcon = document.querySelector('.weather-hero .condition');
-        if (heroIcon && typeof createWeatherIconSVG === 'function') {
-            heroIcon.innerHTML = createWeatherIconSVG(current.weather_code, isDay, 40) + weatherInfo.condition;
+        if (heroIcon && typeof getEnhancedWeatherIcon === 'function') {
+            heroIcon.innerHTML = getEnhancedWeatherIcon(current.weather_code, isDay, 40) + weatherInfo.condition;
             heroIcon.classList.add('has-icon');
             
             // Pas d'animation - icônes statiques mais stylées
@@ -557,8 +561,8 @@ async function displayWeatherData(weatherData) {
             const code = hourly.weather_code[hourIndex];
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
             
-            const iconHTML = typeof createWeatherIconSVG === 'function' 
-                ? createWeatherIconSVG(code, hourlyIsDay, 28) 
+            const iconHTML = typeof getEnhancedWeatherIcon === 'function' 
+                ? getEnhancedWeatherIcon(code, hourlyIsDay, 28) 
                 : '';
             
             hourlyHTML += `
@@ -594,8 +598,8 @@ async function displayWeatherData(weatherData) {
             const dayName = i === 0 ? 'Auj.' : days[date.getDay()];
             const code = daily.weather_code[i];
             
-            const iconHTML = typeof createWeatherIconSVG === 'function' 
-                ? createWeatherIconSVG(code, true, 28) 
+            const iconHTML = typeof getEnhancedWeatherIcon === 'function' 
+                ? getEnhancedWeatherIcon(code, true, 28) 
                 : '';
             
             const tempLow = daily.temperature_2m_min[i];
