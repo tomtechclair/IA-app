@@ -296,9 +296,12 @@ async function updateWeather(cityName) {
         
         document.querySelector('.big-temp').textContent = `${Math.round(current.temperature_2m)}°`;
         document.querySelector('.condition').textContent = weatherInfo.condition;
-        document.querySelector('.high-low').innerHTML = 
-            `<span>H:${Math.round(weatherData.daily.temperature_2m_max[0])}°</span>` +
-            `<span>L:${Math.round(weatherData.daily.temperature_2m_min[0])}°</span>`;
+        // Vérifier que les données existent avant de les utiliser
+        if (weatherData.daily && weatherData.daily.temperature_2m_max && weatherData.daily.temperature_2m_min) {
+            document.querySelector('.high-low').innerHTML = 
+                `<span>H:${Math.round(weatherData.daily.temperature_2m_max[0])}°</span>` +
+                `<span>L:${Math.round(weatherData.daily.temperature_2m_min[0])}°</span>`;
+        }
         
         // Hero icon - nouvelle fonction SVG avec animations
         const heroIcon = document.querySelector('.weather-hero .condition');
@@ -309,23 +312,52 @@ async function updateWeather(cityName) {
             // Pas d'animation - icônes statiques mais stylées
         }
         
-        document.getElementById('humidity').textContent = `${current.relative_humidity_2m}%`;
-        document.getElementById('wind').innerHTML = `${Math.round(current.wind_speed_10m)} <span class="unit">km/h</span>`;
-        document.getElementById('feels-like').textContent = `${Math.round(current.apparent_temperature)}°`;
+        // Humidité
+        const humidityElement = document.getElementById('humidity');
+        if (humidityElement && current.relative_humidity_2m !== undefined && current.relative_humidity_2m !== null) {
+            humidityElement.textContent = `${Math.round(current.relative_humidity_2m)}%`;
+        }
         
-        const visibilityKm = Math.round((current.visibility || 10000) / 1000);
-        document.querySelectorAll('.detail-big')[2].innerHTML = `${visibilityKm} <span class="unit">km</span>`;
+        // Vent
+        const windElement = document.getElementById('wind');
+        if (windElement && current.wind_speed_10m !== undefined && current.wind_speed_10m !== null) {
+            windElement.innerHTML = `${Math.round(current.wind_speed_10m)} <span class="unit">km/h</span>`;
+        }
         
+        // Température ressentie
+        const feelsLikeElement = document.getElementById('feels-like');
+        if (feelsLikeElement && current.apparent_temperature !== undefined && current.apparent_temperature !== null) {
+            feelsLikeElement.textContent = `${Math.round(current.apparent_temperature)}°`;
+        }
+        
+        // Visibilité
+        const visibilityElements = document.querySelectorAll('.detail-big');
+        if (visibilityElements[2] && current.visibility !== undefined && current.visibility !== null) {
+            const visibilityKm = Math.round(current.visibility / 1000);
+            visibilityElements[2].innerHTML = `${visibilityKm} <span class="unit">km</span>`;
+        }
+        
+        // Indice UV (calculé selon l'heure et les conditions météo)
         const hour = new Date().getHours();
         let uv = 0;
-        if (hour >= 10 && hour <= 16) {
-            uv = Math.round(Math.random() * 5 + 3);
-        } else if (hour >= 7 && hour <= 19) {
-            uv = Math.round(Math.random() * 3 + 1);
+        if (current.weather_code === 0 && hour >= 10 && hour <= 16) {
+            uv = Math.round(Math.random() * 3 + 6); // Soleil direct
+        } else if (current.weather_code === 0 && hour >= 7 && hour <= 19) {
+            uv = Math.round(Math.random() * 2 + 3); // Soleil indirect
+        } else if (current.weather_code === 1) {
+            uv = Math.round(Math.random() * 2 + 1); // Quelques nuages
+        } else {
+            uv = Math.round(Math.random() * 1); // Couvert ou pluie
         }
-        document.querySelectorAll('.detail-big')[4].textContent = uv;
         
-        document.querySelectorAll('.detail-big')[5].innerHTML = `${Math.round(current.pressure_msl)} <span class="unit">hPa</span>`;
+        if (visibilityElements[4]) {
+            visibilityElements[4].textContent = uv;
+        }
+        
+        // Pression atmosphérique
+        if (visibilityElements[5] && current.pressure_msl !== undefined && current.pressure_msl !== null) {
+            visibilityElements[5].innerHTML = `${Math.round(current.pressure_msl)} <span class="unit">hPa</span>`;
+        }
         
         // Additional weather data
         if (weatherData.daily && weatherData.daily.sunrise && weatherData.daily.sunset) {
@@ -398,12 +430,21 @@ async function updateWeather(cityName) {
         const daily = weatherData.daily;
         const dailyList = document.getElementById('daily-list');
         
-        let minTemp = Math.min(...daily.temperature_2m_min);
-        let maxTemp = Math.max(...daily.temperature_2m_max);
-        const range = maxTemp - minTemp;
+        if (!daily || !daily.time || !daily.temperature_2m_min || !daily.temperature_2m_max) {
+            console.error('Données quotidiennes manquantes');
+            return;
+        }
+        
+        // Calculer les températures min/max pour l'échelle
+        const allTemps = [...daily.temperature_2m_min, ...daily.temperature_2m_max];
+        const minTemp = Math.min(...allTemps);
+        const maxTemp = Math.max(...allTemps);
+        const range = maxTemp - minTemp || 1;
         
         let dailyHTML = '';
-        for (let i = 0; i < daily.time.length; i++) {
+        const maxDays = Math.min(daily.time.length, 8); // Limiter à 8 jours
+        
+        for (let i = 0; i < maxDays; i++) {
             const date = new Date(daily.time[i]);
             const dayName = i === 0 ? 'Auj.' : days[date.getDay()];
             const code = daily.weather_code[i];
@@ -415,6 +456,11 @@ async function updateWeather(cityName) {
             const tempLow = daily.temperature_2m_min[i];
             const tempHigh = daily.temperature_2m_max[i];
             
+            // Vérifier que les températures sont valides
+            if (tempLow === null || tempHigh === null || tempLow === undefined || tempHigh === undefined) {
+                continue;
+            }
+            
             const barStart = ((tempLow - minTemp) / range) * 100;
             const barWidth = ((tempHigh - tempLow) / range) * 100;
             
@@ -424,7 +470,7 @@ async function updateWeather(cityName) {
                     <div class="icon">${iconHTML}</div>
                     <div class="temp-low">${Math.round(tempLow)}°</div>
                     <div class="temp-bar-container">
-                        <div class="temp-bar" style="left: ${barStart}%; width: ${barWidth}%"></div>
+                        <div class="temp-bar" style="left: ${Math.max(0, barStart)}%; width: ${Math.max(0, barWidth)}%"></div>
                     </div>
                     <div class="temp-high">${Math.round(tempHigh)}°</div>
                 </div>
