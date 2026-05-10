@@ -80,46 +80,23 @@ async function searchCityCoords(cityName) {
 
 async function fetchWeatherData(lat, lon) {
     try {
-        // Utiliser l'API OpenWeatherMap pour les données en temps réel
-        const weatherUrl = `${API_CONFIG.weatherUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`;
-        const forecastUrl = `${API_CONFIG.forecastUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`;
+        // Utiliser l'API Open-Meteo (gratuite et fiable) en fallback
+        const url = `${API_CONFIG.baseUrl}/forecast?` +
+            `latitude=${lat}&longitude=${lon}&` +
+            `current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,pressure_msl,visibility&` +
+            `hourly=temperature_2m,weather_code,is_day&` +
+            `daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&` +
+            `timezone=auto&forecast_days=7`;
         
-        const [weatherResponse, forecastResponse] = await Promise.all([
-            fetch(weatherUrl),
-            fetch(forecastUrl)
-        ]);
+        const response = await fetch(url);
+        const data = await response.json();
         
-        const weatherData = await weatherResponse.json();
-        const forecastData = await forecastResponse.json();
+        if (data.error) {
+            console.error('Erreur API Open-Meteo:', data.reason);
+            return getSimulatedWeatherData();
+        }
         
-        return {
-            current: {
-                temperature_2m: weatherData.main.temp,
-                relative_humidity_2m: weatherData.main.humidity,
-                apparent_temperature: weatherData.main.feels_like,
-                is_day: isDayTime(weatherData.sys.sunrise, weatherData.sys.sunset),
-                weather_code: getWeatherCodeFromOpenWeather(weatherData.weather[0].id),
-                wind_speed_10m: weatherData.wind.speed * 3.6, // Convertir m/s en km/h
-                pressure_msl: weatherData.main.pressure,
-                visibility: weatherData.visibility || 10000,
-                sunrise: weatherData.sys.sunrise,
-                sunset: weatherData.sys.sunset
-            },
-            hourly: {
-                time: forecastData.list.map(item => item.dt * 1000),
-                temperature_2m: forecastData.list.map(item => item.main.temp),
-                weather_code: forecastData.list.map(item => getWeatherCodeFromOpenWeather(item.weather[0].id)),
-                is_day: forecastData.list.map(item => isDayTime(weatherData.sys.sunrise, weatherData.sys.sunset))
-            },
-            daily: {
-                time: forecastData.list.map(item => item.dt * 1000),
-                temperature_2m_max: forecastData.list.map(item => item.main.temp_max),
-                temperature_2m_min: forecastData.list.map(item => item.main.temp_min),
-                weather_code: forecastData.list.map(item => getWeatherCodeFromOpenWeather(item.weather[0].id)),
-                sunrise: [weatherData.sys.sunrise],
-                sunset: [weatherData.sys.sunset]
-            }
-        };
+        return data;
     } catch (error) {
         console.error('Erreur météo:', error);
         // Fallback vers les données simulées si l'API échoue
@@ -282,20 +259,48 @@ async function updateWeather(cityName) {
         }
         
         await displayWeatherData(weatherData);
+    } catch (error) {
+        console.error('Erreur lors de l\'affichage des données:', error);
+        showWeatherError('Erreur lors de l\'affichage des données météo. Veuillez réessayer.');
+        if (searchBtn) searchBtn.style.opacity = '1';
+        return;
+    }
+}
+
+async function displayWeatherData(weatherData) {
+    const searchBtn = document.querySelector('.menu-btn');
+    if (searchBtn) searchBtn.style.opacity = '0.5';
+    
+    try {
+        // Vérifier que les données existent
+        if (!weatherData || !weatherData.current) {
+            throw new Error('Données météo invalides');
+        }
         
         const current = weatherData.current;
-        const weatherInfo = getWeatherInfo(current.weather_code);
+        const weatherInfo = getWeatherInfo(current.weather_code || 0);
         const isDay = current.is_day === 1;
         
         // Mettre à jour le premier chargement
         if (isFirstLoad) {
             isFirstLoad = false;
-            document.querySelector('.city').textContent = currentCity || 'Météo';
-            document.getElementById('city-input').value = currentCity || '';
+            const cityElement = document.querySelector('.city');
+            if (cityElement) cityElement.textContent = currentCity || 'Météo';
+            const inputElement = document.getElementById('city-input');
+            if (inputElement) inputElement.value = currentCity || '';
         }
         
-        document.querySelector('.big-temp').textContent = `${Math.round(current.temperature_2m)}°`;
-        document.querySelector('.condition').textContent = weatherInfo.condition;
+        // Température actuelle
+        const tempElement = document.querySelector('.big-temp');
+        if (tempElement && current.temperature_2m !== undefined && current.temperature_2m !== null) {
+            tempElement.textContent = `${Math.round(current.temperature_2m)}°`;
+        }
+        
+        // Condition météo
+        const conditionElement = document.querySelector('.condition');
+        if (conditionElement && weatherInfo.condition) {
+            conditionElement.textContent = weatherInfo.condition;
+        }
         // Vérifier que les données existent avant de les utiliser
         if (weatherData.daily && weatherData.daily.temperature_2m_max && weatherData.daily.temperature_2m_min) {
             document.querySelector('.high-low').innerHTML = 
@@ -476,9 +481,17 @@ async function updateWeather(cityName) {
                 </div>
             `;
         }
-        dailyList.innerHTML = dailyHTML;
+        if (dailyList) {
+            dailyList.innerHTML = dailyHTML;
+        }
         
-        updateBackground(weatherInfo.bg);
+        // Mettre à jour le fond
+        if (weatherInfo && weatherInfo.bg) {
+            updateBackground(weatherInfo.bg);
+        }
+        
+        // Réinitialiser le bouton de recherche
+        if (searchBtn) searchBtn.style.opacity = '1';
         
     } catch (error) {
         console.error('Erreur:', error);
