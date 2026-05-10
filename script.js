@@ -216,6 +216,36 @@ function displayDaily(daily) {
     list.innerHTML = html;
 }
 
+// Reverse geocoding pour obtenir le nom de la ville depuis les coordonnées
+async function getCityNameFromCoords(lat, lon) {
+    try {
+        const response = await fetch(
+            `${API_CONFIG.geoUrl}/get?latitude=${lat}&longitude=${lon}&language=fr&format=json`
+        );
+        const data = await response.json();
+        
+        if (data.name) {
+            return data.name;
+        }
+        
+        // Fallback via Nominatim
+        const nominatimResponse = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=fr`
+        );
+        const nominatimData = await nominatimResponse.json();
+        
+        if (nominatimData.address) {
+            const addr = nominatimData.address;
+            return addr.city || addr.town || addr.village || addr.suburb || addr.county || 'Position actuelle';
+        }
+        
+        return 'Position actuelle';
+    } catch (error) {
+        console.error('Reverse geocoding error:', error);
+        return 'Position actuelle';
+    }
+}
+
 // Search and geolocation
 async function searchCity(name) {
     try {
@@ -242,9 +272,12 @@ async function loadCity(cityName) {
     isFirstLoad = false;
     
     if (typeof cityName === 'object' && cityName.lat && cityName.lon) {
-        const success = await loadWeather(cityName.name || 'Position actuelle', cityName.lat, cityName.lon);
+        // Obtenir le vrai nom de la ville depuis les coordonnées
+        const realCityName = await getCityNameFromCoords(cityName.lat, cityName.lon);
+        
+        const success = await loadWeather(realCityName, cityName.lat, cityName.lon);
         if (success) {
-            currentCity = cityName.name || 'Position actuelle';
+            currentCity = realCityName;
         }
         return;
     }
@@ -291,8 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
             (pos) => {
                 loadCity({
                     lat: pos.coords.latitude,
-                    lon: pos.coords.longitude,
-                    name: 'Position actuelle'
+                    lon: pos.coords.longitude
                 });
             },
             () => {
