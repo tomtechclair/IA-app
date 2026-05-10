@@ -1,10 +1,8 @@
 const weatherDatabase = {};
 
 const API_CONFIG = {
-    weatherUrl: 'https://api.openweathermap.org/data/2.5/weather',
-    forecastUrl: 'https://api.openweathermap.org/data/2.5/forecast',
-    geoUrl: 'https://geocoding-api.open-meteo.com/v1',
-    apiKey: '2d5b1b15e8785f6c8b3c4e6b5a8b5c5d3' // Clé API OpenWeatherMap valide
+    baseUrl: 'https://api.open-meteo.com/v1',
+    geoUrl: 'https://geocoding-api.open-meteo.com/v1'
 };
 
 let currentCity = 'Paris';
@@ -103,71 +101,63 @@ async function fetchWeatherData(lat, lon) {
             }
         }
 
-        // Requêtes optimisées avec timeout
+        // Requête avec timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout pour mobile
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        // Utiliser l'API OpenWeatherMap avec clé valide et paramètres optimisés
-        const weatherUrl = `${API_CONFIG.weatherUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`;
-        const forecastUrl = `${API_CONFIG.forecastUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`;
+        // Open-Meteo API - GRATUITE, SANS CLÉ API, données fiables
+        const params = new URLSearchParams({
+            latitude: lat,
+            longitude: lon,
+            current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,pressure_msl,visibility',
+            hourly: 'temperature_2m,weather_code,is_day',
+            daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset',
+            timezone: 'auto'
+        });
 
-        const [weatherResponse, forecastResponse] = await Promise.all([
-            fetch(weatherUrl, { signal: controller.signal }),
-            fetch(forecastUrl, { signal: controller.signal })
-        ]);
+        const response = await fetch(`${API_CONFIG.baseUrl}/forecast?${params}`, {
+            signal: controller.signal
+        });
 
         clearTimeout(timeoutId);
 
-        // Vérification rapide des réponses
-        if (!weatherResponse.ok || !forecastResponse.ok) {
-            throw new Error('Erreur réseau');
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP ${response.status}`);
         }
 
-        const weatherData = await weatherResponse.json();
-        const forecastData = await forecastResponse.json();
+        const data = await response.json();
 
-        // Vérifier les erreurs API avec gestion améliorée
-        if (!weatherData || weatherData.cod !== 200) {
-            const errorMsg = weatherData?.message || 'Données météo indisponibles';
-            console.error('Erreur API weather:', weatherData);
-            showWeatherError(`Erreur API: ${errorMsg}`);
-            return null;
+        // Vérifier les données
+        if (!data || !data.current) {
+            throw new Error('Données météo indisponibles');
         }
 
-        if (!forecastData || forecastData.cod !== 200) {
-            const errorMsg = forecastData?.message || 'Prévisions météo indisponibles';
-            console.error('Erreur API forecast:', forecastData);
-            showWeatherError(`Erreur API: ${errorMsg}`);
-            return null;
-        }
-
-        // Mapping optimisé des données OpenWeatherMap
+        // Construction des données au format attendu
         const mappedData = {
             current: {
-                temperature_2m: Math.round(weatherData.main?.temp || 20),
-                relative_humidity_2m: weatherData.main?.humidity || 50,
-                apparent_temperature: Math.round(weatherData.main?.feels_like || weatherData.main?.temp || 20),
-                is_day: isDayTime(weatherData.sys?.sunrise || 0, weatherData.sys?.sunset || 0),
-                weather_code: getWeatherCodeFromOpenWeather(weatherData.weather?.[0]?.id || 0),
-                wind_speed_10m: Math.round((weatherData.wind?.speed || 0) * 3.6),
-                pressure_msl: Math.round(weatherData.main?.pressure || 1013),
-                visibility: Math.round((weatherData.visibility || 10000) / 1000), // Convertir en km
-                sunrise: weatherData.sys?.sunrise || 0,
-                sunset: weatherData.sys?.sunset || 0
+                temperature_2m: Math.round(data.current.temperature_2m ?? 20),
+                relative_humidity_2m: Math.round(data.current.relative_humidity_2m ?? 50),
+                apparent_temperature: Math.round(data.current.apparent_temperature ?? data.current.temperature_2m ?? 20),
+                is_day: data.current.is_day ?? 1,
+                weather_code: data.current.weather_code ?? 0,
+                wind_speed_10m: Math.round(data.current.wind_speed_10m ?? 0),
+                wind_direction_10m: data.current.wind_direction_10m ?? 0,
+                pressure_msl: Math.round(data.current.pressure_msl ?? 1013),
+                visibility: Math.round(data.current.visibility ?? 10000) // en mètres
             },
             hourly: {
-                time: forecastData.list?.slice(0, 24).map(item => item.dt * 1000) || [], // Limiter à 24h
-                temperature_2m: forecastData.list?.slice(0, 24).map(item => Math.round(item.main?.temp || 20)) || [],
-                weather_code: forecastData.list?.slice(0, 24).map(item => getWeatherCodeFromOpenWeather(item.weather?.[0]?.id || 0)) || [],
-                is_day: forecastData.list?.slice(0, 24).map(item => isDayTime(weatherData.sys?.sunrise || 0, weatherData.sys?.sunset || 0)) || []
+                time: (data.hourly?.time || []).map(t => new Date(t).getTime()),
+                temperature_2m: (data.hourly?.temperature_2m || []).map(t => Math.round(t ?? 20)),
+                weather_code: data.hourly?.weather_code || [],
+                is_day: data.hourly?.is_day || []
             },
             daily: {
-                time: forecastData.list?.filter((_, index) => index % 8 === 0).slice(0, 5).map(item => item.dt * 1000) || [], // Limiter à 5 jours
-                temperature_2m_max: forecastData.list?.filter((_, index) => index % 8 === 0).slice(0, 5).map(item => Math.round(item.main?.temp_max || 25)) || [],
-                temperature_2m_min: forecastData.list?.filter((_, index) => index % 8 === 0).slice(0, 5).map(item => Math.round(item.main?.temp_min || 15)) || [],
-                weather_code: forecastData.list?.filter((_, index) => index % 8 === 0).slice(0, 5).map(item => getWeatherCodeFromOpenWeather(item.weather?.[0]?.id || 0)) || [],
-                sunrise: [weatherData.sys?.sunrise || 0],
-                sunset: [weatherData.sys?.sunset || 0]
+                time: (data.daily?.time || []).map(t => new Date(t).getTime()),
+                temperature_2m_max: (data.daily?.temperature_2m_max || []).map(t => Math.round(t ?? 25)),
+                temperature_2m_min: (data.daily?.temperature_2m_min || []).map(t => Math.round(t ?? 15)),
+                weather_code: data.daily?.weather_code || [],
+                sunrise: (data.daily?.sunrise || []).map(t => new Date(t).getTime()),
+                sunset: (data.daily?.sunset || []).map(t => new Date(t).getTime())
             }
         };
 
@@ -183,9 +173,9 @@ async function fetchWeatherData(lat, lon) {
         console.error('Erreur lors de la récupération des données:', error);
         
         if (error.name === 'AbortError') {
-            showWeatherError('Timeout - Vérifiez votre connexion');
+            showWeatherError('⏱️ Timeout - Vérifiez votre connexion internet');
         } else {
-            showWeatherError('Erreur lors de la récupération des données météo. Veuillez réessayer.');
+            showWeatherError('🌐 Erreur réseau - Vérifiez votre connexion internet');
         }
         return null;
     }
