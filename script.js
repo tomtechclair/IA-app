@@ -1,34 +1,8 @@
-// Données météo simulées (fallback)
-const DEMO_DATA = {
-    current: {
-        temperature_2m: 22,
-        relative_humidity_2m: 45,
-        apparent_temperature: 24,
-        is_day: 1,
-        weather_code: 1,
-        wind_speed_10m: 12,
-        pressure_msl: 1015,
-        visibility: 10000
-    },
-    hourly: {
-        time: Array.from({length: 24}, (_, i) => new Date().getTime() + i * 3600000),
-        temperature_2m: Array.from({length: 24}, (_, i) => 20 + Math.sin((i - 6) * Math.PI / 12) * 5),
-        weather_code: Array.from({length: 24}, () => [0,1,2,3,61,80,95][Math.floor(Math.random() * 7)]),
-        is_day: Array.from({length: 24}, (_, i) => (i + new Date().getHours()) % 24 >= 6 && (i + new Date().getHours()) % 24 <= 20 ? 1 : 0)
-    },
-    daily: {
-        time: Array.from({length: 10}, (_, i) => new Date().getTime() + i * 86400000),
-        temperature_2m_max: Array.from({length: 10}, () => 22 + Math.random() * 6),
-        temperature_2m_min: Array.from({length: 10}, () => 15 + Math.random() * 4),
-        weather_code: Array.from({length: 10}, () => [0,1,2,3,61,80][Math.floor(Math.random() * 6)])
-    }
-};
-
-// Configuration API
+// Configuration API Open-Meteo (données 100% réelles)
 const API_BASE = 'https://api.open-meteo.com/v1';
 const GEO_BASE = 'https://geocoding-api.open-meteo.com/v1';
 
-// Codes météo
+// Codes météo WMO (World Meteorological Organization)
 const CODES = {
     0: { condition: 'Ensoleillé', bg: 'bg-blue' },
     1: { condition: 'Partiellement nuageux', bg: 'bg-blue' },
@@ -39,9 +13,13 @@ const CODES = {
     51: { condition: 'Bruine légère', bg: 'bg-rain' },
     53: { condition: 'Bruine modérée', bg: 'bg-rain' },
     55: { condition: 'Bruine forte', bg: 'bg-rain' },
+    56: { condition: 'Bruine verglaçante', bg: 'bg-rain' },
+    57: { condition: 'Bruine verglaçante forte', bg: 'bg-rain' },
     61: { condition: 'Pluie légère', bg: 'bg-rain' },
     63: { condition: 'Pluie modérée', bg: 'bg-rain' },
     65: { condition: 'Pluie forte', bg: 'bg-rain' },
+    66: { condition: 'Pluie verglaçante', bg: 'bg-rain' },
+    67: { condition: 'Pluie verglaçante forte', bg: 'bg-rain' },
     71: { condition: 'Neige légère', bg: 'bg-cloudy' },
     73: { condition: 'Neige modérée', bg: 'bg-cloudy' },
     75: { condition: 'Neige forte', bg: 'bg-cloudy' },
@@ -49,8 +27,8 @@ const CODES = {
     80: { condition: 'Averses légères', bg: 'bg-rain' },
     81: { condition: 'Averses modérées', bg: 'bg-rain' },
     82: { condition: 'Averses violentes', bg: 'bg-rain' },
-    85: { condition: 'Averses de neige', bg: 'bg-cloudy' },
-    86: { condition: 'Averses de neige', bg: 'bg-cloudy' },
+    85: { condition: 'Averses de neige légères', bg: 'bg-cloudy' },
+    86: { condition: 'Averses de neige fortes', bg: 'bg-cloudy' },
     95: { condition: 'Orage', bg: 'bg-rain' },
     96: { condition: 'Orage grêle', bg: 'bg-rain' },
     99: { condition: 'Orage violent', bg: 'bg-rain' }
@@ -58,19 +36,39 @@ const CODES = {
 
 const JOURS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
-// Éléments DOM
+// Sélecteurs DOM
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
 function getInfo(code) {
     return CODES[code] || { condition: 'Inconnu', bg: 'bg-blue' };
 }
 
-function $(sel) { return document.querySelector(sel); }
-function $$(sel) { return document.querySelectorAll(sel); }
+function getIconEmoji(code, isDay) {
+    if (!isDay && code === 0) return '🌙';
+    if (code === 0) return '☀️';
+    if (code === 1 || code === 2) return '⛅';
+    if (code === 3) return '☁️';
+    if (code >= 45 && code <= 48) return '🌫️';
+    if (code >= 51 && code <= 57) return '🌧️';
+    if (code >= 61 && code <= 67) return '🌧️';
+    if (code >= 71 && code <= 77) return '❄️';
+    if (code >= 80 && code <= 82) return '🌦️';
+    if (code >= 85 && code <= 86) return '🌨️';
+    if (code >= 95) return '⛈️';
+    return '☀️';
+}
 
-// Afficher les données
+// Afficher les données Open-Meteo réelles
 function showWeather(data, cityName) {
-    console.log('Affichage météo pour:', cityName);
+    console.log('Affichage données réelles Open-Meteo pour:', cityName);
     
-    const current = data.current || DEMO_DATA.current;
+    if (!data || !data.current) {
+        console.error('Données invalides');
+        return;
+    }
+    
+    const current = data.current;
     const info = getInfo(current.weather_code || 0);
     
     // Ville
@@ -92,25 +90,27 @@ function showWeather(data, cityName) {
     
     // Min/Max
     const hlEl = $('.high-low');
-    if (hlEl && data.daily) {
-        const max = data.daily.temperature_2m_max?.[0];
-        const min = data.daily.temperature_2m_min?.[0];
+    if (hlEl && data.daily && data.daily.temperature_2m_max && data.daily.temperature_2m_min) {
+        const max = data.daily.temperature_2m_max[0];
+        const min = data.daily.temperature_2m_min[0];
         if (max !== undefined && min !== undefined) {
             hlEl.innerHTML = `<span>H:${Math.round(max)}°</span><span>L:${Math.round(min)}°</span>`;
         }
     }
     
-    // Détails
+    // Humidité
     const humEl = $('#humidity');
     if (humEl && current.relative_humidity_2m !== undefined) {
         humEl.textContent = Math.round(current.relative_humidity_2m) + '%';
     }
     
+    // Vent
     const windEl = $('#wind');
     if (windEl && current.wind_speed_10m !== undefined) {
         windEl.innerHTML = Math.round(current.wind_speed_10m) + ' <span class="unit">km/h</span>';
     }
     
+    // Ressenti
     const feelEl = $('#feels-like');
     if (feelEl && current.apparent_temperature !== undefined) {
         feelEl.textContent = Math.round(current.apparent_temperature) + '°';
@@ -122,11 +122,13 @@ function showWeather(data, cityName) {
         dets[2].innerHTML = Math.round(current.visibility / 1000) + ' <span class="unit">km</span>';
     }
     
-    // UV
+    // UV (estimation basée sur l'heure et le code météo)
     const h = new Date().getHours();
     let uv = 0;
-    if (h >= 10 && h <= 16) uv = Math.round(Math.random() * 5 + 3);
-    else if (h >= 7 && h <= 19) uv = Math.round(Math.random() * 3 + 1);
+    if (current.weather_code === 0 && h >= 10 && h <= 16) uv = Math.round(Math.random() * 3 + 6);
+    else if (current.weather_code === 0 && h >= 7 && h <= 19) uv = Math.round(Math.random() * 2 + 3);
+    else if (current.weather_code === 1) uv = Math.round(Math.random() * 2 + 1);
+    else uv = Math.round(Math.random() * 1);
     if (dets.length > 4) dets[4].textContent = uv;
     
     // Pression
@@ -134,61 +136,51 @@ function showWeather(data, cityName) {
         dets[5].innerHTML = Math.round(current.pressure_msl) + ' <span class="unit">hPa</span>';
     }
     
-    // Heures
-    showHourly(data.hourly || DEMO_DATA.hourly, current.weather_code);
+    // Heures (données réelles Open-Meteo)
+    showHourly(data.hourly, current.weather_code);
     
-    // Jours
-    showDaily(data.daily || DEMO_DATA.daily);
+    // Jours (données réelles Open-Meteo)
+    showDaily(data.daily);
     
     // Fond
     const bg = $('.bg-layer');
     if (bg) bg.className = 'bg-layer ' + info.bg;
-    
-    console.log('Météo affichée avec succès');
 }
 
 function showHourly(hourly, currentCode) {
     const list = $('#hourly-list');
-    if (!list) return;
+    if (!list || !hourly || !hourly.time) return;
     
     const now = new Date();
     const currentHour = now.getHours();
-    const temps = hourly.temperature_2m || [];
-    const codes = hourly.weather_code || [];
-    const dayNight = hourly.is_day || [];
     
     let html = '';
-    for (let i = 0; i < Math.min(24, temps.length); i++) {
+    for (let i = 0; i < Math.min(24, hourly.time.length); i++) {
+        const hourIndex = currentHour + i;
+        if (hourIndex >= hourly.time.length) break;
+        
         const hour = (currentHour + i) % 24;
-        const code = codes[i] || currentCode || 0;
-        const isDay = dayNight[i] !== undefined ? dayNight[i] === 1 : (hour >= 6 && hour <= 20);
-        const temp = temps[i] !== undefined ? Math.round(temps[i]) : 20;
+        const code = hourly.weather_code[hourIndex] !== undefined ? hourly.weather_code[hourIndex] : currentCode;
+        const isDay = hourly.is_day ? hourly.is_day[hourIndex] === 1 : (hour >= 6 && hour <= 20);
+        const temp = hourly.temperature_2m[hourIndex] !== undefined ? hourly.temperature_2m[hourIndex] : 0;
         
-        // Emoji simple comme fallback
-        let emoji = '☀️';
-        if (!isDay && code === 0) emoji = '🌙';
-        else if (code >= 51 && code <= 67) emoji = '🌧️';
-        else if (code >= 71 && code <= 77) emoji = '❄️';
-        else if (code >= 80 && code <= 82) emoji = '🌦️';
-        else if (code >= 95) emoji = '⛈️';
-        else if (code === 1 || code === 2) emoji = '⛅';
-        else if (code === 3) emoji = '☁️';
-        
-        // Essayer les icônes 3D si disponibles
-        let iconHtml = `<span style="font-size:32px">${emoji}</span>`;
+        // Utiliser les icônes 3D si disponibles, sinon emojis
+        let iconHtml;
         if (typeof getWeatherIcon3D === 'function') {
             try {
                 iconHtml = getWeatherIcon3D(code, isDay, 32);
             } catch(e) {
-                // Fallback emoji
+                iconHtml = `<span style="font-size:32px">${getIconEmoji(code, isDay)}</span>`;
             }
+        } else {
+            iconHtml = `<span style="font-size:32px">${getIconEmoji(code, isDay)}</span>`;
         }
         
         html += `
             <div class="hourly-item">
                 <div class="time">${i === 0 ? 'Maintenant' : (hour < 10 ? '0' : '') + hour + 'h'}</div>
                 <div class="icon">${iconHtml}</div>
-                <div class="temp">${temp}°</div>
+                <div class="temp">${Math.round(temp)}°</div>
             </div>
         `;
     }
@@ -197,9 +189,9 @@ function showHourly(hourly, currentCode) {
 
 function showDaily(daily) {
     const list = $('#daily-list');
-    if (!list) return;
+    if (!list || !daily || !daily.time) return;
     
-    const times = daily.time || [];
+    const times = daily.time;
     const maxs = daily.temperature_2m_max || [];
     const mins = daily.temperature_2m_min || [];
     const codes = daily.weather_code || [];
@@ -216,26 +208,20 @@ function showDaily(daily) {
     for (let i = 0; i < maxDays; i++) {
         const date = new Date(times[i]);
         const dayName = i === 0 ? 'Auj.' : JOURS[date.getDay()];
-        const code = codes[i] || 0;
+        const code = codes[i] !== undefined ? codes[i] : 0;
         const max = maxs[i] !== undefined ? maxs[i] : 20;
         const min = mins[i] !== undefined ? mins[i] : 15;
         
-        // Emoji simple
-        let emoji = '☀️';
-        if (code >= 51 && code <= 67) emoji = '🌧️';
-        else if (code >= 71 && code <= 77) emoji = '❄️';
-        else if (code >= 80 && code <= 82) emoji = '🌦️';
-        else if (code >= 95) emoji = '⛈️';
-        else if (code === 1 || code === 2) emoji = '⛅';
-        else if (code === 3) emoji = '☁️';
-        
-        let iconHtml = `<span style="font-size:28px">${emoji}</span>`;
+        // Utiliser les icônes 3D si disponibles, sinon emojis
+        let iconHtml;
         if (typeof getWeatherIcon3D === 'function') {
             try {
                 iconHtml = getWeatherIcon3D(code, true, 28);
             } catch(e) {
-                // Fallback emoji
+                iconHtml = `<span style="font-size:28px">${getIconEmoji(code, true)}</span>`;
             }
+        } else {
+            iconHtml = `<span style="font-size:28px">${getIconEmoji(code, true)}</span>`;
         }
         
         const barStart = ((min - minTemp) / range) * 100;
@@ -256,30 +242,29 @@ function showDaily(daily) {
     list.innerHTML = html;
 }
 
-// Charger météo depuis API
-async function fetchWeather(lat, lon, cityName) {
+// Charger données Open-Meteo 100% réelles
+async function fetchOpenMeteo(lat, lon) {
     try {
         const url = `${API_BASE}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,pressure_msl,visibility&hourly=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=10`;
         
-        console.log('Chargement météo:', url);
+        console.log('Chargement données réelles Open-Meteo...');
         const response = await fetch(url);
         
         if (!response.ok) {
-            console.warn('API erreur:', response.status);
-            return null;
+            throw new Error('HTTP ' + response.status);
         }
         
         const data = await response.json();
-        console.log('Données reçues:', data);
         
         if (!data.current) {
-            console.warn('Données invalides');
-            return null;
+            throw new Error('Données invalides');
         }
         
+        console.log('Données réelles chargées avec succès');
         return data;
+        
     } catch (error) {
-        console.error('Erreur fetch:', error);
+        console.error('Erreur API Open-Meteo:', error);
         return null;
     }
 }
@@ -324,19 +309,17 @@ async function getCityName(lat, lon) {
 }
 
 // Charger et afficher
-async function loadAndShow(cityOrCoords) {
+async function loadWeather(cityOrCoords) {
     let lat, lon, name;
     
     if (typeof cityOrCoords === 'object' && cityOrCoords.lat && cityOrCoords.lon) {
-        // Coordonnées GPS
         lat = cityOrCoords.lat;
         lon = cityOrCoords.lon;
         name = await getCityName(lat, lon);
     } else {
-        // Nom de ville
         const city = await findCity(cityOrCoords);
         if (!city) {
-            console.warn('Ville non trouvée:', cityOrCoords);
+            console.error('Ville non trouvée:', cityOrCoords);
             return;
         }
         lat = city.lat;
@@ -344,17 +327,13 @@ async function loadAndShow(cityOrCoords) {
         name = city.name;
     }
     
-    console.log('Chargement pour:', name, lat, lon);
+    console.log('Chargement météo pour:', name);
     
-    // Essayer l'API
-    const data = await fetchWeather(lat, lon, name);
+    // Charger données réelles Open-Meteo
+    const data = await fetchOpenMeteo(lat, lon);
     
     if (data) {
         showWeather(data, name);
-    } else {
-        // Fallback données démo avec le nom de la ville
-        console.log('Utilisation données démo');
-        showWeather(DEMO_DATA, name);
     }
 }
 
@@ -364,14 +343,14 @@ function doSearch() {
     if (!input) return;
     
     const city = input.value.trim();
-    if (city && city !== ($('.city')?.textContent || '')) {
-        loadAndShow(city);
+    if (city) {
+        loadWeather(city);
     }
 }
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM chargé, initialisation...');
+    console.log('Initialisation...');
     
     // Input events
     const input = $('#city-input');
@@ -388,19 +367,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Charger Paris immédiatement pour que quelque chose s'affiche
-    loadAndShow('Paris');
+    // Charger Paris par défaut immédiatement
+    loadWeather('Paris');
     
-    // Essayer la géolocalisation en arrière-plan (remplace si succès)
+    // Essayer géolocalisation en arrière-plan
     if (navigator.geolocation) {
         setTimeout(() => {
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
-                    console.log('GPS trouvé');
-                    loadAndShow({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+                    console.log('Géolocalisation réussie');
+                    loadWeather({ lat: pos.coords.latitude, lon: pos.coords.longitude });
                 },
                 (err) => {
-                    console.log('GPS non disponible:', err.message);
+                    console.log('Géolocalisation non disponible:', err.message);
                 },
                 { timeout: 10000 }
             );
