@@ -830,3 +830,107 @@ body {
         margin: 0 auto;
     }
 }
+
+/* Enhanced Icons System */
+.label-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    color: currentColor;
+    opacity: 0.9;
+}
+
+.label-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: currentColor;
+    fill: none;
+}
+
+.card-label {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Apple Weather Icons Container */
+.apple-weather-icon-container,
+.weather-icon-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.apple-weather-icon-container svg,
+.weather-icon-container svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Category Icons */
+.category-icon-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-icon {
+    width: 100%;
+    height: 100%;
+    stroke: currentColor;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.category-icon.icon-clock {
+    color: #FFD60A;
+}
+
+.category-icon.icon-calendar {
+    color: #FFD60A;
+}
+
+.category-icon.icon-droplet {
+    color: #007AFF;
+}
+
+.category-icon.icon-wind {
+    color: #007AFF;
+}
+
+.category-icon.icon-eye {
+    color: #8E8E93;
+}
+
+.category-icon.icon-thermometer {
+    color: #FF3B30;
+}
+
+.category-icon.icon-uv {
+    color: #FFD60A;
+}
+
+.category-icon.icon-pressure {
+    color: #8E8E93;
+}
+
+.category-icon.icon-sunrise {
+    color: #FFD60A;
+}
+
+.category-icon.icon-sunset {
+    color: #FF9500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 375px) {
+    .label-icon {
+        width: 18px;
+        height: 18px;
+        margin-right: 6px;
+    }
+}
