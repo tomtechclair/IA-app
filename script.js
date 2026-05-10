@@ -454,7 +454,7 @@ async function displayWeatherData(weatherData) {
             
             hourlyHTML += `
                 <div class="hourly-item">
-                    <div class="time">${i === 0 ? 'Maint' : `${hour.toString().padStart(2, '0')}h`}</div>
+                    <div class="time">${i === 0 ? 'Maintenant' : `${hour.toString().padStart(2, '0')}h`}</div>
                     <div class="icon">${iconHTML}</div>
                     <div class="temp">${Math.round(hourly.temperature_2m[hourIndex])}°</div>
                 </div>
@@ -946,6 +946,10 @@ function requestAutoGeolocation() {
         (error) => {
             console.error('Erreur de géolocalisation:', error);
             
+            // Mettre à jour l'interface pour montrer l'erreur
+            if (cityElement) cityElement.textContent = 'Erreur de localisation';
+            if (conditionElement) conditionElement.textContent = 'Impossible de vous localiser';
+            
             // Vérifier si on a des coordonnées en cache
             const cachedCoords = localStorage.getItem('lastCoords');
             if (cachedCoords) {
@@ -954,6 +958,8 @@ function requestAutoGeolocation() {
                 
                 // Utiliser le cache si moins de 30 minutes
                 if (age < 1800000) {
+                    if (cityElement) cityElement.textContent = 'Position en cache...';
+                    if (conditionElement) conditionElement.textContent = 'Utilisation de votre dernière position';
                     updateWeatherByCoords(coords.lat, coords.lon);
                     startAutoRefresh();
                     return;
@@ -965,12 +971,18 @@ function requestAutoGeolocation() {
                 // Permission refusée - utiliser une ville par défaut selon la langue
                 const userLang = navigator.language || navigator.userLanguage;
                 if (userLang.startsWith('fr')) {
+                    if (cityElement) cityElement.textContent = 'Permission refusée';
+                    if (conditionElement) conditionElement.textContent = 'Utilisation de Paris par défaut';
                     updateWeather('Paris');
                 } else {
+                    if (cityElement) cityElement.textContent = 'Permission refusée';
+                    if (conditionElement) conditionElement.textContent = 'Utilisation de London par défaut';
                     updateWeather('London');
                 }
             } else {
                 // Autre erreur - utiliser la dernière position connue ou Paris
+                if (cityElement) cityElement.textContent = 'Erreur de géolocalisation';
+                if (conditionElement) conditionElement.textContent = 'Utilisation de Paris par défaut';
                 updateWeather('Paris');
             }
             startAutoRefresh();
@@ -983,7 +995,7 @@ function requestAutoGeolocation() {
 document.addEventListener('DOMContentLoaded', () => {
     setupSearchListeners();
     
-    // Ne pas afficher de données fictives au premier chargement
+    // État de chargement initial
     const cityElement = document.querySelector('.city');
     const tempElement = document.querySelector('.big-temp');
     const conditionElement = document.querySelector('.condition');
@@ -994,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Géolocalisation automatique sur mobile
     if (isMobileDevice()) {
-        // Sur mobile, géolocalisation automatique sans demande explicite
+        // Sur mobile, géolocalisation automatique sans afficher "Paris" avant
         requestAutoGeolocation();
     } else {
         // Sur desktop, comportement normal avec demande de permission
