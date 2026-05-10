@@ -131,11 +131,33 @@ async function updateWeather(cityName) {
             `<span>H:${Math.round(weatherData.daily.temperature_2m_max[0])}°</span>` +
             `<span>L:${Math.round(weatherData.daily.temperature_2m_min[0])}°</span>`;
         
-        // Hero icon - nouvelle fonction SVG
+        // Hero icon - nouvelle fonction SVG avec animations
         const heroIcon = document.querySelector('.weather-hero .condition');
         if (heroIcon && typeof createWeatherIconSVG === 'function') {
             heroIcon.innerHTML = createWeatherIconSVG(current.weather_code, isDay, 40) + weatherInfo.condition;
             heroIcon.classList.add('has-icon');
+            
+            // Ajouter les classes d'animation selon le type de météo
+            const iconContainer = heroIcon.querySelector('.icon') || heroIcon.querySelector('svg');
+            if (iconContainer) {
+                // Retirer toutes les classes d'animation précédentes
+                iconContainer.classList.remove('sun-icon', 'cloud-icon', 'rain-icon', 'snow-icon', 'lightning-icon');
+                
+                // Ajouter la classe d'animation appropriée
+                if (current.weather_code === 0) {
+                    iconContainer.classList.add('sun-icon');
+                } else if (current.weather_code >= 1 && current.weather_code <= 3) {
+                    iconContainer.classList.add('cloud-icon');
+                } else if ((current.weather_code >= 51 && current.weather_code <= 67) || 
+                          (current.weather_code >= 80 && current.weather_code <= 82)) {
+                    iconContainer.classList.add('rain-icon');
+                } else if ((current.weather_code >= 71 && current.weather_code <= 77) || 
+                          (current.weather_code >= 85 && current.weather_code <= 86)) {
+                    iconContainer.classList.add('snow-icon');
+                } else if (current.weather_code >= 95 && current.weather_code <= 99) {
+                    iconContainer.classList.add('lightning-icon');
+                }
+            }
         }
         
         document.getElementById('humidity').textContent = `${current.relative_humidity_2m}%`;
@@ -210,10 +232,24 @@ async function updateWeather(cityName) {
                 ? createWeatherIconSVG(code, hourlyIsDay, 28) 
                 : '';
             
+            // Déterminer la classe d'animation pour l'icône horaire
+            let animationClass = '';
+            if (code === 0) {
+                animationClass = 'sun-icon';
+            } else if (code >= 1 && code <= 3) {
+                animationClass = 'cloud-icon';
+            } else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+                animationClass = 'rain-icon';
+            } else if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) {
+                animationClass = 'snow-icon';
+            } else if (code >= 95 && code <= 99) {
+                animationClass = 'lightning-icon';
+            }
+            
             hourlyHTML += `
                 <div class="hourly-item">
                     <div class="time">${i === 0 ? 'Maintenant' : `${hour.toString().padStart(2, '0')}h`}</div>
-                    <div class="icon">${iconHTML}</div>
+                    <div class="icon ${animationClass}">${iconHTML}</div>
                     <div class="temp">${Math.round(hourly.temperature_2m[hourIndex])}°</div>
                 </div>
             `;
@@ -238,6 +274,20 @@ async function updateWeather(cityName) {
                 ? createWeatherIconSVG(code, true, 28) 
                 : '';
             
+            // Déterminer la classe d'animation pour l'icône quotidien
+            let animationClass = '';
+            if (code === 0) {
+                animationClass = 'sun-icon';
+            } else if (code >= 1 && code <= 3) {
+                animationClass = 'cloud-icon';
+            } else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+                animationClass = 'rain-icon';
+            } else if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) {
+                animationClass = 'snow-icon';
+            } else if (code >= 95 && code <= 99) {
+                animationClass = 'lightning-icon';
+            }
+            
             const tempLow = daily.temperature_2m_min[i];
             const tempHigh = daily.temperature_2m_max[i];
             
@@ -247,7 +297,7 @@ async function updateWeather(cityName) {
             dailyHTML += `
                 <div class="daily-item">
                     <div class="day">${dayName}</div>
-                    <div class="icon">${iconHTML}</div>
+                    <div class="icon ${animationClass}">${iconHTML}</div>
                     <div class="temp-low">${Math.round(tempLow)}°</div>
                     <div class="temp-bar-container">
                         <div class="temp-bar" style="left: ${barStart}%; width: ${barWidth}%"></div>
