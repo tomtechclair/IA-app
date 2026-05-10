@@ -67,9 +67,9 @@ async function fetchWeatherData(lat, lon) {
     try {
         const url = `${API_CONFIG.baseUrl}/forecast?` +
             `latitude=${lat}&longitude=${lon}&` +
-            `current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,pressure_msl,visibility,precipitation,rain,showers,snowfall,cloudcover,lightning_potential&` +
-            `hourly=temperature_2m,weather_code,is_day,precipitation_probability,rain,showers,snowfall,cloudcover,lightning_potential,cape&` +
-            `daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,rain_sum,showers_sum,snowfall_sum&` +
+            `current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,pressure_msl,visibility&` +
+            `hourly=temperature_2m,weather_code,is_day&` +
+            `daily=weather_code,temperature_2m_max,temperature_2m_min&` +
             `timezone=auto&forecast_days=10`;
         
         const response = await fetch(url);
@@ -106,20 +106,8 @@ async function updateWeather(cityName) {
         }
         
         const current = weatherData.current;
-        const currentHour = new Date().getHours();
-        const currentHourIndex = currentHour;
         const isDay = current.is_day === 1;
-        
-        // Utiliser l'analyse intelligente des conditions
-        let weatherInfo, displayCode;
-        if (typeof getSmartWeatherCondition === 'function') {
-            const smartCondition = getSmartWeatherCondition(current.weather_code, current, weatherData, currentHourIndex);
-            weatherInfo = smartCondition;
-            displayCode = getDisplayIconCode ? getDisplayIconCode(current.weather_code, smartCondition) : current.weather_code;
-        } else {
-            weatherInfo = getWeatherInfo(current.weather_code);
-            displayCode = current.weather_code;
-        }
+        const weatherInfo = getWeatherInfo(current.weather_code);
         
         document.querySelector('.city').textContent = cityData.name;
         const cityInput = document.getElementById('city-input');
@@ -131,14 +119,9 @@ async function updateWeather(cityName) {
         const conditionEl = document.querySelector('.condition');
         if (conditionEl) {
             const heroIconHTML = typeof getWeatherIcon3D === 'function' 
-                ? getWeatherIcon3D(displayCode, isDay, 48) 
+                ? getWeatherIcon3D(current.weather_code, isDay, 48) 
                 : '';
-            
-            let conditionText = weatherInfo.condition;
-            if (weatherInfo.subtitle) {
-                conditionText += ` <span style="font-size:0.7em;opacity:0.7">(${weatherInfo.subtitle})</span>`;
-            }
-            conditionEl.innerHTML = `${heroIconHTML}<span>${conditionText}</span>`;
+            conditionEl.innerHTML = `${heroIconHTML}<span>${weatherInfo.condition}</span>`;
         }
         
         document.querySelector('.high-low').innerHTML = 
@@ -185,34 +168,9 @@ async function updateWeather(cityName) {
                 const code = hourly.weather_code[hourIndex];
                 const hourlyIsDay = hourly.is_day[hourIndex] === 1;
                 
-                // Analyse intelligente pour chaque heure
-                let displayCode = code;
-                let conditionText = (getWeatherInfo(code) || {}).condition || 'Inconnu';
-                
-                if (typeof getSmartWeatherCondition === 'function' && i === 0) {
-                    // Pour "Maintenant", utiliser l'analyse complète
-                    const smartCondition = getSmartWeatherCondition(code, current, weatherData, hourIndex);
-                    conditionText = smartCondition.condition;
-                    displayCode = smartCondition.iconCode || code;
-                } else if (STORM_CODES.includes(code)) {
-                    // Pour les heures futures avec orages, utiliser les icônes orageuses
-                    displayCode = code;
-                } else {
-                    // Vérifier si un orage est proche (dans les 2 prochaines heures)
-                    const upcomingStorm = typeof detectUpcomingStorm === 'function' 
-                        ? detectUpcomingStorm(weatherData, hourIndex) 
-                        : null;
-                    
-                    if (upcomingStorm && upcomingStorm.imminent && (code === 2 || code === 3)) {
-                        // Si orage imminent et couvert/nuageux, afficher risque orageux
-                        conditionText = 'Risque orageux';
-                        displayCode = 95;
-                    }
-                }
-                
                 const iconHTML = typeof getWeatherIcon3D === 'function' 
-                    ? getWeatherIcon3D(displayCode, hourlyIsDay, 36) 
-                    : (typeof getWeatherIcon === 'function' ? getWeatherIcon(displayCode, hourlyIsDay, 32) : '');
+                    ? getWeatherIcon3D(code, hourlyIsDay, 36) 
+                    : (typeof getWeatherIcon === 'function' ? getWeatherIcon(code, hourlyIsDay, 32) : '');
                 
                 hourlyHTML += `
                     <div class="hourly-item">
@@ -265,7 +223,7 @@ async function updateWeather(cityName) {
             dailyList.innerHTML = dailyHTML;
         }
         
-        updateBackground(weatherInfo.bg || 'bg-blue');
+        updateBackground(weatherInfo.bg);
         
     } catch (error) {
         console.error('Erreur:', error);
