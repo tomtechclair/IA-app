@@ -211,6 +211,7 @@ function getSimulatedWeatherData() {
             is_day: hour >= 6 && hour <= 20 ? 1 : 0,
             weather_code: Math.random() > 0.7 ? (Math.random() > 0.5 ? 0 : 1) : (Math.random() > 0.5 ? 51 : 45),
             wind_speed_10m: 5 + Math.random() * 20,
+            wind_direction_10m: Math.random() * 360,
             pressure_msl: 1010 + Math.random() * 20,
             visibility: 5000 + Math.random() * 10000,
             sunrise: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0).getTime() / 1000,
