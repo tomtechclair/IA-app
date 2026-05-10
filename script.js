@@ -189,9 +189,9 @@ async function updateWeather(cityName) {
                 const dayName = i === 0 ? 'Auj.' : days[date.getDay()];
                 const code = daily.weather_code[i];
                 
-                const iconHTML = typeof getWeatherIcon === 'function' 
-                    ? getWeatherIcon(code, true, 28) 
-                    : '';
+                const iconHTML = typeof getWeatherIcon3D === 'function' 
+                    ? getWeatherIcon3D(code, true, 30) 
+                    : (typeof getWeatherIcon === 'function' ? getWeatherIcon(code, true, 28) : '');
                 
                 const tempLow = daily.temperature_2m_min[i];
                 const tempHigh = daily.temperature_2m_max[i];
