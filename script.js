@@ -454,7 +454,7 @@ async function displayWeatherData(weatherData) {
             
             hourlyHTML += `
                 <div class="hourly-item">
-                    <div class="time">${i === 0 ? 'Maintenant' : `${hour.toString().padStart(2, '0')}h`}</div>
+                    <div class="time">${i === 0 ? 'Maint' : `${hour.toString().padStart(2, '0')}h`}</div>
                     <div class="icon">${iconHTML}</div>
                     <div class="temp">${Math.round(hourly.temperature_2m[hourIndex])}°</div>
                 </div>
