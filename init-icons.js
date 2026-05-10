@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Map of label IDs to icon names
     const labelIconMap = {
-        'label-next-hour': 'clock',
         'label-hourly': 'clock',
         'label-daily': 'calendar',
         'label-humidity': 'droplet',
