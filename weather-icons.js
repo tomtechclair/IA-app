@@ -1,51 +1,135 @@
-// Fonction pour créer des icônes météo propres et stylées
+// Fonction pour créer des icônes météo 3D ultra-réalistes
 function createWeatherIconSVG(code, isDay = true, size = 32) {
     const sunSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
-        <g class="icon-sun">
-            <circle cx="50" cy="50" r="18" fill="#FFD700" opacity="0.9"/>
-            <g opacity="0.8">
-                <circle cx="50" cy="25" r="3" fill="#FFD700"/>
-                <circle cx="75" cy="50" r="3" fill="#FFD700"/>
-                <circle cx="50" cy="75" r="3" fill="#FFD700"/>
-                <circle cx="25" cy="50" r="3" fill="#FFD700"/>
-                <circle cx="35" cy="35" r="2" fill="#FFD700"/>
-                <circle cx="65" cy="35" r="2" fill="#FFD700"/>
-                <circle cx="35" cy="65" r="2" fill="#FFD700"/>
-                <circle cx="65" cy="65" r="2" fill="#FFD700"/>
+        <defs>
+            <radialGradient id="sunGradient3D">
+                <stop offset="0%" style="stop-color:#FFF8DC;stop-opacity:1" />
+                <stop offset="70%" style="stop-color:#FFD700;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+            </radialGradient>
+            <filter id="sunShadow3D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                <feOffset dx="2" dy="2" result="offsetblur"/>
+                <feFlood flood-color="#000000" flood-opacity="0.3"/>
+                <feComposite in2="offsetblur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <g class="icon-sun-3d" filter="url(#sunShadow3D)">
+            <!-- Sphère principale -->
+            <circle cx="50" cy="50" r="20" fill="url(#sunGradient3D)"/>
+            <!-- Effet de brillance -->
+            <ellipse cx="45" cy="45" rx="12" ry="8" fill="rgba(255,255,255,0.4)" transform="rotate(-30 45 45)"/>
+            <!-- Rayons solaires 3D -->
+            <g opacity="0.9">
+                <ellipse cx="50" cy="20" rx="3" ry="2" fill="#FFA500"/>
+                <ellipse cx="75" cy="50" rx="2" ry="3" fill="#FFA500"/>
+                <ellipse cx="50" cy="80" rx="3" ry="2" fill="#FFA500"/>
+                <ellipse cx="25" cy="50" rx="2" ry="3" fill="#FFA500"/>
+                <ellipse cx="35" cy="35" rx="2" ry="1.5" fill="#FFD700" opacity="0.7"/>
+                <ellipse cx="65" cy="35" rx="2" ry="1.5" fill="#FFD700" opacity="0.7"/>
+                <ellipse cx="35" cy="65" rx="2" ry="1.5" fill="#FFD700" opacity="0.7"/>
+                <ellipse cx="65" cy="65" rx="2" ry="1.5" fill="#FFD700" opacity="0.7"/>
             </g>
         </g>
     </svg>`;
     
     const moonSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
-        <g class="icon-moon">
-            <path d="M55 25 A 20 20 0 1 1 55 75 A 15 15 0 1 0 55 25" fill="#E0E0E0" opacity="0.9"/>
-            <circle cx="45" cy="45" r="3" fill="#C0C0C0" opacity="0.3"/>
-            <circle cx="60" cy="55" r="2" fill="#C0C0C0" opacity="0.3"/>
+        <defs>
+            <radialGradient id="moonGradient3D">
+                <stop offset="0%" style="stop-color:#F0F0F0;stop-opacity:1" />
+                <stop offset="80%" style="stop-color:#E0E0E0;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#C0C0C0;stop-opacity:1" />
+            </radialGradient>
+            <filter id="moonShadow3D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+                <feOffset dx="1" dy="1" result="offsetblur"/>
+                <feFlood flood-color="#000000" flood-opacity="0.4"/>
+                <feComposite in2="offsetblur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <g class="icon-moon-3d" filter="url(#moonShadow3D)">
+            <!-- Sphère lunaire -->
+            <path d="M55 25 A 20 20 0 1 1 55 75 A 15 15 0 1 0 55 25" fill="url(#moonGradient3D)"/>
+            <!-- Cratères 3D -->
+            <ellipse cx="45" cy="45" rx="4" ry="3" fill="#A0A0A0" opacity="0.3"/>
+            <ellipse cx="60" cy="55" rx="3" ry="2" fill="#A0A0A0" opacity="0.2"/>
+            <ellipse cx="50" cy="35" rx="2" ry="1.5" fill="#A0A0A0" opacity="0.25"/>
+            <!-- Effet de brillance lunaire -->
+            <ellipse cx="48" cy="40" rx="8" ry="5" fill="rgba(255,255,255,0.2)" transform="rotate(-20 48 40)"/>
         </g>
     </svg>`;
     
     const cloudSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
-        <g class="icon-cloud">
-            <path d="M30 65 Q20 65 20 55 Q20 45 30 45 Q30 35 45 35 Q55 35 60 42 Q70 42 70 52 Q70 62 60 65 Q50 65 40 65 Q35 65 30 65 Z" 
-                  fill="#F5F5F5" opacity="0.9"/>
-            <path d="M25 60 Q18 60 18 52 Q18 45 25 45 Q25 38 35 38 Q42 38 46 43 Q52 43 56 50 Q56 57 48 60 Q40 60 32 60 Q28 60 25 60 Z" 
-                  fill="#E8E8E8" opacity="0.7"/>
+        <defs>
+            <linearGradient id="cloudGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#F8F8F8;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#E8E8E8;stop-opacity:1" />
+            </linearGradient>
+            <filter id="cloudShadow3D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+                <feOffset dx="2" dy="3" result="offsetblur"/>
+                <feFlood flood-color="#000000" flood-opacity="0.2"/>
+                <feComposite in2="offsetblur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <g class="icon-cloud-3d" filter="url(#cloudShadow3D)">
+            <!-- Nuage principal 3D -->
+            <ellipse cx="40" cy="55" rx="25" ry="18" fill="url(#cloudGradient3D)"/>
+            <ellipse cx="65" cy="50" rx="20" ry="15" fill="url(#cloudGradient3D)"/>
+            <!-- Ombres et profondeur -->
+            <ellipse cx="35" cy="65" rx="18" ry="8" fill="#D0D0D0" opacity="0.3"/>
+            <ellipse cx="60" cy="60" rx="15" ry="6" fill="#D0D0D0" opacity="0.2"/>
+            <!-- Effet de brillance -->
+            <ellipse cx="38" cy="48" rx="12" ry="6" fill="rgba(255,255,255,0.3)"/>
+            <ellipse cx="62" cy="43" rx="8" ry="4" fill="rgba(255,255,255,0.25)"/>
         </g>
     </svg>`;
     
     const cloudSunSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
-        <g class="icon-cloud-sun">
-            <circle cx="70" cy="30" r="12" fill="#FFD700" opacity="0.9"/>
-            <g opacity="0.7">
-                <circle cx="70" cy="15" r="2" fill="#FFD700"/>
-                <circle cx="85" cy="30" r="2" fill="#FFD700"/>
-                <circle cx="70" cy="45" r="2" fill="#FFD700"/>
-                <circle cx="55" cy="30" r="2" fill="#FFD700"/>
-            </g>
-            <path d="M25 65 Q15 65 15 55 Q15 45 25 45 Q25 35 40 35 Q50 35 55 43 Q65 43 65 53 Q65 63 55 65 Q45 65 35 65 Q30 65 25 65 Z" 
-                  fill="#F5F5F5" opacity="0.9"/>
-            <path d="M20 60 Q13 60 13 52 Q13 45 20 45 Q20 38 30 38 Q37 38 41 43 Q47 43 51 50 Q51 57 43 60 Q35 60 27 60 Q23 60 20 60 Z" 
-                  fill="#E8E8E8" opacity="0.7"/>
+        <defs>
+            <radialGradient id="sunGradientCloud3D">
+                <stop offset="0%" style="stop-color:#FFF8DC;stop-opacity:1" />
+                <stop offset="70%" style="stop-color:#FFD700;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+            </radialGradient>
+            <linearGradient id="cloudGradientSun3D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#E0E0E0;stop-opacity:1" />
+            </linearGradient>
+            <filter id="cloudSunShadow3D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+                <feOffset dx="2" dy="2" result="offsetblur"/>
+                <feFlood flood-color="#000000" flood-opacity="0.25"/>
+                <feComposite in2="offsetblur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <g class="icon-cloud-sun-3d" filter="url(#cloudSunShadow3D)">
+            <!-- Soleil derrière les nuages -->
+            <circle cx="70" cy="30" r="15" fill="url(#sunGradientCloud3D)" opacity="0.95"/>
+            <ellipse cx="68" cy="28" rx="8" ry="5" fill="rgba(255,255,255,0.4)" transform="rotate(-25 68 28)"/>
+            <!-- Nuages 3D -->
+            <ellipse cx="35" cy="60" rx="22" ry="16" fill="url(#cloudGradientSun3D)"/>
+            <ellipse cx="55" cy="55" rx="18" ry="12" fill="url(#cloudGradientSun3D)"/>
+            <!-- Ombres -->
+            <ellipse cx="30" cy="68" rx="15" ry="6" fill="#C0C0C0" opacity="0.3"/>
+            <ellipse cx="50" cy="63" rx="12" ry="5" fill="#C0C0C0" opacity="0.2"/>
         </g>
     </svg>`;
     
@@ -63,7 +147,187 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
     </svg>`;
     
     const rainSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
-        <g class="icon-rain">
+        <defs>
+            <linearGradient id="rainCloudGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#A0A0A0;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#708080;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="rainDropGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#4FC3F7;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#2196F3;stop-opacity:1" />
+            </linearGradient>
+            <filter id="rainShadow3D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+                <feOffset dx="1" dy="2" result="offsetblur"/>
+                <feFlood flood-color="#000000" flood-opacity="0.3"/>
+                <feComposite in2="offsetblur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <g class="icon-rain-3d" filter="url(#rainShadow3D)">
+            <!-- Nuage d'orage 3D -->
+            <ellipse cx="40" cy="45" rx="28" ry="20" fill="url(#rainCloudGradient3D)"/>
+            <ellipse cx="65" cy="40" rx="22" ry="16" fill="url(#rainCloudGradient3D)"/>
+            <!-- Ombres profondes -->
+            <ellipse cx="35" cy="55" rx="20" ry="10" fill="#606060" opacity="0.4"/>
+            <ellipse cx="60" cy="50" rx="16" ry="8" fill="#606060" opacity="0.3"/>
+            <!-- Gouttes de pluie 3D -->
+            <g opacity="0.9">
+                <ellipse cx="35" cy="70" rx="2" ry="4" fill="url(#rainDropGradient3D)" transform="rotate(15 35 70)"/>
+                <ellipse cx="45" cy="75" rx="1.5" ry="6" fill="url(#rainDropGradient3D)" transform="rotate(-10 45 75)"/>
+                <ellipse cx="55" cy="72" rx="1.8" ry="5" fill="url(#rainDropGradient3D)" transform="rotate(5 55 72)"/>
+                <ellipse cx="65" cy="78" rx="1.5" ry="7" fill="url(#rainDropGradient3D)" transform="rotate(-20 65 78)"/>
+                <ellipse cx="40" cy="80" rx="1.2" ry="5" fill="url(#rainDropGradient3D)" transform="rotate(25 40 80)"/>
+                <ellipse cx="60" cy="85" rx="1" ry="6" fill="url(#rainDropGradient3D)" transform="rotate(-15 60 85)"/>
+            </g>
+            <!-- Éclaboussures -->
+            <ellipse cx="38" cy="48" rx="15" ry="8" fill="rgba(255,255,255,0.2)"/>
+            <ellipse cx="62" cy="43" rx="10" ry="5" fill="rgba(255,255,255,0.15)"/>
+        </g>
+    </svg>`;
+    
+    const snowSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
+        <defs>
+            <linearGradient id="snowCloudGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#F0F8FF;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#E0E0E0;stop-opacity:1" />
+            </linearGradient>
+            <radialGradient id="snowFlakeGradient3D">
+                <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#E6F3FF;stop-opacity:0.8" />
+            </radialGradient>
+            <filter id="snowShadow3D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+                <feOffset dx="1" dy="1" result="offsetblur"/>
+                <feFlood flood-color="#000000" flood-opacity="0.2"/>
+                <feComposite in2="offsetblur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <g class="icon-snow-3d" filter="url(#snowShadow3D)">
+            <!-- Nuages de neige 3D -->
+            <ellipse cx="40" cy="45" rx="26" ry="18" fill="url(#snowCloudGradient3D)"/>
+            <ellipse cx="60" cy="40" rx="20" ry="14" fill="url(#snowCloudGradient3D)"/>
+            <!-- Ombres douces -->
+            <ellipse cx="35" cy="52" rx="18" ry="8" fill="#D0D0D0" opacity="0.3"/>
+            <ellipse cx="55" cy="47" rx="14" ry="6" fill="#D0D0D0" opacity="0.25"/>
+            <!-- Flocons de neige 3D -->
+            <g opacity="0.95">
+                <g transform="translate(30,65)">
+                    <ellipse cx="0" cy="0" rx="4" ry="3" fill="url(#snowFlakeGradient3D)"/>
+                    <ellipse cx="-2" cy="1" rx="2" ry="1.5" fill="#FFFFFF" opacity="0.8"/>
+                    <ellipse cx="2" cy="-1" rx="1.5" ry="1" fill="#FFFFFF" opacity="0.6"/>
+                </g>
+                <g transform="translate(45,70) rotate(15)">
+                    <ellipse cx="0" cy="0" rx="3" ry="2.5" fill="url(#snowFlakeGradient3D)"/>
+                    <ellipse cx="-1" cy="0.5" rx="1.5" ry="1" fill="#FFFFFF" opacity="0.7"/>
+                </g>
+                <g transform="translate(55,68) rotate(-20)">
+                    <ellipse cx="0" cy="0" rx="3.5" ry="2.8" fill="url(#snowFlakeGradient3D)"/>
+                    <ellipse cx="1" cy="-0.5" rx="1.8" ry="1.2" fill="#FFFFFF" opacity="0.8"/>
+                </g>
+                <g transform="translate(65,75) rotate(30)">
+                    <ellipse cx="0" cy="0" rx="2.8" ry="2.2" fill="url(#snowFlakeGradient3D)"/>
+                    <ellipse cx="-0.5" cy="0.8" rx="1.2" ry="0.8" fill="#FFFFFF" opacity="0.6"/>
+                </g>
+                <g transform="translate(38,78) rotate(-10)">
+                    <ellipse cx="0" cy="0" rx="2.2" ry="1.8" fill="url(#snowFlakeGradient3D)"/>
+                    <ellipse cx="0.5" cy="-0.3" rx="1" ry="0.6" fill="#FFFFFF" opacity="0.7"/>
+                </g>
+            </g>
+            <!-- Effet de brillance neigeuse -->
+            <ellipse cx="42" cy="48" rx="12" ry="6" fill="rgba(255,255,255,0.3)"/>
+            <ellipse cx="58" cy="43" rx="8" ry="4" fill="rgba(255,255,255,0.2)"/>
+        </g>
+    </svg>`;
+    
+    const thunderSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
+        <defs>
+            <linearGradient id="thunderCloudGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#4B0082;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#1C1C1C;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="thunderBoltGradient3D" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FF6347;stop-opacity:1" />
+            </linearGradient>
+            <filter id="thunderShadow3D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                <feOffset dx="2" dy="2" result="offsetblur"/>
+                <feFlood flood-color="#000000" flood-opacity="0.5"/>
+                <feComposite in2="offsetblur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+            <filter id="thunderGlow3D">
+                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <g class="icon-thunder-3d" filter="url(#thunderShadow3D)">
+            <!-- Nuages d'orage 3D -->
+            <ellipse cx="40" cy="45" rx="30" ry="22" fill="url(#thunderCloudGradient3D)"/>
+            <ellipse cx="65" cy="38" rx="25" ry="18" fill="url(#thunderCloudGradient3D)"/>
+            <!-- Ombres dramatiques -->
+            <ellipse cx="35" cy="55" rx="22" ry="12" fill="#0F0F0F" opacity="0.6"/>
+            <ellipse cx="60" cy="48" rx="18" ry="10" fill="#0F0F0F" opacity="0.5"/>
+            <!-- Éclair principal 3D -->
+            <g filter="url(#thunderGlow3D)">
+                <path d="M45 35 L40 55 L50 55 L45 70 L60 50 L48 50 Z" fill="url(#thunderBoltGradient3D)"/>
+                <path d="M45 35 L40 55 L50 55 L45 70 L60 50 L48 50 Z" fill="rgba(255,255,255,0.3)" transform="translate(1,1)"/>
+            </g>
+            <!-- Éclair secondaire -->
+            <path d="M65 40 L62 48 L67 48 L64 58 L70 52 L66 52 Z" fill="url(#thunderBoltGradient3D)" opacity="0.7"/>
+            <!-- Éclaboussures lumineuses -->
+            <ellipse cx="42" cy="48" rx="8" ry="4" fill="rgba(255,215,0,0.4)"/>
+            <ellipse cx="58" cy="42" rx="6" ry="3" fill="rgba(255,215,0,0.3)"/>
+        </g>
+    </svg>`;
+    
+    const fogSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
+        <defs>
+            <linearGradient id="fogGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#E0E0E0;stop-opacity:0.8" />
+                <stop offset="50%" style="stop-color:#D0D0D0;stop-opacity:0.6" />
+                <stop offset="100%" style="stop-color:#C0C0C0;stop-opacity:0.4" />
+            </linearGradient>
+            <filter id="fogShadow3D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+                <feOffset dx="1" dy="1" result="offsetblur"/>
+                <feFlood flood-color="#000000" flood-opacity="0.2"/>
+                <feComposite in2="offsetblur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <g class="icon-fog-3d" filter="url(#fogShadow3D)">
+            <!-- Couches de brouillard 3D -->
+            <ellipse cx="50" cy="40" rx="35" ry="8" fill="url(#fogGradient3D)" opacity="0.7"/>
+            <ellipse cx="45" cy="50" rx="30" ry="10" fill="url(#fogGradient3D)" opacity="0.6"/>
+            <ellipse cx="55" cy="60" rx="32" ry="8" fill="url(#fogGradient3D)" opacity="0.5"/>
+            <ellipse cx="48" cy="70" rx="28" ry="6" fill="url(#fogGradient3D)" opacity="0.4"/>
+            <!-- Effet de profondeur -->
+            <ellipse cx="40" cy="45" rx="25" ry="6" fill="#B0B0B0" opacity="0.3"/>
+            <ellipse cx="60" cy="55" rx="20" ry="5" fill="#A0A0A0" opacity="0.25"/>
+        </g>
+    </svg>`;
+    
+    const drizzleSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
+        <g class="icon-drizzle">
             <path d="M30 65 Q20 65 20 55 Q20 45 30 45 Q30 35 45 35 Q55 35 60 42 Q70 42 70 52 Q70 62 60 65 Q50 65 40 65 Q35 65 30 65 Z" 
                   fill="#F5F5F5" opacity="0.9"/>
             <g opacity="0.8">
@@ -75,6 +339,7 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
             <line class="drop-1" x1="30" y1="55" x2="30" y2="65" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
             <line class="drop-2" x1="45" y1="55" x2="45" y2="68" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
             <line class="drop-3" x1="55" y1="55" x2="55" y2="62" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
+            <line class="drop-1" x1="35" y1="58" x2="35" y2="63" stroke="#4FC3F7" stroke-width="2" stroke-linecap="round"/>
             <defs>
                 <linearGradient id="cloudGrad4" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" style="stop-color:#C0C0C0"/>
@@ -83,53 +348,6 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
             </defs>
         </g>
     </svg>`;
-    
-    const snowSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
-        <g class="icon-snow">
-            <path class="cloud-shape" d="M20 50 Q10 50 10 40 Q10 30 20 30 Q20 15 35 15 Q45 15 50 23 Q60 23 60 33 Q70 33 70 43 Q70 50 60 50 Z" fill="url(#cloudGrad5)" stroke="none"/>
-            <circle class="flake-1" cx="30" cy="58" r="3" fill="white"/>
-            <circle class="flake-2" cx="45" cy="62" r="3" fill="white"/>
-            <circle class="flake-3" cx="55" cy="56" r="3" fill="white"/>
-            <defs>
-                <linearGradient id="cloudGrad5" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#E0E0E0"/>
-                    <stop offset="100%" style="stop-color:#C0C0C0"/>
-                </linearGradient>
-            </defs>
-        </g>
-    </svg>`;
-    
-    const thunderSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
-        <g class="icon-thunder">
-            <path class="cloud-shape" d="M20 50 Q10 50 10 40 Q10 30 20 30 Q20 15 35 15 Q45 15 50 23 Q60 23 60 33 Q70 33 70 43 Q70 50 60 50 Z" fill="url(#cloudGrad6)" stroke="none"/>
-            <path class="bolt" d="M45 50 L35 70 L48 70 L40 90 L55 65 L42 65 Z" fill="#FFD600" stroke="none"/>
-            <defs>
-                <linearGradient id="cloudGrad6" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#808080"/>
-                    <stop offset="100%" style="stop-color:#606060"/>
-                </linearGradient>
-            </defs>
-        </g>
-    </svg>`;
-    
-    const fogSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
-        <g class="icon-fog">
-            <path class="cloud-shape" d="M20 50 Q10 50 10 40 Q10 30 20 30 Q20 15 35 15 Q45 15 50 23 Q60 23 60 33 Q70 33 70 43 Q70 50 60 50 Z" fill="url(#cloudGrad7)" stroke="none"/>
-            <line x1="20" y1="55" x2="60" y2="55" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
-            <line x1="25" y1="63" x2="55" y2="63" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
-            <line x1="30" y1="71" x2="50" y2="71" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.2"/>
-            <defs>
-                <linearGradient id="cloudGrad7" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#D0D0D0"/>
-                    <stop offset="100%" style="stop-color:#B0B0B0"/>
-                </linearGradient>
-            </defs>
-        </g>
-    </svg>`;
-    
-    const drizzleSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
-        <g class="icon-drizzle">
-            <path class="cloud-shape" d="M20 50 Q10 50 10 40 Q10 30 20 30 Q20 15 35 15 Q45 15 50 23 Q60 23 60 33 Q70 33 70 43 Q70 50 60 50 Z" fill="url(#cloudGrad8)" stroke="none"/>
             <line class="drop-1" x1="30" y1="55" x2="30" y2="62" stroke="#81D4FA" stroke-width="2" stroke-linecap="round"/>
             <line class="drop-2" x1="40" y1="55" x2="40" y2="63" stroke="#81D4FA" stroke-width="2" stroke-linecap="round"/>
             <line class="drop-3" x1="50" y1="55" x2="50" y2="61" stroke="#81D4FA" stroke-width="2" stroke-linecap="round"/>
