@@ -69,7 +69,42 @@ function showWeather(data, cityName) {
     }
     
     const current = data.current;
-    const info = getInfo(current.weather_code || 0);
+    const currentCode = current.weather_code || 0;
+    
+    // Analyser les prochaines heures pour détecter un changement météo imminent
+    let displayCondition = getInfo(currentCode).condition;
+    let displayCode = currentCode;
+    
+    if (data.hourly && data.hourly.weather_code) {
+        const hourlyCodes = data.hourly.weather_code;
+        const now = new Date();
+        const currentHour = now.getHours();
+        
+        // Vérifier les prochaines 3 heures
+        for (let i = 1; i <= 3 && i < hourlyCodes.length; i++) {
+            const nextCode = hourlyCodes[currentHour + i];
+            if (nextCode !== undefined) {
+                // Si c'est couvert/nuageux actuellement mais pluie/orage dans les prochaines heures
+                if ((currentCode === 3 || currentCode === 2 || currentCode === 1) && 
+                    (nextCode >= 51 || nextCode === 80 || nextCode === 81 || nextCode >= 95)) {
+                    // Afficher un avertissement
+                    if (nextCode >= 95) {
+                        displayCondition = 'Orage imminent';
+                        displayCode = nextCode;
+                    } else if (nextCode >= 61 || nextCode === 82) {
+                        displayCondition = 'Pluie imminente';
+                        displayCode = nextCode;
+                    } else if (nextCode >= 51) {
+                        displayCondition = 'Risque de pluie';
+                        displayCode = nextCode;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    
+    const info = getInfo(displayCode);
     
     // Ville
     const cityEl = $('.city');
@@ -84,9 +119,9 @@ function showWeather(data, cityName) {
         tempEl.textContent = Math.round(current.temperature_2m) + '°';
     }
     
-    // Condition
+    // Condition - affiche la condition analysée (peut inclure avertissement)
     const condEl = $('.condition');
-    if (condEl) condEl.textContent = info.condition;
+    if (condEl) condEl.textContent = displayCondition;
     
     // Min/Max
     const hlEl = $('.high-low');
@@ -137,7 +172,7 @@ function showWeather(data, cityName) {
     }
     
     // Heures (données réelles Open-Meteo)
-    showHourly(data.hourly, current.weather_code);
+    showHourly(data.hourly, current.weather_code, displayCode);
     
     // Jours (données réelles Open-Meteo)
     showDaily(data.daily);
@@ -152,7 +187,7 @@ function showWeather(data, cityName) {
     }
 }
 
-function showHourly(hourly, currentCode) {
+function showHourly(hourly, currentCode, displayCodeOverride) {
     const list = $('#hourly-list');
     if (!list || !hourly || !hourly.time) return;
     
@@ -169,16 +204,19 @@ function showHourly(hourly, currentCode) {
         const isDay = hourly.is_day ? hourly.is_day[hourIndex] === 1 : (hour >= 6 && hour <= 20);
         const temp = hourly.temperature_2m[hourIndex] !== undefined ? hourly.temperature_2m[hourIndex] : 0;
         
+        // Pour "Maintenant", utiliser le displayCode si fourni (pour montrer la météo imminente)
+        const displayCode = (i === 0 && displayCodeOverride) ? displayCodeOverride : code;
+        
         // Utiliser les icônes 3D si disponibles, sinon emojis
         let iconHtml;
         if (typeof getWeatherIcon3D === 'function') {
             try {
-                iconHtml = getWeatherIcon3D(code, isDay, 32);
+                iconHtml = getWeatherIcon3D(displayCode, isDay, 32);
             } catch(e) {
-                iconHtml = `<span style="font-size:32px">${getIconEmoji(code, isDay)}</span>`;
+                iconHtml = `<span style="font-size:32px">${getIconEmoji(displayCode, isDay)}</span>`;
             }
         } else {
-            iconHtml = `<span style="font-size:32px">${getIconEmoji(code, isDay)}</span>`;
+            iconHtml = `<span style="font-size:32px">${getIconEmoji(displayCode, isDay)}</span>`;
         }
         
         html += `
