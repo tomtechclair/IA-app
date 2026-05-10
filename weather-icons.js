@@ -1,57 +1,51 @@
-// Fonction pour créer un SVG d'icône météo style Apple
+// Fonction pour créer des icônes météo propres et stylées
 function createWeatherIconSVG(code, isDay = true, size = 32) {
     const sunSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
         <g class="icon-sun">
-            <circle cx="50" cy="50" r="20" fill="#FFD700" class="sun-core"/>
-            <g class="sun-rays">
-                <line x1="50" y1="15" x2="50" y2="25" stroke="#FFD700" stroke-width="4" stroke-linecap="round"/>
-                <line x1="50" y1="75" x2="50" y2="85" stroke="#FFD700" stroke-width="4" stroke-linecap="round"/>
-                <line x1="15" y1="50" x2="25" y2="50" stroke="#FFD700" stroke-width="4" stroke-linecap="round"/>
-                <line x1="75" y1="50" x2="85" y2="50" stroke="#FFD700" stroke-width="4" stroke-linecap="round"/>
-                <line x1="25" y1="25" x2="32" y2="32" stroke="#FFD700" stroke-width="4" stroke-linecap="round"/>
-                <line x1="68" y1="68" x2="75" y2="75" stroke="#FFD700" stroke-width="4" stroke-linecap="round"/>
-                <line x1="25" y1="75" x2="32" y2="68" stroke="#FFD700" stroke-width="4" stroke-linecap="round"/>
-                <line x1="68" y1="32" x2="75" y2="25" stroke="#FFD700" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="18" fill="#FFD700" opacity="0.9"/>
+            <g opacity="0.8">
+                <circle cx="50" cy="25" r="3" fill="#FFD700"/>
+                <circle cx="75" cy="50" r="3" fill="#FFD700"/>
+                <circle cx="50" cy="75" r="3" fill="#FFD700"/>
+                <circle cx="25" cy="50" r="3" fill="#FFD700"/>
+                <circle cx="35" cy="35" r="2" fill="#FFD700"/>
+                <circle cx="65" cy="35" r="2" fill="#FFD700"/>
+                <circle cx="35" cy="65" r="2" fill="#FFD700"/>
+                <circle cx="65" cy="65" r="2" fill="#FFD700"/>
             </g>
         </g>
     </svg>`;
     
     const moonSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
         <g class="icon-moon">
-            <path d="M60 20 A 30 30 0 1 1 40 80 A 22 22 0 1 0 60 20" fill="#C0C0C0" stroke="none"/>
+            <path d="M55 25 A 20 20 0 1 1 55 75 A 15 15 0 1 0 55 25" fill="#E0E0E0" opacity="0.9"/>
+            <circle cx="45" cy="45" r="3" fill="#C0C0C0" opacity="0.3"/>
+            <circle cx="60" cy="55" r="2" fill="#C0C0C0" opacity="0.3"/>
         </g>
     </svg>`;
     
     const cloudSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
         <g class="icon-cloud">
-            <path class="cloud-shape" d="M25 65 Q15 65 15 55 Q15 45 25 45 Q25 30 40 30 Q50 30 55 38 Q65 38 65 48 Q75 48 75 58 Q75 65 65 65 Z" fill="url(#cloudGrad)" stroke="none"/>
-            <defs>
-                <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#F0F0F0"/>
-                    <stop offset="100%" style="stop-color:#D0D0D0"/>
-                </linearGradient>
-            </defs>
+            <path d="M30 65 Q20 65 20 55 Q20 45 30 45 Q30 35 45 35 Q55 35 60 42 Q70 42 70 52 Q70 62 60 65 Q50 65 40 65 Q35 65 30 65 Z" 
+                  fill="#F5F5F5" opacity="0.9"/>
+            <path d="M25 60 Q18 60 18 52 Q18 45 25 45 Q25 38 35 38 Q42 38 46 43 Q52 43 56 50 Q56 57 48 60 Q40 60 32 60 Q28 60 25 60 Z" 
+                  fill="#E8E8E8" opacity="0.7"/>
         </g>
     </svg>`;
     
     const cloudSunSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
         <g class="icon-cloud-sun">
-            <circle cx="65" cy="35" r="15" fill="#FFD700"/>
-            <g stroke="#FFD700" stroke-width="3" stroke-linecap="round">
-                <line x1="65" y1="12" x2="65" y2="18"/>
-                <line x1="65" y1="52" x2="65" y2="58"/>
-                <line x1="42" y1="35" x2="48" y2="35"/>
-                <line x1="82" y1="35" x2="88" y2="35"/>
-                <line x1="49" y1="19" x2="53" y2="23"/>
-                <line x1="77" y1="47" x2="81" y2="51"/>
+            <circle cx="70" cy="30" r="12" fill="#FFD700" opacity="0.9"/>
+            <g opacity="0.7">
+                <circle cx="70" cy="15" r="2" fill="#FFD700"/>
+                <circle cx="85" cy="30" r="2" fill="#FFD700"/>
+                <circle cx="70" cy="45" r="2" fill="#FFD700"/>
+                <circle cx="55" cy="30" r="2" fill="#FFD700"/>
             </g>
-            <path class="cloud-shape" d="M15 70 Q5 70 5 60 Q5 50 15 50 Q15 35 30 35 Q40 35 45 43 Q55 43 55 53 Q65 53 65 63 Q65 70 55 70 Z" fill="url(#cloudGrad2)" stroke="none"/>
-            <defs>
-                <linearGradient id="cloudGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#F0F0F0"/>
-                    <stop offset="100%" style="stop-color:#D0D0D0"/>
-                </linearGradient>
-            </defs>
+            <path d="M25 65 Q15 65 15 55 Q15 45 25 45 Q25 35 40 35 Q50 35 55 43 Q65 43 65 53 Q65 63 55 65 Q45 65 35 65 Q30 65 25 65 Z" 
+                  fill="#F5F5F5" opacity="0.9"/>
+            <path d="M20 60 Q13 60 13 52 Q13 45 20 45 Q20 38 30 38 Q37 38 41 43 Q47 43 51 50 Q51 57 43 60 Q35 60 27 60 Q23 60 20 60 Z" 
+                  fill="#E8E8E8" opacity="0.7"/>
         </g>
     </svg>`;
     
@@ -70,7 +64,14 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
     
     const rainSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
         <g class="icon-rain">
-            <path class="cloud-shape" d="M20 50 Q10 50 10 40 Q10 30 20 30 Q20 15 35 15 Q45 15 50 23 Q60 23 60 33 Q70 33 70 43 Q70 50 60 50 Z" fill="url(#cloudGrad4)" stroke="none"/>
+            <path d="M30 65 Q20 65 20 55 Q20 45 30 45 Q30 35 45 35 Q55 35 60 42 Q70 42 70 52 Q70 62 60 65 Q50 65 40 65 Q35 65 30 65 Z" 
+                  fill="#F5F5F5" opacity="0.9"/>
+            <g opacity="0.8">
+                <line x1="35" y1="70" x2="33" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
+                <line x1="45" y1="70" x2="43" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
+                <line x1="55" y1="70" x2="53" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
+                <line x1="65" y1="70" x2="63" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
+            </g>
             <line class="drop-1" x1="30" y1="55" x2="30" y2="65" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
             <line class="drop-2" x1="45" y1="55" x2="45" y2="68" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
             <line class="drop-3" x1="55" y1="55" x2="55" y2="62" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
@@ -147,41 +148,36 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
         return moonSVG;
     }
     
-    switch (code) {
-        case 0: // Ensoleillé
-            return sunSVG;
-        case 1: // Partiellement nuageux
-            return isDay ? cloudSunSVG : cloudMoonSVG;
-        case 2: // Nuageux
-        case 3: // Couvert
-            return cloudSVG;
-        case 45: // Brouillard
-        case 48: // Brouillard givrant
-            return fogSVG;
-        case 51: // Bruine légère
-        case 53: // Bruine modérée
-        case 55: // Bruine forte
-            return drizzleSVG;
-        case 61: // Pluie légère
-        case 63: // Pluie modérée
-        case 65: // Pluie forte
-        case 80: // Averses légères
-        case 81: // Averses modérées
-            return rainSVG;
-        case 82: // Averses violentes
-        case 95: // Orage
-        case 96: // Orage grêle
-        case 99: // Orage violent
-            return thunderSVG;
-        case 71: // Neige légère
-        case 73: // Neige modérée
-        case 75: // Neige forte
-        case 77: // Grains de neige
-        case 85: // Averses de neige
-        case 86: // Averses de neige
-            return snowSVG;
-        default:
-            return isDay ? cloudSVG : moonSVG;
+    switch(code) {
+        case 0: return isDay ? sunSVG : moonSVG;
+        case 1: return cloudSunSVG;
+        case 2: return cloudSVG;
+        case 3: return cloudSVG;
+        case 45: return fogSVG;
+        case 48: return fogSVG;
+        case 51: return rainSVG;
+        case 53: return rainSVG;
+        case 55: return rainSVG;
+        case 56: return rainSVG;
+        case 57: return rainSVG;
+        case 61: return snowSVG;
+        case 63: return snowSVG;
+        case 65: return snowSVG;
+        case 66: return snowSVG;
+        case 67: return snowSVG;
+        case 71: return snowSVG;
+        case 73: return snowSVG;
+        case 75: return snowSVG;
+        case 77: return snowSVG;
+        case 80: return rainSVG;
+        case 81: return rainSVG;
+        case 82: return rainSVG;
+        case 85: return snowSVG;
+        case 86: return snowSVG;
+        case 95: return thunderSVG;
+        case 96: return thunderSVG;
+        case 99: return thunderSVG;
+        default: return sunSVG;
     }
 }
 
