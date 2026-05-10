@@ -9,49 +9,64 @@ let currentCity = 'Paris';
 let currentCoords = { lat: 48.8566, lon: 2.3522 };
 let hasInitialized = false;
 
-// Géolocalisation par IP (sans permission, automatique)
+// Géolocalisation par IP (sans permission, automatique) - Version mobile-friendly avec CORS
 async function getLocationByIP() {
-    try {
-        // Essayer ipapi.co (sans clé API, gratuit pour usage non commercial)
-        const response = await fetch('https://ipapi.co/json/', {
-            headers: { 'Accept': 'application/json' }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            if (data.latitude && data.longitude) {
-                return {
-                    lat: data.latitude,
-                    lon: data.longitude,
-                    city: data.city || data.region || 'Position actuelle'
-                };
-            }
+    // Liste des services de géolocalisation IP avec CORS support
+    const services = [
+        {
+            url: 'https://api.bigdatacloud.net/data/client-info',
+            extract: (data) => data.latitude && data.longitude ? {
+                lat: data.latitude,
+                lon: data.longitude,
+                city: data.city || data.principalSubdivision || 'Position actuelle'
+            } : null
+        },
+        {
+            url: 'https://ipwho.is/',
+            extract: (data) => data.success && data.latitude ? {
+                lat: data.latitude,
+                lon: data.longitude,
+                city: data.city || 'Position actuelle'
+            } : null
+        },
+        {
+            url: 'https://ipapi.co/json/',
+            extract: (data) => data.latitude && data.longitude ? {
+                lat: data.latitude,
+                lon: data.longitude,
+                city: data.city || data.region || 'Position actuelle'
+            } : null
         }
-        
-        throw new Error('IP geolocation failed');
-    } catch (error) {
-        console.warn('IP geolocation failed:', error);
-        
-        // Fallback vers ipinfo.io
+    ];
+    
+    for (const service of services) {
         try {
-            const response = await fetch('https://ipinfo.io/json');
-            const data = await response.json();
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
             
-            if (data.loc) {
-                const [lat, lon] = data.loc.split(',').map(Number);
-                return {
-                    lat: lat,
-                    lon: lon,
-                    city: data.city || 'Position actuelle'
-                };
+            const response = await fetch(service.url, {
+                signal: controller.signal,
+                headers: { 'Accept': 'application/json' }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (response.ok) {
+                const data = await response.json();
+                const result = service.extract(data);
+                if (result) {
+                    console.log(`IP geolocation succeeded with: ${service.url}`);
+                    return result;
+                }
             }
-            
-            throw new Error('ipinfo failed');
-        } catch (ipinfoError) {
-            console.warn('ipinfo fallback failed:', ipinfoError);
-            return null;
+        } catch (error) {
+            console.warn(`IP service failed: ${service.url}`, error.message);
+            continue;
         }
     }
+    
+    console.warn('All IP geolocation services failed');
+    return null;
 }
 
 // Géolocalisation GPS (avec permission - utilisé uniquement si l'utilisateur clique sur le bouton GPS)
@@ -451,5 +466,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Initialize storm background
+    if (typeof initStormBackground === 'function') {
+        initStormBackground();
+    }
+    
+    // Initialize weather with geolocation
     initializeWeather();
 });
