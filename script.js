@@ -80,7 +80,7 @@ async function searchCityCoords(cityName) {
 
 async function fetchWeatherData(lat, lon) {
     try {
-        // Cache des données pour éviter les requêtes multiples
+        // Cache intelligent pour temps réel
         const cacheKey = `weather_${lat.toFixed(2)}_${lon.toFixed(2)}`;
         const cachedData = localStorage.getItem(cacheKey);
         
@@ -88,11 +88,18 @@ async function fetchWeatherData(lat, lon) {
             const { data, timestamp } = JSON.parse(cachedData);
             const age = Date.now() - timestamp;
             
-            // Utiliser le cache si moins de 2 minutes (mobile) ou 5 minutes (desktop)
-            const maxAge = isMobileDevice() ? 120000 : 300000;
+            // Cache ultra-court pour temps réel mobile
+            const maxAge = isMobileDevice() ? 30000 : 60000; // 30s mobile, 1min desktop
+            
             if (age < maxAge) {
-                console.log('Utilisation des données en cache');
+                console.log(`Cache utilisé (${Math.round(age/1000)}s)`);
                 return data;
+            } else {
+                // Cache expiré mais garder en backup
+                localStorage.setItem(`${cacheKey}_backup`, JSON.stringify({
+                    data,
+                    timestamp: Date.now() - maxAge + 5000 // Backup de 5s
+                }));
             }
         }
 
@@ -934,38 +941,165 @@ function updateNextHourForecast(weatherData) {
     rainPercentage.textContent = `${rainProbability}%`;
 }
 
-// Auto-refresh optimisé pour mobile
+// Auto-refresh en temps réel pour mobile
 let autoRefreshInterval;
 let isFirstLoad = true;
 let lastUpdateTime = 0;
 let refreshTimeout;
+let realTimeInterval;
+let visibilityChangeHandler;
+let networkChangeHandler;
 
 function startAutoRefresh() {
-    if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval);
-    }
+    // Arrêter les intervalles précédents
+    stopAutoRefresh();
     
-    // Intervalle plus court sur mobile pour réactivité
-    const refreshInterval = isMobileDevice() ? 60000 : 120000; // 1 min mobile, 2 min desktop
+    // Intervalle ultra-rapide sur mobile pour temps réel
+    const refreshInterval = isMobileDevice() ? 30000 : 60000; // 30s mobile, 1min desktop
     
     autoRefreshInterval = setInterval(() => {
-        if (currentCity && Date.now() - lastUpdateTime > 30000) { // Pas plus d'une fois par 30s
-            updateWeatherOptimized(currentCity);
+        if (currentCity && Date.now() - lastUpdateTime > 15000) { // Pas plus d'une fois par 15s
+            updateWeatherRealTime();
         }
     }, refreshInterval);
+    
+    // Intervalle de temps réel (toutes les 10s sur mobile)
+    if (isMobileDevice()) {
+        realTimeInterval = setInterval(() => {
+            if (currentCity && isPageVisible() && isOnline()) {
+                updateWeatherRealTime();
+            }
+        }, 10000); // 10 secondes pour temps réel
+    }
+    
+    // Gérer les changements de visibilité de la page
+    setupVisibilityHandlers();
+    
+    // Gérer les changements de connexion
+    setupNetworkHandlers();
 }
 
-// Version optimisée de updateWeather
-function updateWeatherOptimized(city) {
+// Arrêter tous les intervalles
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    }
+    if (realTimeInterval) {
+        clearInterval(realTimeInterval);
+        realTimeInterval = null;
+    }
+    if (refreshTimeout) {
+        clearTimeout(refreshTimeout);
+        refreshTimeout = null;
+    }
+}
+
+// Vérifier si la page est visible
+function isPageVisible() {
+    return !document.hidden;
+}
+
+// Vérifier si on est en ligne
+function isOnline() {
+    return navigator.onLine;
+}
+
+// Mettre en place les gestionnaires de visibilité
+function setupVisibilityHandlers() {
+    if (visibilityChangeHandler) {
+        document.removeEventListener('visibilitychange', visibilityChangeHandler);
+    }
+    
+    visibilityChangeHandler = () => {
+        if (!document.hidden && currentCity && Date.now() - lastUpdateTime > 5000) {
+            // Mettre à jour dès que la page devient visible
+            updateWeatherRealTime();
+        }
+    };
+    
+    document.addEventListener('visibilitychange', visibilityChangeHandler);
+}
+
+// Mettre en place les gestionnaires de réseau
+function setupNetworkHandlers() {
+    if (networkChangeHandler) {
+        window.removeEventListener('online', networkChangeHandler);
+        window.removeEventListener('offline', networkChangeHandler);
+    }
+    
+    networkChangeHandler = () => {
+        if (navigator.onLine && currentCity) {
+            // Mettre à jour dès qu'on retrouve la connexion
+            setTimeout(() => updateWeatherRealTime(), 1000);
+        }
+    };
+    
+    window.addEventListener('online', networkChangeHandler);
+    window.addEventListener('offline', networkChangeHandler);
+}
+
+// Version temps réel de updateWeather
+function updateWeatherRealTime() {
     // Éviter les requêtes multiples
     if (refreshTimeout) {
         clearTimeout(refreshTimeout);
     }
     
+    // Afficher l'indicateur de mise à jour
+    showRealTimeIndicator();
+    
     refreshTimeout = setTimeout(() => {
-        updateWeather(city);
+        if (currentCoords) {
+            updateWeatherByCoords(currentCoords.lat, currentCoords.lon);
+        } else if (currentCity) {
+            updateWeather(currentCity);
+        }
         lastUpdateTime = Date.now();
-    }, 100); // Debounce de 100ms
+    }, 50); // Debounce ultra-rapide de 50ms
+}
+
+// Afficher l'indicateur de mise à jour en temps réel
+function showRealTimeIndicator() {
+    let indicator = document.getElementById('realtime-indicator');
+    
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'realtime-indicator';
+        indicator.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 184, 255, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+            animation: pulse 1s infinite;
+            backdrop-filter: blur(5px);
+        `;
+        document.body.appendChild(indicator);
+    }
+    
+    indicator.textContent = '⚡ Mise à jour temps réel';
+    
+    // Masquer l'indicateur après 2 secondes
+    setTimeout(() => {
+        if (indicator && indicator.parentElement) {
+            indicator.style.opacity = '0';
+            setTimeout(() => {
+                if (indicator && indicator.parentElement) {
+                    indicator.parentElement.removeChild(indicator);
+                }
+            }, 500);
+        }
+    }, 2000);
+}
+
+// Version optimisée de updateWeather (maintenant utilisée par updateWeatherRealTime)
+function updateWeatherOptimized(city) {
+    updateWeatherRealTime();
 }
 
 // Détecter si on est sur mobile
