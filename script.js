@@ -119,14 +119,18 @@ async function fetchWeatherData(lat, lon) {
         const weatherData = await weatherResponse.json();
         const forecastData = await forecastResponse.json();
 
-        // Vérifier les erreurs API
-        if (weatherData.cod !== 200) {
-            showWeatherError(`Erreur API: ${weatherData.message}`);
+        // Vérifier les erreurs API avec gestion améliorée
+        if (!weatherData || weatherData.cod !== 200) {
+            const errorMsg = weatherData?.message || 'Données météo indisponibles';
+            console.error('Erreur API weather:', weatherData);
+            showWeatherError(`Erreur API: ${errorMsg}`);
             return null;
         }
 
-        if (forecastData.cod !== 200) {
-            showWeatherError(`Erreur API: ${forecastData.message}`);
+        if (!forecastData || forecastData.cod !== 200) {
+            const errorMsg = forecastData?.message || 'Prévisions météo indisponibles';
+            console.error('Erreur API forecast:', forecastData);
+            showWeatherError(`Erreur API: ${errorMsg}`);
             return null;
         }
 
