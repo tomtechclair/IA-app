@@ -193,13 +193,37 @@ function getSimulatedWeatherData() {
     };
 }
 
+function showWeatherError(message) {
+    // Créer un message d'erreur stylé
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'weather-error';
+    errorDiv.innerHTML = `
+        <div class="error-icon">⚠️</div>
+        <div class="error-message">${message}</div>
+        <div class="error-close" onclick="this.parentElement.remove()">✕</div>
+    `;
+    
+    // Ajouter au conteneur principal
+    const container = document.querySelector('.weather-hero') || document.querySelector('.hero');
+    if (container) {
+        container.appendChild(errorDiv);
+        
+        // Auto-suppression après 5 secondes
+        setTimeout(() => {
+            if (errorDiv.parentElement) {
+                errorDiv.parentElement.removeChild(errorDiv);
+            }
+        }, 5000);
+    }
+}
+
 async function updateWeatherByCoords(lat, lon) {
     try {
         currentCoords = { lat, lon };
         const weatherData = await fetchWeatherData(lat, lon);
         
         if (!weatherData) {
-            console.error('Impossible de récupérer les données météo');
+            showWeatherError('Impossible de récupérer les données météo. Vérifiez votre connexion internet.');
             return;
         }
         
@@ -211,6 +235,7 @@ async function updateWeatherByCoords(lat, lon) {
         
     } catch (error) {
         console.error('Erreur:', error);
+        showWeatherError('Erreur de connexion. Vérifiez votre accès internet et réessayez.');
     }
 }
 
@@ -230,7 +255,7 @@ async function updateWeather(cityName) {
                 startAutoRefresh();
                 return;
             } else {
-                alert('Ville non trouvée. Essayez un autre nom.');
+                showWeatherError('Ville non trouvée. Vérifiez l\'orthographe ou essayez une autre ville.');
             }
             if (searchBtn) searchBtn.style.opacity = '1';
             return;
@@ -250,7 +275,7 @@ async function updateWeather(cityName) {
                 startAutoRefresh();
                 return;
             } else {
-                alert('Erreur lors de la récupération des données météo.');
+                showWeatherError('Erreur lors de la récupération des données météo. Vérifiez votre connexion internet.');
             }
             if (searchBtn) searchBtn.style.opacity = '1';
             return;
