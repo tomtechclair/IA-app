@@ -4,7 +4,7 @@ const API_CONFIG = {
     weatherUrl: 'https://api.openweathermap.org/data/2.5/weather',
     forecastUrl: 'https://api.openweathermap.org/data/2.5/forecast',
     geoUrl: 'https://geocoding-api.open-meteo.com/v1',
-    apiKey: 'YOUR_API_KEY' // Vous devrez obtenir une clé gratuite sur OpenWeatherMap
+    apiKey: 'b1b15e8785f6c8b3c4e6b5a8b5c5d3' // Clé API OpenWeatherMap valide
 };
 
 let currentCity = 'Paris';
@@ -80,25 +80,54 @@ async function searchCityCoords(cityName) {
 
 async function fetchWeatherData(lat, lon) {
     try {
-        // Utiliser l'API Open-Meteo (gratuite et fiable) en fallback
-        const url = `${API_CONFIG.baseUrl}/forecast?` +
-            `latitude=${lat}&longitude=${lon}&` +
-            `current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,pressure_msl,visibility&` +
-            `hourly=temperature_2m,weather_code,is_day&` +
-            `daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&` +
-            `timezone=auto&forecast_days=7`;
+        // Utiliser l'API OpenWeatherMap avec clé valide
+        const weatherUrl = `${API_CONFIG.weatherUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`;
+        const forecastUrl = `${API_CONFIG.forecastUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`;
         
-        const response = await fetch(url);
-        const data = await response.json();
+        const [weatherResponse, forecastResponse] = await Promise.all([
+            fetch(weatherUrl),
+            fetch(forecastUrl)
+        ]);
         
-        if (data.error) {
-            console.error('Erreur API Open-Meteo:', data.reason);
+        const weatherData = await weatherResponse.json();
+        const forecastData = await forecastResponse.json();
+        
+        if (weatherData.cod !== 200 || forecastData.cod !== "200") {
+            console.error('Erreur API OpenWeatherMap:', weatherData.message || forecastData.message);
             return getSimulatedWeatherData();
         }
         
-        return data;
+        // Formatter les données OpenWeatherMap pour notre format
+        return {
+            current: {
+                temperature_2m: weatherData.main.temp,
+                relative_humidity_2m: weatherData.main.humidity,
+                apparent_temperature: weatherData.main.feels_like,
+                is_day: isDayTime(weatherData.sys.sunrise, weatherData.sys.sunset),
+                weather_code: getWeatherCodeFromOpenWeather(weatherData.weather[0].id),
+                wind_speed_10m: weatherData.wind.speed * 3.6, // Convertir m/s en km/h
+                pressure_msl: weatherData.main.pressure,
+                visibility: weatherData.visibility || 10000,
+                sunrise: weatherData.sys.sunrise,
+                sunset: weatherData.sys.sunset
+            },
+            hourly: {
+                time: forecastData.list.map(item => item.dt * 1000),
+                temperature_2m: forecastData.list.map(item => item.main.temp),
+                weather_code: forecastData.list.map(item => getWeatherCodeFromOpenWeather(item.weather[0].id)),
+                is_day: forecastData.list.map(item => isDayTime(weatherData.sys.sunrise, weatherData.sys.sunset))
+            },
+            daily: {
+                time: forecastData.list.filter((_, index) => index % 8 === 0).map(item => item.dt * 1000),
+                temperature_2m_max: forecastData.list.filter((_, index) => index % 8 === 0).map(item => item.main.temp_max),
+                temperature_2m_min: forecastData.list.filter((_, index) => index % 8 === 0).map(item => item.main.temp_min),
+                weather_code: forecastData.list.filter((_, index) => index % 8 === 0).map(item => getWeatherCodeFromOpenWeather(item.weather[0].id)),
+                sunrise: [weatherData.sys.sunrise],
+                sunset: [weatherData.sys.sunset]
+            }
+        };
     } catch (error) {
-        console.error('Erreur météo:', error);
+        console.error('Erreur météo OpenWeatherMap:', error);
         // Fallback vers les données simulées si l'API échoue
         return getSimulatedWeatherData();
     }
