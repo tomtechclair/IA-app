@@ -114,7 +114,16 @@ async function updateWeather(cityName) {
         if (cityInput) cityInput.value = cityData.name;
         
         document.querySelector('.big-temp').textContent = `${Math.round(current.temperature_2m)}°`;
-        document.querySelector('.condition').textContent = weatherInfo.condition;
+        
+        // Met à jour la condition avec l'icône 3D
+        const conditionEl = document.querySelector('.condition');
+        if (conditionEl) {
+            const heroIconHTML = typeof getWeatherIcon3D === 'function' 
+                ? getWeatherIcon3D(current.weather_code, isDay, 48) 
+                : '';
+            conditionEl.innerHTML = `${heroIconHTML}<span>${weatherInfo.condition}</span>`;
+        }
+        
         document.querySelector('.high-low').innerHTML = 
             `<span>H:${Math.round(weatherData.daily.temperature_2m_max[0])}°</span>` +
             `<span>L:${Math.round(weatherData.daily.temperature_2m_min[0])}°</span>`;
