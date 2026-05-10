@@ -159,9 +159,9 @@ async function updateWeather(cityName) {
                 const code = hourly.weather_code[hourIndex];
                 const hourlyIsDay = hourly.is_day[hourIndex] === 1;
                 
-                const iconHTML = typeof getWeatherIcon === 'function' 
-                    ? getWeatherIcon(code, hourlyIsDay, 28) 
-                    : '';
+                const iconHTML = typeof getWeatherIcon3D === 'function' 
+                    ? getWeatherIcon3D(code, hourlyIsDay, 32) 
+                    : (typeof getWeatherIcon === 'function' ? getWeatherIcon(code, hourlyIsDay, 28) : '');
                 
                 hourlyHTML += `
                     <div class="hourly-item">
