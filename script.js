@@ -196,29 +196,15 @@ function isDayTime(sunrise, sunset) {
     return now >= sunrise * 1000 && now <= sunset * 1000 ? 1 : 0;
 }
 
-function getWeatherCodeFromOpenWeather(openWeatherId) {
-    // Conversion des codes OpenWeather vers nos codes internes
-    const codeMap = {
-        200: 95, 201: 95, 202: 95, 210: 95, 211: 95, 212: 95, 221: 95, 232: 95, // Orage
-        230: 95, 231: 95, // Orage avec bruine légère
-        500: 51, 501: 51, 502: 51, 503: 51, 504: 51, 511: 51, 520: 51, 521: 51, 522: 51, 531: 51, // Bruine
-        600: 61, 601: 61, 602: 61, 611: 61, 612: 61, 613: 61, 614: 61, 615: 61, 616: 61, 620: 61, 621: 61, 622: 61, // Pluie légère
-        701: 63, 711: 63, 721: 63, 731: 63, 741: 63, // Pluie modérée
-        800: 0,   // Dégagé
-        801: 1,   // Quelques nuages
-        802: 2,   // Nuages épars
-        803: 2,   // Nuages épars
-        804: 3,   // Nuages épars
-        741: 2,   // Nuageux
-        600: 45,  // Brouillard
-        741: 45,  // Brouillard
-        620: 45,  // Brouillard
-        721: 45,  // Brouillard
-        751: 75, 752: 75, 771: 75, // Neige
-        761: 71, 762: 71, 771: 71, // Neige légère
-        731: 71, 741: 71, 761: 71, // Neige
-    };
-    return codeMap[openWeatherId] || 0;
+function getWindDirectionText(degrees) {
+    const directions = [
+        'N', 'NNE', 'NE', 'ENE',
+        'E', 'ESE', 'SE', 'SSE',
+        'S', 'SSO', 'SO', 'OSO',
+        'O', 'ONO', 'NO', 'NNO'
+    ];
+    const index = Math.round(degrees / 22.5) % 16;
+    return `Direction ${directions[index]}`;
 }
 
 function getSimulatedWeatherData() {
@@ -405,10 +391,24 @@ async function displayWeatherData(weatherData) {
             // Pas d'animation - icônes statiques mais stylées
         }
         
-        // Humidité
+        // Humidité avec point de rosée
         const humidityElement = document.getElementById('humidity');
         if (humidityElement && current.relative_humidity_2m !== undefined && current.relative_humidity_2m !== null) {
             humidityElement.textContent = `${Math.round(current.relative_humidity_2m)}%`;
+            
+            // Calcul du point de rosée (formule de Magnus)
+            const T = current.temperature_2m;
+            const RH = current.relative_humidity_2m;
+            if (T !== undefined && T !== null) {
+                const a = 17.27;
+                const b = 237.7;
+                const gamma = (a * T) / (b + T) + Math.log(RH / 100);
+                const dewPoint = Math.round((b * gamma) / (a - gamma));
+                const humidityDesc = document.querySelectorAll('.detail-card')[0]?.querySelector('.detail-small');
+                if (humidityDesc) {
+                    humidityDesc.textContent = `Point de rosée : ${dewPoint}°`;
+                }
+            }
         }
         
         // Vent
@@ -423,54 +423,115 @@ async function displayWeatherData(weatherData) {
             feelsLikeElement.textContent = `${Math.round(current.apparent_temperature)}°`;
         }
         
-        // Visibilité
-        const visibilityElements = document.querySelectorAll('.detail-big');
-        if (visibilityElements[2] && current.visibility !== undefined && current.visibility !== null) {
+        // Visibilité (Open-Meteo renvoie en mètres)
+        if (current.visibility !== undefined && current.visibility !== null) {
+            const visEl = document.getElementById('visibility-value') || document.querySelectorAll('.detail-big')[2];
+            const visDescEl = document.getElementById('visibility-desc');
             const visibilityKm = Math.round(current.visibility / 1000);
-            visibilityElements[2].innerHTML = `${visibilityKm} <span class="unit">km</span>`;
+            if (visEl) visEl.innerHTML = `${visibilityKm} <span class="unit">km</span>`;
+            if (visDescEl) {
+                if (visibilityKm >= 20) visDescEl.textContent = 'Excellente';
+                else if (visibilityKm >= 10) visDescEl.textContent = 'Très bonne';
+                else if (visibilityKm >= 5) visDescEl.textContent = 'Bonne';
+                else if (visibilityKm >= 2) visDescEl.textContent = 'Moyenne';
+                else visDescEl.textContent = 'Faible';
+            }
         }
-        
+
         // Indice UV (calculé selon l'heure et les conditions météo)
         const hour = new Date().getHours();
         let uv = 0;
+        let uvLabel = 'Faible';
         if (current.weather_code === 0 && hour >= 10 && hour <= 16) {
             uv = Math.round(Math.random() * 3 + 6); // Soleil direct
+            uvLabel = uv >= 8 ? 'Très élevé' : uv >= 6 ? 'Élevé' : 'Modéré';
         } else if (current.weather_code === 0 && hour >= 7 && hour <= 19) {
             uv = Math.round(Math.random() * 2 + 3); // Soleil indirect
+            uvLabel = 'Modéré';
         } else if (current.weather_code === 1) {
             uv = Math.round(Math.random() * 2 + 1); // Quelques nuages
+            uvLabel = uv >= 3 ? 'Modéré' : 'Faible';
         } else {
             uv = Math.round(Math.random() * 1); // Couvert ou pluie
+            uvLabel = 'Faible';
         }
         
-        if (visibilityElements[4]) {
-            visibilityElements[4].textContent = uv;
+        const uvValueEl = document.querySelectorAll('.detail-big')[4];
+        if (uvValueEl) {
+            uvValueEl.textContent = uv;
+        }
+        const uvDescEl = document.querySelectorAll('.detail-card')[4]?.querySelector('.detail-small');
+        if (uvDescEl) {
+            uvDescEl.textContent = uvLabel;
         }
         
         // Pression atmosphérique
-        if (visibilityElements[5] && current.pressure_msl !== undefined && current.pressure_msl !== null) {
-            visibilityElements[5].innerHTML = `${Math.round(current.pressure_msl)} <span class="unit">hPa</span>`;
+        const pressureValueEl = document.querySelectorAll('.detail-big')[5];
+        if (pressureValueEl && current.pressure_msl !== undefined && current.pressure_msl !== null) {
+            pressureValueEl.innerHTML = `${Math.round(current.pressure_msl)} <span class="unit">hPa</span>`;
         }
+        const pressureDescEl = document.querySelectorAll('.detail-card')[5]?.querySelector('.detail-small');
+        if (pressureDescEl && current.pressure_msl) {
+            const p = current.pressure_msl;
+            if (p >= 1030) pressureDescEl.textContent = 'Haute pression';
+            else if (p >= 1015) pressureDescEl.textContent = 'Stable';
+            else if (p >= 1000) pressureDescEl.textContent = 'Normale';
+            else pressureDescEl.textContent = 'Basse pression';
+        }
+        
+        // Direction du vent
+        const windDirEl = document.getElementById('wind-direction');
+        if (windDirEl && current.wind_direction_10m !== undefined) {
+            windDirEl.textContent = getWindDirectionText(current.wind_direction_10m);
+        }
+        
+        // Température ressentie - description améliorée
+        const feelsDescEl = document.querySelectorAll('.detail-card')[3]?.querySelector('.detail-small');
+        if (feelsDescEl && current.apparent_temperature !== undefined && current.temperature_2m !== undefined) {
+            const diff = current.apparent_temperature - current.temperature_2m;
+            if (Math.abs(diff) <= 1) feelsDescEl.textContent = 'Ressenti similaire';
+            else if (diff > 0) feelsDescEl.textContent = 'Sensation plus chaude';
+            else feelsDescEl.textContent = 'Sensation plus fraîche';
+        }
+        
+        // Titre de page dynamique
+        document.title = `${Math.round(current.temperature_2m)}° - ${currentCity} | Météo`;
         
         // Additional weather data
         if (weatherData.daily && weatherData.daily.sunrise && weatherData.daily.sunset) {
             const sunriseTime = new Date(weatherData.daily.sunrise[0]);
             const sunsetTime = new Date(weatherData.daily.sunset[0]);
             
-            const sunriseStr = sunriseTime.toLocaleTimeString('fr-FR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            const sunsetStr = sunsetTime.toLocaleTimeString('fr-FR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
+            const timeOpts = { hour: '2-digit', minute: '2-digit' };
+            const sunriseStr = sunriseTime.toLocaleTimeString('fr-FR', timeOpts);
+            const sunsetStr = sunsetTime.toLocaleTimeString('fr-FR', timeOpts);
             
             const sunriseElement = document.getElementById('sunrise');
             const sunsetElement = document.getElementById('sunset');
             
             if (sunriseElement) sunriseElement.textContent = sunriseStr;
             if (sunsetElement) sunsetElement.textContent = sunsetStr;
+            
+            // Descriptions dynamiques pour lever/coucher
+            const sunriseCard = document.querySelectorAll('.detail-card')[6];
+            const sunsetCard = document.querySelectorAll('.detail-card')[7];
+            const now = Date.now();
+            if (sunriseCard) {
+                const desc = sunriseCard.querySelector('.detail-small');
+                if (desc) {
+                    const diffMin = Math.round((sunriseTime.getTime() - now) / 60000);
+                    if (diffMin > 0 && diffMin < 120) desc.textContent = `Dans ${diffMin} min`;
+                    else desc.textContent = 'Matin';
+                }
+            }
+            if (sunsetCard) {
+                const desc = sunsetCard.querySelector('.detail-small');
+                if (desc) {
+                    const diffMin = Math.round((sunsetTime.getTime() - now) / 60000);
+                    if (diffMin > 0 && diffMin < 120) desc.textContent = `Dans ${diffMin} min`;
+                    else desc.textContent = 'Soir';
+                }
+            }
         }
         
         // Cloudiness (simulated based on weather code)
