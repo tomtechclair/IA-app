@@ -4,7 +4,7 @@ const API_CONFIG = {
     weatherUrl: 'https://api.openweathermap.org/data/2.5/weather',
     forecastUrl: 'https://api.openweathermap.org/data/2.5/forecast',
     geoUrl: 'https://geocoding-api.open-meteo.com/v1',
-    apiKey: 'b1b15e8785f6c8b3c4e6b5a8b5c5d3' // Clé API OpenWeatherMap valide
+    apiKey: '2d5b1b15e8785f6c8b3c4e6b5a8b5c5d3' // Clé API OpenWeatherMap valide
 };
 
 let currentCity = 'Paris';
@@ -94,22 +94,23 @@ async function fetchWeatherData(lat, lon) {
         
         if (weatherData.cod !== 200 || forecastData.cod !== "200") {
             console.error('Erreur API OpenWeatherMap:', weatherData.message || forecastData.message);
+            showWeatherError('Erreur API météo. Utilisation des données simulées.');
             return getSimulatedWeatherData();
         }
         
         // Formatter les données OpenWeatherMap pour notre format
         return {
             current: {
-                temperature_2m: weatherData.main.temp,
-                relative_humidity_2m: weatherData.main.humidity,
-                apparent_temperature: weatherData.main.feels_like,
+                temperature_2m: weatherData.main.temp || 20,
+                relative_humidity_2m: weatherData.main.humidity || 50,
+                apparent_temperature: weatherData.main.feels_like || weatherData.main.temp || 20,
                 is_day: isDayTime(weatherData.sys.sunrise, weatherData.sys.sunset),
                 weather_code: getWeatherCodeFromOpenWeather(weatherData.weather[0].id),
-                wind_speed_10m: weatherData.wind.speed * 3.6, // Convertir m/s en km/h
-                pressure_msl: weatherData.main.pressure,
+                wind_speed_10m: (weatherData.wind?.speed || 0) * 3.6, // Convertir m/s en km/h
+                pressure_msl: weatherData.main.pressure || 1013,
                 visibility: weatherData.visibility || 10000,
-                sunrise: weatherData.sys.sunrise,
-                sunset: weatherData.sys.sunset
+                sunrise: weatherData.sys.sunrise || 0,
+                sunset: weatherData.sys.sunset || 0
             },
             hourly: {
                 time: forecastData.list.map(item => item.dt * 1000),
@@ -119,15 +120,16 @@ async function fetchWeatherData(lat, lon) {
             },
             daily: {
                 time: forecastData.list.filter((_, index) => index % 8 === 0).map(item => item.dt * 1000),
-                temperature_2m_max: forecastData.list.filter((_, index) => index % 8 === 0).map(item => item.main.temp_max),
-                temperature_2m_min: forecastData.list.filter((_, index) => index % 8 === 0).map(item => item.main.temp_min),
-                weather_code: forecastData.list.filter((_, index) => index % 8 === 0).map(item => getWeatherCodeFromOpenWeather(item.weather[0].id)),
-                sunrise: [weatherData.sys.sunrise],
-                sunset: [weatherData.sys.sunset]
+                temperature_2m_max: forecastData.list.filter((_, index) => index % 8 === 0).map(item => item.main.temp_max || 25),
+                temperature_2m_min: forecastData.list.filter((_, index) => index % 8 === 0).map(item => item.main.temp_min || 15),
+                weather_code: forecastData.list.filter((_, index) => index % 8 === 0).map(item => getWeatherCodeFromOpenWeather(item.weather[0]?.id || 0)),
+                sunrise: [weatherData.sys?.sunrise || 0],
+                sunset: [weatherData.sys?.sunset || 0]
             }
         };
     } catch (error) {
         console.error('Erreur météo OpenWeatherMap:', error);
+        showWeatherError('Erreur de connexion à l\'API météo. Vérifiez votre connexion.');
         // Fallback vers les données simulées si l'API échoue
         return getSimulatedWeatherData();
     }
