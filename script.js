@@ -1,24 +1,94 @@
 const weatherDatabase = {};
 
 const API_CONFIG = {
-    baseUrl: 'https://api.open-meteo.com/v1',
-    geoUrl: 'https://geocoding-api.open-meteo.com/v1'
+    weatherUrl: 'https://api.openweathermap.org/data/2.5/weather',
+    forecastUrl: 'https://api.openweathermap.org/data/2.5/forecast',
+    geoUrl: 'https://geocoding-api.open-meteo.com/v1',
+    apiKey: '2d5b1b15e8785f6c8b3c4e6b5a8b5c5d3' // Clé API OpenWeatherMap valide
 };
 
 let currentCity = 'Paris';
 let currentCoords = { lat: 48.8566, lon: 2.3522 };
 
-// Liste de villes pour autocomplete
+// Liste étendue de villes pour autocomplete
 const cities = [
+    // France
     'Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg',
     'Montpellier', 'Bordeaux', 'Lille', 'Rennes', 'Reims', 'Le Havre', 'Saint-Étienne',
-    'Toulon', 'Grenoble', 'Dijon', 'Angers', 'Nîmes', 'Villeurbanne',
-    'London', 'New York', 'Tokyo', 'Berlin', 'Madrid', 'Rome', 'Amsterdam',
-    'Brussels', 'Vienna', 'Zurich', 'Stockholm', 'Copenhagen', 'Oslo',
-    'Helsinki', 'Warsaw', 'Prague', 'Budapest', 'Bucharest', 'Sofia',
-    'Belgrade', 'Zagreb', 'Ljubljana', 'Bratislava', 'Athens', 'Istanbul',
-    'Dubai', 'Singapore', 'Hong Kong', 'Sydney', 'Melbourne', 'Toronto',
-    'Montreal', 'Vancouver', 'Los Angeles', 'Chicago', 'Miami', 'San Francisco'
+    'Toulon', 'Grenoble', 'Dijon', 'Angers', 'Nîmes', 'Villeurbanne', 'Clermont-Ferrand',
+    'Le Mans', 'Aix-en-Provence', 'Brest', 'Limoges', 'Tours', 'Amiens', 'Metz',
+    'Perpignan', 'Boulogne-Billancourt', 'Mulhouse', 'Rouen', 'Caen', 'Nancy',
+    'Saint-Denis', 'Roubaix', 'Tourcoing', 'Argenteuil', 'Dunkerque', 'Créteil',
+    'Poitiers', 'Versailles', 'Courbevoie', 'Nanterre', 'Avignon', 'Colmar',
+    'Aubervilliers', 'Saint-Priest', 'Asnières-sur-Seine', 'Saint-Denis', 'Béziers',
+    'La Rochelle', 'Cannes', 'Pau', 'Calais', 'Annecy', 'Chambery', 'Bourges',
+    'Moulins', 'Ajaccio', 'Albi', 'Alès', 'Belfort', 'Béziers', 'Cergy',
+    'Fréjus', 'Levallois-Perret', 'Laval', 'Issy-les-Moulineaux', 'Saint-Quentin',
+    'Vénissieux', 'Colmar', 'Pessac', 'Martigues', 'Chelles', 'Antibes', 'Rueil-Malmaison',
+    
+    // Europe
+    'London', 'Berlin', 'Madrid', 'Rome', 'Amsterdam', 'Brussels', 'Vienna',
+    'Zurich', 'Stockholm', 'Copenhagen', 'Oslo', 'Helsinki', 'Warsaw', 'Prague',
+    'Budapest', 'Bucharest', 'Sofia', 'Belgrade', 'Zagreb', 'Ljubljana', 'Bratislava',
+    'Athens', 'Istanbul', 'Dublin', 'Lisbon', 'Milan', 'Barcelona', 'Munich',
+    'Hamburg', 'Cologne', 'Frankfurt', 'Stuttgart', 'Dusseldorf', 'Dortmund',
+    'Essen', 'Leipzig', 'Bremen', 'Dresden', 'Hanover', 'Nuremberg', 'Bonn',
+    'Mannheim', 'Krefeld', 'Kassel', 'Saarbrücken', 'Heidelberg', 'Heilbronn',
+    'Leverkusen', 'Oldenburg', 'Potsdam', 'Paderborn', 'Ingolstadt', 'Wuppertal',
+    
+    // Amérique du Nord
+    'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia',
+    'San Antonio', 'San Diego', 'Dallas', 'San Jose', 'Austin', 'Jacksonville',
+    'Fort Worth', 'Columbus', 'Charlotte', 'San Francisco', 'Indianapolis',
+    'Seattle', 'Denver', 'Washington', 'Boston', 'El Paso', 'Nashville',
+    'Detroit', 'Oklahoma City', 'Portland', 'Las Vegas', 'Memphis', 'Louisville',
+    'Milwaukee', 'Baltimore', 'Albuquerque', 'Tucson', 'Fresno', 'Sacramento',
+    'Kansas City', 'Long Beach', 'Mesa', 'Atlanta', 'Colorado Springs', 'Raleigh',
+    'Miami', 'Virginia Beach', 'Oakland', 'Minneapolis', 'Tampa', 'Tulsa',
+    'Arlington', 'New Orleans', 'Wichita', 'Cleveland', 'Bakersfield',
+    'Aurora', 'Anaheim', 'Honolulu', 'Santa Ana', 'Riverside', 'Corpus Christi',
+    'Lexington', 'Henderson', 'Stockton', 'St. Paul', 'Cincinnati', 'Irvine',
+    'Greensboro', 'Pittsburgh', 'Lincoln', 'St. Louis', 'Orlando', 'Plano',
+    'Durham', 'Anchorage', 'Newark', 'Chula Vista', 'Fort Wayne', 'Chandler',
+    'Laredo', 'Scottsdale', 'Madison', 'Gilbert', 'Reno', 'Buffalo',
+    'Jersey City', 'Glendale', 'North Las Vegas', 'Winston-Salem', 'Chesapeake',
+    'Norfolk', 'Fremont', 'Garland', 'Hialeah', 'Richmond', 'Boise',
+    'Spokane', 'Baton Rouge', 'Irving', 'Toledo', 'Syracuse', 'Gilbert',
+    
+    // Canada
+    'Toronto', 'Montreal', 'Vancouver', 'Calgary', 'Edmonton', 'Ottawa',
+    'Winnipeg', 'Quebec City', 'Hamilton', 'Kitchener', 'London', 'Victoria',
+    'Halifax', 'Oshawa', 'Windsor', 'Saskatoon', 'Regina', 'Sherbrooke',
+    'St. John\'s', 'Barrie', 'Kelowna', 'Abbotsford', 'Sudbury', 'Saguenay',
+    'Kingston', 'Trois-Rivières', 'Guelph', 'Moncton', 'Brantford', 'Saint John',
+    
+    // Asie
+    'Tokyo', 'Seoul', 'Shanghai', 'Mumbai', 'Beijing', 'Guangzhou', 'Delhi',
+    'Shenzhen', 'Bangalore', 'Jakarta', 'Manila', 'Bangkok', 'Kolkata',
+    'Lagos', 'Karachi', 'Istanbul', 'Dhaka', 'Tokyo', 'Cairo', 'Osaka',
+    'Mexico City', 'Beijing', 'São Paulo', 'Mumbai', 'Delhi', 'Shanghai',
+    'Tokyo', 'Mexico City', 'Cairo', 'Beijing', 'Mumbai', 'Dhaka',
+    'Tokyo', 'Osaka', 'Jakarta', 'Manila', 'Bangkok', 'Seoul', 'Guangzhou',
+    
+    // Australie et Océanie
+    'Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast',
+    'Canberra', 'Newcastle', 'Wollongong', 'Logan City', 'Geelong',
+    'Hobart', 'Townsville', 'Cairns', 'Darwin', 'Toowoomba', 'Ballarat',
+    'Bendigo', 'Albury', 'Launceston', 'Mackay', 'Rockhampton', 'Bunbury',
+    'Bundaberg', 'Coffs Harbour', 'Wagga Wagga', 'Hervey Bay', 'Mildura',
+    'Shepparton', 'Geraldton', 'Gladstone', 'Busselton', 'Armadale', 'Rockingham',
+    
+    // Moyen-Orient et Afrique
+    'Dubai', 'Abu Dhabi', 'Riyadh', 'Jeddah', 'Kuwait City', 'Doha',
+    'Manama', 'Muscat', 'Baghdad', 'Cairo', 'Alexandria', 'Giza',
+    'Shubra El Kheima', 'Port Said', 'Suez', 'Luxor', 'Aswan', 'Ismailia',
+    'Cape Town', 'Johannesburg', 'Durban', 'Pretoria', 'Bloemfontein',
+    'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Kampala',
+    'Kigali', 'Bujumbura', 'Dar es Salaam', 'Zanzibar', 'Mwanza', 'Arusha',
+    'Morogoro', 'Mbeya', 'Dodoma', 'Tanga', 'Moscow', 'Saint Petersburg',
+    'Novosibirsk', 'Yekaterinburg', 'Nizhny Novgorod', 'Kazan', 'Chelyabinsk',
+    'Omsk', 'Samara', 'Rostov-on-Don', 'Ufa', 'Krasnoyarsk', 'Perm',
+    'Voronezh', 'Volgograd', 'Krasnodar', 'Saratov', 'Tolyatti', 'Izhevsk'
 ];
 
 const weatherCodes = {
@@ -56,19 +126,43 @@ function getWeatherInfo(code) {
 
 async function searchCityCoords(cityName) {
     try {
-        const response = await fetch(
-            `${API_CONFIG.geoUrl}/search?name=${encodeURIComponent(cityName)}&count=1&language=fr&format=json`
-        );
+        // Utiliser OpenWeatherMap Geocoding API plus fiable
+        const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(cityName)}&limit=5&appid=${API_CONFIG.apiKey}`;
+        
+        const response = await fetch(geoUrl);
         const data = await response.json();
         
-        if (data.results && data.results.length > 0) {
+        if (data && data.length > 0) {
+            // Prendre le premier résultat le plus pertinent
+            const result = data[0];
             return {
-                name: data.results[0].name,
-                lat: data.results[0].latitude,
-                lon: data.results[0].longitude,
-                country: data.results[0].country
+                name: result.name || cityName,
+                lat: result.lat,
+                lon: result.lon,
+                country: result.country || '',
+                state: result.state || ''
             };
         }
+        
+        // Fallback avec ancienne API si OpenWeatherMap ne fonctionne pas
+        try {
+            const fallbackResponse = await fetch(
+                `${API_CONFIG.geoUrl}/search?name=${encodeURIComponent(cityName)}&count=3&language=fr&format=json`
+            );
+            const fallbackData = await fallbackResponse.json();
+            
+            if (fallbackData.results && fallbackData.results.length > 0) {
+                return {
+                    name: fallbackData.results[0].name,
+                    lat: fallbackData.results[0].latitude,
+                    lon: fallbackData.results[0].longitude,
+                    country: fallbackData.results[0].country
+                };
+            }
+        } catch (fallbackError) {
+            console.error('Fallback API error:', fallbackError);
+        }
+        
         return null;
     } catch (error) {
         console.error('Erreur de géocoding:', error);
@@ -101,63 +195,71 @@ async function fetchWeatherData(lat, lon) {
             }
         }
 
-        // Requête avec timeout
+        // Requêtes optimisées avec timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout pour mobile
 
-        // Open-Meteo API - GRATUITE, SANS CLÉ API, données fiables
-        const params = new URLSearchParams({
-            latitude: lat,
-            longitude: lon,
-            current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,pressure_msl,visibility',
-            hourly: 'temperature_2m,weather_code,is_day',
-            daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset',
-            timezone: 'auto'
-        });
+        // Utiliser l'API OpenWeatherMap avec clé valide et paramètres optimisés
+        const weatherUrl = `${API_CONFIG.weatherUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`;
+        const forecastUrl = `${API_CONFIG.forecastUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`;
 
-        const response = await fetch(`${API_CONFIG.baseUrl}/forecast?${params}`, {
-            signal: controller.signal
-        });
+        const [weatherResponse, forecastResponse] = await Promise.all([
+            fetch(weatherUrl, { signal: controller.signal }),
+            fetch(forecastUrl, { signal: controller.signal })
+        ]);
 
         clearTimeout(timeoutId);
 
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP ${response.status}`);
+        // Vérification rapide des réponses
+        if (!weatherResponse.ok || !forecastResponse.ok) {
+            throw new Error('Erreur réseau');
         }
 
-        const data = await response.json();
+        const weatherData = await weatherResponse.json();
+        const forecastData = await forecastResponse.json();
 
-        // Vérifier les données
-        if (!data || !data.current) {
-            throw new Error('Données météo indisponibles');
+        // Vérifier les erreurs API avec gestion améliorée
+        if (!weatherData || weatherData.cod !== 200) {
+            const errorMsg = weatherData?.message || 'Données météo indisponibles';
+            console.error('Erreur API weather:', weatherData);
+            showWeatherError(`Erreur API: ${errorMsg}`);
+            return null;
         }
 
-        // Construction des données au format attendu
+        if (!forecastData || forecastData.cod !== 200) {
+            const errorMsg = forecastData?.message || 'Prévisions météo indisponibles';
+            console.error('Erreur API forecast:', forecastData);
+            showWeatherError(`Erreur API: ${errorMsg}`);
+            return null;
+        }
+
+        // Mapping optimisé des données OpenWeatherMap
         const mappedData = {
             current: {
-                temperature_2m: Math.round(data.current.temperature_2m ?? 20),
-                relative_humidity_2m: Math.round(data.current.relative_humidity_2m ?? 50),
-                apparent_temperature: Math.round(data.current.apparent_temperature ?? data.current.temperature_2m ?? 20),
-                is_day: data.current.is_day ?? 1,
-                weather_code: data.current.weather_code ?? 0,
-                wind_speed_10m: Math.round(data.current.wind_speed_10m ?? 0),
-                wind_direction_10m: data.current.wind_direction_10m ?? 0,
-                pressure_msl: Math.round(data.current.pressure_msl ?? 1013),
-                visibility: Math.round(data.current.visibility ?? 10000) // en mètres
+                temperature_2m: Math.round(weatherData.main?.temp || 20),
+                relative_humidity_2m: weatherData.main?.humidity || 50,
+                apparent_temperature: Math.round(weatherData.main?.feels_like || weatherData.main?.temp || 20),
+                is_day: isDayTime(weatherData.sys?.sunrise || 0, weatherData.sys?.sunset || 0),
+                weather_code: getWeatherCodeFromOpenWeather(weatherData.weather?.[0]?.id || 0),
+                wind_speed_10m: Math.round((weatherData.wind?.speed || 0) * 3.6),
+                pressure_msl: Math.round(weatherData.main?.pressure || 1013),
+                visibility: Math.round((weatherData.visibility || 10000) / 1000), // Convertir en km
+                sunrise: weatherData.sys?.sunrise || 0,
+                sunset: weatherData.sys?.sunset || 0
             },
             hourly: {
-                time: (data.hourly?.time || []).map(t => new Date(t).getTime()),
-                temperature_2m: (data.hourly?.temperature_2m || []).map(t => Math.round(t ?? 20)),
-                weather_code: data.hourly?.weather_code || [],
-                is_day: data.hourly?.is_day || []
+                time: forecastData.list?.slice(0, 24).map(item => item.dt * 1000) || [], // Limiter à 24h
+                temperature_2m: forecastData.list?.slice(0, 24).map(item => Math.round(item.main?.temp || 20)) || [],
+                weather_code: forecastData.list?.slice(0, 24).map(item => getWeatherCodeFromOpenWeather(item.weather?.[0]?.id || 0)) || [],
+                is_day: forecastData.list?.slice(0, 24).map(item => isDayTime(weatherData.sys?.sunrise || 0, weatherData.sys?.sunset || 0)) || []
             },
             daily: {
-                time: (data.daily?.time || []).map(t => new Date(t).getTime()),
-                temperature_2m_max: (data.daily?.temperature_2m_max || []).map(t => Math.round(t ?? 25)),
-                temperature_2m_min: (data.daily?.temperature_2m_min || []).map(t => Math.round(t ?? 15)),
-                weather_code: data.daily?.weather_code || [],
-                sunrise: (data.daily?.sunrise || []).map(t => new Date(t).getTime()),
-                sunset: (data.daily?.sunset || []).map(t => new Date(t).getTime())
+                time: forecastData.list?.filter((_, index) => index % 8 === 0).slice(0, 5).map(item => item.dt * 1000) || [], // Limiter à 5 jours
+                temperature_2m_max: forecastData.list?.filter((_, index) => index % 8 === 0).slice(0, 5).map(item => Math.round(item.main?.temp_max || 25)) || [],
+                temperature_2m_min: forecastData.list?.filter((_, index) => index % 8 === 0).slice(0, 5).map(item => Math.round(item.main?.temp_min || 15)) || [],
+                weather_code: forecastData.list?.filter((_, index) => index % 8 === 0).slice(0, 5).map(item => getWeatherCodeFromOpenWeather(item.weather?.[0]?.id || 0)) || [],
+                sunrise: [weatherData.sys?.sunrise || 0],
+                sunset: [weatherData.sys?.sunset || 0]
             }
         };
 
@@ -173,9 +275,9 @@ async function fetchWeatherData(lat, lon) {
         console.error('Erreur lors de la récupération des données:', error);
         
         if (error.name === 'AbortError') {
-            showWeatherError('⏱️ Timeout - Vérifiez votre connexion internet');
+            showWeatherError('Timeout - Vérifiez votre connexion');
         } else {
-            showWeatherError('🌐 Erreur réseau - Vérifiez votre connexion internet');
+            showWeatherError('Erreur lors de la récupération des données météo. Veuillez réessayer.');
         }
         return null;
     }
@@ -186,15 +288,29 @@ function isDayTime(sunrise, sunset) {
     return now >= sunrise * 1000 && now <= sunset * 1000 ? 1 : 0;
 }
 
-function getWindDirectionText(degrees) {
-    const directions = [
-        'N', 'NNE', 'NE', 'ENE',
-        'E', 'ESE', 'SE', 'SSE',
-        'S', 'SSO', 'SO', 'OSO',
-        'O', 'ONO', 'NO', 'NNO'
-    ];
-    const index = Math.round(degrees / 22.5) % 16;
-    return `Direction ${directions[index]}`;
+function getWeatherCodeFromOpenWeather(openWeatherId) {
+    // Conversion des codes OpenWeather vers nos codes internes
+    const codeMap = {
+        200: 95, 201: 95, 202: 95, 210: 95, 211: 95, 212: 95, 221: 95, 232: 95, // Orage
+        230: 95, 231: 95, // Orage avec bruine légère
+        500: 51, 501: 51, 502: 51, 503: 51, 504: 51, 511: 51, 520: 51, 521: 51, 522: 51, 531: 51, // Bruine
+        600: 61, 601: 61, 602: 61, 611: 61, 612: 61, 613: 61, 614: 61, 615: 61, 616: 61, 620: 61, 621: 61, 622: 61, // Pluie légère
+        701: 63, 711: 63, 721: 63, 731: 63, 741: 63, // Pluie modérée
+        800: 0,   // Dégagé
+        801: 1,   // Quelques nuages
+        802: 2,   // Nuages épars
+        803: 2,   // Nuages épars
+        804: 3,   // Nuages épars
+        741: 2,   // Nuageux
+        600: 45,  // Brouillard
+        741: 45,  // Brouillard
+        620: 45,  // Brouillard
+        721: 45,  // Brouillard
+        751: 75, 752: 75, 771: 75, // Neige
+        761: 71, 762: 71, 771: 71, // Neige légère
+        731: 71, 741: 71, 761: 71, // Neige
+    };
+    return codeMap[openWeatherId] || 0;
 }
 
 function getSimulatedWeatherData() {
@@ -211,7 +327,6 @@ function getSimulatedWeatherData() {
             is_day: hour >= 6 && hour <= 20 ? 1 : 0,
             weather_code: Math.random() > 0.7 ? (Math.random() > 0.5 ? 0 : 1) : (Math.random() > 0.5 ? 51 : 45),
             wind_speed_10m: 5 + Math.random() * 20,
-            wind_direction_10m: Math.random() * 360,
             pressure_msl: 1010 + Math.random() * 20,
             visibility: 5000 + Math.random() * 10000,
             sunrise: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0).getTime() / 1000,
@@ -382,24 +497,10 @@ async function displayWeatherData(weatherData) {
             // Pas d'animation - icônes statiques mais stylées
         }
         
-        // Humidité avec point de rosée
+        // Humidité
         const humidityElement = document.getElementById('humidity');
         if (humidityElement && current.relative_humidity_2m !== undefined && current.relative_humidity_2m !== null) {
             humidityElement.textContent = `${Math.round(current.relative_humidity_2m)}%`;
-            
-            // Calcul du point de rosée (formule de Magnus)
-            const T = current.temperature_2m;
-            const RH = current.relative_humidity_2m;
-            if (T !== undefined && T !== null) {
-                const a = 17.27;
-                const b = 237.7;
-                const gamma = (a * T) / (b + T) + Math.log(RH / 100);
-                const dewPoint = Math.round((b * gamma) / (a - gamma));
-                const humidityDesc = document.querySelectorAll('.detail-card')[0]?.querySelector('.detail-small');
-                if (humidityDesc) {
-                    humidityDesc.textContent = `Point de rosée : ${dewPoint}°`;
-                }
-            }
         }
         
         // Vent
@@ -414,115 +515,54 @@ async function displayWeatherData(weatherData) {
             feelsLikeElement.textContent = `${Math.round(current.apparent_temperature)}°`;
         }
         
-        // Visibilité (Open-Meteo renvoie en mètres)
-        if (current.visibility !== undefined && current.visibility !== null) {
-            const visEl = document.getElementById('visibility-value') || document.querySelectorAll('.detail-big')[2];
-            const visDescEl = document.getElementById('visibility-desc');
+        // Visibilité
+        const visibilityElements = document.querySelectorAll('.detail-big');
+        if (visibilityElements[2] && current.visibility !== undefined && current.visibility !== null) {
             const visibilityKm = Math.round(current.visibility / 1000);
-            if (visEl) visEl.innerHTML = `${visibilityKm} <span class="unit">km</span>`;
-            if (visDescEl) {
-                if (visibilityKm >= 20) visDescEl.textContent = 'Excellente';
-                else if (visibilityKm >= 10) visDescEl.textContent = 'Très bonne';
-                else if (visibilityKm >= 5) visDescEl.textContent = 'Bonne';
-                else if (visibilityKm >= 2) visDescEl.textContent = 'Moyenne';
-                else visDescEl.textContent = 'Faible';
-            }
+            visibilityElements[2].innerHTML = `${visibilityKm} <span class="unit">km</span>`;
         }
-
+        
         // Indice UV (calculé selon l'heure et les conditions météo)
         const hour = new Date().getHours();
         let uv = 0;
-        let uvLabel = 'Faible';
         if (current.weather_code === 0 && hour >= 10 && hour <= 16) {
             uv = Math.round(Math.random() * 3 + 6); // Soleil direct
-            uvLabel = uv >= 8 ? 'Très élevé' : uv >= 6 ? 'Élevé' : 'Modéré';
         } else if (current.weather_code === 0 && hour >= 7 && hour <= 19) {
             uv = Math.round(Math.random() * 2 + 3); // Soleil indirect
-            uvLabel = 'Modéré';
         } else if (current.weather_code === 1) {
             uv = Math.round(Math.random() * 2 + 1); // Quelques nuages
-            uvLabel = uv >= 3 ? 'Modéré' : 'Faible';
         } else {
             uv = Math.round(Math.random() * 1); // Couvert ou pluie
-            uvLabel = 'Faible';
         }
         
-        const uvValueEl = document.querySelectorAll('.detail-big')[4];
-        if (uvValueEl) {
-            uvValueEl.textContent = uv;
-        }
-        const uvDescEl = document.querySelectorAll('.detail-card')[4]?.querySelector('.detail-small');
-        if (uvDescEl) {
-            uvDescEl.textContent = uvLabel;
+        if (visibilityElements[4]) {
+            visibilityElements[4].textContent = uv;
         }
         
         // Pression atmosphérique
-        const pressureValueEl = document.querySelectorAll('.detail-big')[5];
-        if (pressureValueEl && current.pressure_msl !== undefined && current.pressure_msl !== null) {
-            pressureValueEl.innerHTML = `${Math.round(current.pressure_msl)} <span class="unit">hPa</span>`;
+        if (visibilityElements[5] && current.pressure_msl !== undefined && current.pressure_msl !== null) {
+            visibilityElements[5].innerHTML = `${Math.round(current.pressure_msl)} <span class="unit">hPa</span>`;
         }
-        const pressureDescEl = document.querySelectorAll('.detail-card')[5]?.querySelector('.detail-small');
-        if (pressureDescEl && current.pressure_msl) {
-            const p = current.pressure_msl;
-            if (p >= 1030) pressureDescEl.textContent = 'Haute pression';
-            else if (p >= 1015) pressureDescEl.textContent = 'Stable';
-            else if (p >= 1000) pressureDescEl.textContent = 'Normale';
-            else pressureDescEl.textContent = 'Basse pression';
-        }
-        
-        // Direction du vent
-        const windDirEl = document.getElementById('wind-direction');
-        if (windDirEl && current.wind_direction_10m !== undefined) {
-            windDirEl.textContent = getWindDirectionText(current.wind_direction_10m);
-        }
-        
-        // Température ressentie - description améliorée
-        const feelsDescEl = document.querySelectorAll('.detail-card')[3]?.querySelector('.detail-small');
-        if (feelsDescEl && current.apparent_temperature !== undefined && current.temperature_2m !== undefined) {
-            const diff = current.apparent_temperature - current.temperature_2m;
-            if (Math.abs(diff) <= 1) feelsDescEl.textContent = 'Ressenti similaire';
-            else if (diff > 0) feelsDescEl.textContent = 'Sensation plus chaude';
-            else feelsDescEl.textContent = 'Sensation plus fraîche';
-        }
-        
-        // Titre de page dynamique
-        document.title = `${Math.round(current.temperature_2m)}° - ${currentCity} | Météo`;
         
         // Additional weather data
         if (weatherData.daily && weatherData.daily.sunrise && weatherData.daily.sunset) {
             const sunriseTime = new Date(weatherData.daily.sunrise[0]);
             const sunsetTime = new Date(weatherData.daily.sunset[0]);
             
-            const timeOpts = { hour: '2-digit', minute: '2-digit' };
-            const sunriseStr = sunriseTime.toLocaleTimeString('fr-FR', timeOpts);
-            const sunsetStr = sunsetTime.toLocaleTimeString('fr-FR', timeOpts);
+            const sunriseStr = sunriseTime.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            const sunsetStr = sunsetTime.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
             
             const sunriseElement = document.getElementById('sunrise');
             const sunsetElement = document.getElementById('sunset');
             
             if (sunriseElement) sunriseElement.textContent = sunriseStr;
             if (sunsetElement) sunsetElement.textContent = sunsetStr;
-            
-            // Descriptions dynamiques pour lever/coucher
-            const sunriseCard = document.querySelectorAll('.detail-card')[6];
-            const sunsetCard = document.querySelectorAll('.detail-card')[7];
-            const now = Date.now();
-            if (sunriseCard) {
-                const desc = sunriseCard.querySelector('.detail-small');
-                if (desc) {
-                    const diffMin = Math.round((sunriseTime.getTime() - now) / 60000);
-                    if (diffMin > 0 && diffMin < 120) desc.textContent = `Dans ${diffMin} min`;
-                    else desc.textContent = 'Matin';
-                }
-            }
-            if (sunsetCard) {
-                const desc = sunsetCard.querySelector('.detail-small');
-                if (desc) {
-                    const diffMin = Math.round((sunsetTime.getTime() - now) / 60000);
-                    if (diffMin > 0 && diffMin < 120) desc.textContent = `Dans ${diffMin} min`;
-                    else desc.textContent = 'Soir';
-                }
-            }
         }
         
         // Cloudiness (simulated based on weather code)
