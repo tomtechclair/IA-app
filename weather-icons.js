@@ -1,16 +1,25 @@
-// Fonction pour créer des icônes météo 3D ultra-réalistes
+// Fonction pour créer des icônes météo 4D super stylées avec animations spatiales
 function createWeatherIconSVG(code, isDay = true, size = 32) {
     const sunSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
         <defs>
-            <radialGradient id="sunGradient3D">
-                <stop offset="0%" style="stop-color:#FFF8DC;stop-opacity:1" />
+            <radialGradient id="sunGradient4D">
+                <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                <stop offset="30%" style="stop-color:#FFF8DC;stop-opacity:1" />
                 <stop offset="70%" style="stop-color:#FFD700;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
             </radialGradient>
-            <filter id="sunShadow3D">
-                <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
-                <feOffset dx="2" dy="2" result="offsetblur"/>
-                <feFlood flood-color="#000000" flood-opacity="0.3"/>
+            <filter id="sunGlow4D">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+                <feSpecularLighting result="specOut" in="blur" specularConstant="2" specularExponent="20" lighting-color="white">
+                    <fePointLight x="50" y="50" z="200"/>
+                </feSpecularLighting>
+                <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut2"/>
+                <feComposite in="SourceGraphic" in2="specOut2" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+            </filter>
+            <filter id="sunShadow4D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+                <feOffset dx="3" dy="3" result="offsetblur"/>
+                <feFlood flood-color="#FF8C00" flood-opacity="0.4"/>
                 <feComposite in2="offsetblur" operator="in"/>
                 <feMerge>
                     <feMergeNode/>
@@ -18,22 +27,67 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
                 </feMerge>
             </filter>
         </defs>
-        <g class="icon-sun-3d" filter="url(#sunShadow3D)">
-            <!-- Sphère principale -->
-            <circle cx="50" cy="50" r="20" fill="url(#sunGradient3D)"/>
-            <!-- Effet de brillance -->
-            <ellipse cx="45" cy="45" rx="12" ry="8" fill="rgba(255,255,255,0.4)" transform="rotate(-30 45 45)"/>
-            <!-- Rayons solaires 3D -->
-            <g opacity="0.9">
-                <ellipse cx="50" cy="20" rx="3" ry="2" fill="#FFA500"/>
-                <ellipse cx="75" cy="50" rx="2" ry="3" fill="#FFA500"/>
-                <ellipse cx="50" cy="80" rx="3" ry="2" fill="#FFA500"/>
-                <ellipse cx="25" cy="50" rx="2" ry="3" fill="#FFA500"/>
-                <ellipse cx="35" cy="35" rx="2" ry="1.5" fill="#FFD700" opacity="0.7"/>
-                <ellipse cx="65" cy="35" rx="2" ry="1.5" fill="#FFD700" opacity="0.7"/>
-                <ellipse cx="35" cy="65" rx="2" ry="1.5" fill="#FFD700" opacity="0.7"/>
-                <ellipse cx="65" cy="65" rx="2" ry="1.5" fill="#FFD700" opacity="0.7"/>
+        <g class="icon-sun-4d" filter="url(#sunShadow4D)">
+            <!-- Sphère principale 4D avec effet de profondeur -->
+            <circle cx="50" cy="50" r="22" fill="url(#sunGradient4D)" filter="url(#sunGlow4D)">
+                <animateTransform
+                    attributeName="transform"
+                    type="rotate"
+                    from="0 50 50"
+                    to="360 50 50"
+                    dur="20s"
+                    repeatCount="indefinite"/>
+            </circle>
+            <!-- Effet de brillance 4D -->
+            <ellipse cx="42" cy="42" rx="15" ry="10" fill="rgba(255,255,255,0.6)" transform="rotate(-25 42 42)">
+                <animate attributeName="opacity" values="0.6;0.8;0.6" dur="3s" repeatCount="indefinite"/>
+            </ellipse>
+            <!-- Rayons solaires 4D animés -->
+            <g opacity="0.95">
+                <ellipse cx="50" cy="18" rx="4" ry="2.5" fill="#FFD700">
+                    <animate attributeName="rx" values="4;6;4" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.9;1;0.9" dur="1.5s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="82" cy="50" rx="2.5" ry="4" fill="#FFD700">
+                    <animate attributeName="ry" values="4;6;4" dur="2.5s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="50" cy="82" rx="4" ry="2.5" fill="#FFD700">
+                    <animate attributeName="rx" values="4;6;4" dur="1.8s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="18" cy="50" rx="2.5" ry="4" fill="#FFD700">
+                    <animate attributeName="ry" values="4;6;4" dur="2.2s" repeatCount="indefinite"/>
+                </ellipse>
+                <!-- Rayons diagonaux 4D -->
+                <ellipse cx="30" cy="30" rx="2" ry="1.5" fill="#FFA500" opacity="0.8">
+                    <animate attributeName="opacity" values="0.8;1;0.8" dur="1.7s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="70" cy="30" rx="2" ry="1.5" fill="#FFA500" opacity="0.8">
+                    <animate attributeName="opacity" values="0.8;1;0.8" dur="2.1s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="30" cy="70" rx="2" ry="1.5" fill="#FFA500" opacity="0.8">
+                    <animate attributeName="opacity" values="0.8;1;0.8" dur="1.9s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="70" cy="70" rx="2" ry="1.5" fill="#FFA500" opacity="0.8">
+                    <animate attributeName="opacity" values="0.8;1;0.8" dur="2.3s" repeatCount="indefinite"/>
+                </ellipse>
             </g>
+            <!-- Particules solaires 4D -->
+            <circle cx="35" cy="25" r="1" fill="#FFF8DC" opacity="0.8">
+                <animate attributeName="opacity" values="0;0.8;0" dur="3s" repeatCount="indefinite"/>
+                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="65" cy="25" r="1" fill="#FFF8DC" opacity="0.8">
+                <animate attributeName="opacity" values="0;0.8;0" dur="3.5s" repeatCount="indefinite"/>
+                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="10s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="35" cy="75" r="1" fill="#FFF8DC" opacity="0.8">
+                <animate attributeName="opacity" values="0;0.8;0" dur="4s" repeatCount="indefinite"/>
+                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="12s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="65" cy="75" r="1" fill="#FFF8DC" opacity="0.8">
+                <animate attributeName="opacity" values="0;0.8;0" dur="3.2s" repeatCount="indefinite"/>
+                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="9s" repeatCount="indefinite"/>
+            </circle>
         </g>
     </svg>`;
     
@@ -69,15 +123,34 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
     
     const cloudSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
         <defs>
-            <linearGradient id="cloudGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
+            <linearGradient id="cloudGradient4D" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
-                <stop offset="50%" style="stop-color:#F8F8F8;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#E8E8E8;stop-opacity:1" />
+                <stop offset="30%" style="stop-color:#F8F8FF;stop-opacity:1" />
+                <stop offset="70%" style="stop-color:#E8E8F0;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#D0D0E0;stop-opacity:1" />
             </linearGradient>
-            <filter id="cloudShadow3D">
-                <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-                <feOffset dx="2" dy="3" result="offsetblur"/>
-                <feFlood flood-color="#000000" flood-opacity="0.2"/>
+            <filter id="cloudGlow4D">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
+                <feSpecularLighting result="specOut" in="blur" specularConstant="1.5" specularExponent="15" lighting-color="white">
+                    <fePointLight x="50" y="40" z="100"/>
+                </feSpecularLighting>
+                <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut2"/>
+                <feComposite in="SourceGraphic" in2="specOut2" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+            </filter>
+            <filter id="cloudShadow4D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                <feOffset dx="2" dy="4" result="offsetblur"/>
+                <feFlood flood-color="#A0A0B0" flood-opacity="0.3"/>
+                <feComposite in2="offsetblur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+            <filter id="cloudDepth4D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+                <feOffset dx="1" dy="2" result="offsetblur"/>
+                <feFlood flood-color="#C0C0D0" flood-opacity="0.2"/>
                 <feComposite in2="offsetblur" operator="in"/>
                 <feMerge>
                     <feMergeNode/>
@@ -85,16 +158,56 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
                 </feMerge>
             </filter>
         </defs>
-        <g class="icon-cloud-3d" filter="url(#cloudShadow3D)">
-            <!-- Nuage principal 3D -->
-            <ellipse cx="40" cy="55" rx="25" ry="18" fill="url(#cloudGradient3D)"/>
-            <ellipse cx="65" cy="50" rx="20" ry="15" fill="url(#cloudGradient3D)"/>
-            <!-- Ombres et profondeur -->
-            <ellipse cx="35" cy="65" rx="18" ry="8" fill="#D0D0D0" opacity="0.3"/>
-            <ellipse cx="60" cy="60" rx="15" ry="6" fill="#D0D0D0" opacity="0.2"/>
-            <!-- Effet de brillance -->
-            <ellipse cx="38" cy="48" rx="12" ry="6" fill="rgba(255,255,255,0.3)"/>
-            <ellipse cx="62" cy="43" rx="8" ry="4" fill="rgba(255,255,255,0.25)"/>
+        <g class="icon-cloud-4d" filter="url(#cloudShadow4D)">
+            <!-- Nuage principal 4D avec effet de profondeur -->
+            <ellipse cx="40" cy="55" rx="28" ry="20" fill="url(#cloudGradient4D)" filter="url(#cloudGlow4D)">
+                <animate attributeName="rx" values="28;30;28" dur="4s" repeatCount="indefinite"/>
+                <animate attributeName="ry" values="20;22;20" dur="3.5s" repeatCount="indefinite"/>
+            </ellipse>
+            <!-- Deuxième couche de nuage 4D -->
+            <ellipse cx="65" cy="48" rx="22" ry="16" fill="url(#cloudGradient4D)" filter="url(#cloudDepth4D)">
+                <animate attributeName="rx" values="22;24;22" dur="3.8s" repeatCount="indefinite"/>
+                <animate attributeName="ry" values="16;18;16" dur="4.2s" repeatCount="indefinite"/>
+            </ellipse>
+            <!-- Troisième couche arrière 4D -->
+            <ellipse cx="25" cy="60" rx="20" ry="14" fill="url(#cloudGradient4D)" opacity="0.7" filter="url(#cloudDepth4D)">
+                <animate attributeName="opacity" values="0.7;0.8;0.7" dur="5s" repeatCount="indefinite"/>
+                <animate attributeName="rx" values="20;22;20" dur="4.5s" repeatCount="indefinite"/>
+            </ellipse>
+            <!-- Ombres et profondeur 4D -->
+            <ellipse cx="35" cy="68" rx="20" ry="10" fill="#B0B0C0" opacity="0.4">
+                <animate attributeName="opacity" values="0.4;0.5;0.4" dur="3s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="60" cy="63" rx="18" ry="8" fill="#A0A0B0" opacity="0.3">
+                <animate attributeName="opacity" values="0.3;0.4;0.3" dur="3.5s" repeatCount="indefinite"/>
+            </ellipse>
+            <!-- Effet de brillance 4D -->
+            <ellipse cx="38" cy="46" rx="15" ry="8" fill="rgba(255,255,255,0.4)" filter="url(#cloudGlow4D)">
+                <animate attributeName="opacity" values="0.4;0.6;0.4" dur="2.5s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="62" cy="40" rx="10" ry="5" fill="rgba(255,255,255,0.35)" filter="url(#cloudGlow4D)">
+                <animate attributeName="opacity" values="0.35;0.5;0.35" dur="3s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="28" cy="52" rx="8" ry="4" fill="rgba(255,255,255,0.3)" filter="url(#cloudGlow4D)">
+                <animate attributeName="opacity" values="0.3;0.45;0.3" dur="2.8s" repeatCount="indefinite"/>
+            </ellipse>
+            <!-- Particules de vapeur 4D -->
+            <circle cx="45" cy="55" r="1.5" fill="rgba(255,255,255,0.6)">
+                <animate attributeName="opacity" values="0;0.6;0" dur="2s" repeatCount="indefinite"/>
+                <animateTransform attributeName="transform" type="translate" values="0,0; 3,-2; 0,0" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="55" cy="50" r="1" fill="rgba(255,255,255,0.5)">
+                <animate attributeName="opacity" values="0;0.5;0" dur="2.5s" repeatCount="indefinite"/>
+                <animateTransform attributeName="transform" type="translate" values="0,0; -2,-3; 0,0" dur="2.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="35" cy="58" r="1.2" fill="rgba(255,255,255,0.55)">
+                <animate attributeName="opacity" values="0;0.55;0" dur="3s" repeatCount="indefinite"/>
+                <animateTransform attributeName="transform" type="translate" values="0,0; 4,-1; 0,0" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="70" cy="45" r="0.8" fill="rgba(255,255,255,0.4)">
+                <animate attributeName="opacity" values="0;0.4;0" dur="2.2s" repeatCount="indefinite"/>
+                <animateTransform attributeName="transform" type="translate" values="0,0; -3,2; 0,0" dur="2.2s" repeatCount="indefinite"/>
+            </circle>
         </g>
     </svg>`;
     
@@ -148,18 +261,28 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
     
     const rainSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
         <defs>
-            <linearGradient id="rainCloudGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#A0A0A0;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#708080;stop-opacity:1" />
+            <linearGradient id="rainCloudGradient4D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#808090;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#607080;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#405060;stop-opacity:1" />
             </linearGradient>
-            <linearGradient id="rainDropGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#4FC3F7;stop-opacity:1" />
+            <linearGradient id="rainDropGradient4D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#4FC3F7;stop-opacity:1" />
                 <stop offset="100%" style="stop-color:#2196F3;stop-opacity:1" />
             </linearGradient>
-            <filter id="rainShadow3D">
-                <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-                <feOffset dx="1" dy="2" result="offsetblur"/>
-                <feFlood flood-color="#000000" flood-opacity="0.3"/>
+            <filter id="rainGlow4D">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur"/>
+                <feSpecularLighting result="specOut" in="blur" specularConstant="1" specularExponent="10" lighting-color="#87CEEB">
+                    <fePointLight x="50" y="30" z="50"/>
+                </feSpecularLighting>
+                <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut2"/>
+                <feComposite in="SourceGraphic" in2="specOut2" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+            </filter>
+            <filter id="rainShadow4D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                <feOffset dx="2" dy="3" result="offsetblur"/>
+                <feFlood flood-color="#305070" flood-opacity="0.4"/>
                 <feComposite in2="offsetblur" operator="in"/>
                 <feMerge>
                     <feMergeNode/>
@@ -167,66 +290,72 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
                 </feMerge>
             </filter>
         </defs>
-        <g class="icon-rain-3d" filter="url(#rainShadow3D)">
-            <!-- Nuage d'orage 3D -->
-            <ellipse cx="40" cy="45" rx="28" ry="20" fill="url(#rainCloudGradient3D)"/>
-            <ellipse cx="65" cy="40" rx="22" ry="16" fill="url(#rainCloudGradient3D)"/>
-            <!-- Ombres profondes -->
-            <ellipse cx="35" cy="55" rx="20" ry="10" fill="#606060" opacity="0.4"/>
-            <ellipse cx="60" cy="50" rx="16" ry="8" fill="#606060" opacity="0.3"/>
-            <!-- Gouttes de pluie 3D -->
-            <g opacity="0.9">
-                <ellipse cx="35" cy="70" rx="2" ry="4" fill="url(#rainDropGradient3D)" transform="rotate(15 35 70)"/>
-                <ellipse cx="45" cy="75" rx="1.5" ry="6" fill="url(#rainDropGradient3D)" transform="rotate(-10 45 75)"/>
-                <ellipse cx="55" cy="72" rx="1.8" ry="5" fill="url(#rainDropGradient3D)" transform="rotate(5 55 72)"/>
-                <ellipse cx="65" cy="78" rx="1.5" ry="7" fill="url(#rainDropGradient3D)" transform="rotate(-20 65 78)"/>
-                <ellipse cx="40" cy="80" rx="1.2" ry="5" fill="url(#rainDropGradient3D)" transform="rotate(25 40 80)"/>
-                <ellipse cx="60" cy="85" rx="1" ry="6" fill="url(#rainDropGradient3D)" transform="rotate(-15 60 85)"/>
+        <g class="icon-rain-4d" filter="url(#rainShadow4D)">
+            <!-- Nuage d'orage 4D avec effet de profondeur -->
+            <ellipse cx="40" cy="42" rx="30" ry="22" fill="url(#rainCloudGradient4D)" filter="url(#rainGlow4D)">
+                <animate attributeName="rx" values="30;32;30" dur="3s" repeatCount="indefinite"/>
+                <animate attributeName="ry" values="22;24;22" dur="2.8s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="65" cy="38" rx="24" ry="18" fill="url(#rainCloudGradient4D)" opacity="0.9">
+                <animate attributeName="rx" values="24;26;24" dur="3.5s" repeatCount="indefinite"/>
+                <animate attributeName="ry" values="18;20;18" dur="3.2s" repeatCount="indefinite"/>
+            </ellipse>
+            <!-- Ombres profondes 4D -->
+            <ellipse cx="35" cy="58" rx="22" ry="12" fill="#405060" opacity="0.5">
+                <animate attributeName="opacity" values="0.5;0.6;0.5" dur="2.5s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="60" cy="53" rx="18" ry="10" fill="#304050" opacity="0.4">
+                <animate attributeName="opacity" values="0.4;0.5;0.4" dur="3s" repeatCount="indefinite"/>
+            </ellipse>
+            <!-- Gouttes de pluie 4D animées -->
+            <g opacity="0.95">
+                <ellipse cx="30" cy="75" rx="2.5" ry="6" fill="url(#rainDropGradient4D)" filter="url(#rainGlow4D)" transform="rotate(20 30 75)">
+                    <animate attributeName="cy" values="75;85;75" dur="1s" repeatCount="indefinite"/>
+                    <animate attributeName="ry" values="6;8;6" dur="1s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.8;1;0.8" dur="1s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="45" cy="78" rx="2" ry="7" fill="url(#rainDropGradient4D)" filter="url(#rainGlow4D)" transform="rotate(-15 45 78)">
+                    <animate attributeName="cy" values="78;88;78" dur="1.2s" repeatCount="indefinite"/>
+                    <animate attributeName="ry" values="7;9;7" dur="1.2s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="60" cy="76" rx="2.2" ry="6.5" fill="url(#rainDropGradient4D)" filter="url(#rainGlow4D)" transform="rotate(10 60 76)">
+                    <animate attributeName="cy" values="76;86;76" dur="1.1s" repeatCount="indefinite"/>
+                    <animate attributeName="ry" values="6.5;8.5;6.5" dur="1.1s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="75" cy="82" rx="2" ry="8" fill="url(#rainDropGradient4D)" filter="url(#rainGlow4D)" transform="rotate(-25 75 82)">
+                    <animate attributeName="cy" values="82;92;82" dur="1.3s" repeatCount="indefinite"/>
+                    <animate attributeName="ry" values="8;10;8" dur="1.3s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="35" cy="85" rx="1.8" ry="7" fill="url(#rainDropGradient4D)" filter="url(#rainGlow4D)" transform="rotate(15 35 85)">
+                    <animate attributeName="cy" values="85;95;85" dur="1.4s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="55" cy="83" rx="1.5" ry="6" fill="url(#rainDropGradient4D)" filter="url(#rainGlow4D)" transform="rotate(-20 55 83)">
+                    <animate attributeName="cy" values="83;93;83" dur="1.5s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="70" cy="87" rx="1.2" ry="5" fill="url(#rainDropGradient4D)" filter="url(#rainGlow4D)" transform="rotate(25 70 87)">
+                    <animate attributeName="cy" values="87;97;87" dur="1.6s" repeatCount="indefinite"/>
+                </ellipse>
             </g>
-            <!-- Éclaboussures -->
-            <ellipse cx="38" cy="48" rx="15" ry="8" fill="rgba(255,255,255,0.2)"/>
-            <ellipse cx="62" cy="43" rx="10" ry="5" fill="rgba(255,255,255,0.15)"/>
-        </g>
-    </svg>`;
-    
-    const drizzleSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
-        <defs>
-            <linearGradient id="drizzleCloudGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#D8D8D8;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#B8B8B8;stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="drizzleDropGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#4A90E2;stop-opacity:1" />
-            </linearGradient>
-            <filter id="drizzleShadow3D">
-                <feGaussianBlur in="SourceAlpha" stdDeviation="1.5"/>
-                <feOffset dx="1" dy="1.5" result="offsetblur"/>
-                <feFlood flood-color="#000000" flood-opacity="0.2"/>
-                <feComposite in2="offsetblur" operator="in"/>
-                <feMerge>
-                    <feMergeNode/>
-                    <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-            </filter>
-        </defs>
-        <g class="icon-drizzle" filter="url(#drizzleShadow3D)">
-            <!-- Nuage léger 3D -->
-            <ellipse cx="40" cy="45" rx="24" ry="17" fill="url(#drizzleCloudGradient3D)"/>
-            <ellipse cx="62" cy="42" rx="18" ry="13" fill="url(#drizzleCloudGradient3D)"/>
-            <!-- Ombres douces -->
-            <ellipse cx="35" cy="53" rx="16" ry="7" fill="#A0A0A0" opacity="0.25"/>
-            <ellipse cx="58" cy="50" rx="12" ry="5" fill="#A0A0A0" opacity="0.2"/>
-            <!-- Petites gouttes de bruine -->
-            <g opacity="0.85">
-                <ellipse cx="32" cy="68" rx="1.2" ry="3" fill="url(#drizzleDropGradient3D)" transform="rotate(10 32 68)"/>
-                <ellipse cx="43" cy="72" rx="1" ry="2.8" fill="url(#drizzleDropGradient3D)" transform="rotate(-8 43 72)"/>
-                <ellipse cx="54" cy="70" rx="1.1" ry="3.2" fill="url(#drizzleDropGradient3D)" transform="rotate(5 54 70)"/>
-                <ellipse cx="65" cy="75" rx="1" ry="2.8" fill="url(#drizzleDropGradient3D)" transform="rotate(-12 65 75)"/>
-            </g>
-            <!-- Effet de brillance léger -->
-            <ellipse cx="40" cy="48" rx="10" ry="5" fill="rgba(255,255,255,0.2)"/>
-            <ellipse cx="60" cy="43" rx="7" ry="3.5" fill="rgba(255,255,255,0.15)"/>
+            <!-- Éclaboussures 4D -->
+            <ellipse cx="32" cy="90" rx="3" ry="1.5" fill="rgba(135,206,235,0.4)" filter="url(#rainGlow4D)">
+                <animate attributeName="rx" values="3;5;3" dur="0.8s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.4;0.6;0.4" dur="0.8s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="50" cy="92" rx="2.5" ry="1.2" fill="rgba(79,195,247,0.35)" filter="url(#rainGlow4D)">
+                <animate attributeName="rx" values="2.5;4;2.5" dur="1s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.35;0.55;0.35" dur="1s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="68" cy="88" rx="2" ry="1" fill="rgba(33,150,243,0.3)" filter="url(#rainGlow4D)">
+                <animate attributeName="rx" values="2;3.5;2" dur="0.9s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.3;0.5;0.3" dur="0.9s" repeatCount="indefinite"/>
+            </ellipse>
+            <!-- Brillance du nuage 4D -->
+            <ellipse cx="38" cy="40" rx="12" ry="6" fill="rgba(255,255,255,0.15)" filter="url(#rainGlow4D)">
+                <animate attributeName="opacity" values="0.15;0.25;0.15" dur="2s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="62" cy="35" rx="8" ry="4" fill="rgba(255,255,255,0.12)" filter="url(#rainGlow4D)">
+                <animate attributeName="opacity" values="0.12;0.22;0.12" dur="2.3s" repeatCount="indefinite"/>
+            </ellipse>
         </g>
     </svg>`;
     
@@ -366,6 +495,41 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
             <ellipse cx="60" cy="55" rx="20" ry="5" fill="#A0A0A0" opacity="0.25"/>
         </g>
     </svg>`;
+    
+    const drizzleSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
+        <g class="icon-drizzle">
+            <path d="M30 65 Q20 65 20 55 Q20 45 30 45 Q30 35 45 35 Q55 35 60 42 Q70 42 70 52 Q70 62 60 65 Q50 65 40 65 Q35 65 30 65 Z" 
+                  fill="#F5F5F5" opacity="0.9"/>
+            <g opacity="0.8">
+                <line x1="35" y1="70" x2="33" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
+                <line x1="45" y1="70" x2="43" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
+                <line x1="55" y1="70" x2="53" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
+                <line x1="65" y1="70" x2="63" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
+            </g>
+            <line class="drop-1" x1="30" y1="55" x2="30" y2="65" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
+            <line class="drop-2" x1="45" y1="55" x2="45" y2="68" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
+            <line class="drop-3" x1="55" y1="55" x2="55" y2="62" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
+            <line class="drop-1" x1="35" y1="58" x2="35" y2="63" stroke="#4FC3F7" stroke-width="2" stroke-linecap="round"/>
+            <defs>
+                <linearGradient id="cloudGrad4" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#C0C0C0"/>
+                    <stop offset="100%" style="stop-color:#A0A0A0"/>
+                </linearGradient>
+            </defs>
+        </g>
+    </svg>`;
+            <line class="drop-1" x1="30" y1="55" x2="30" y2="62" stroke="#81D4FA" stroke-width="2" stroke-linecap="round"/>
+            <line class="drop-2" x1="40" y1="55" x2="40" y2="63" stroke="#81D4FA" stroke-width="2" stroke-linecap="round"/>
+            <line class="drop-3" x1="50" y1="55" x2="50" y2="61" stroke="#81D4FA" stroke-width="2" stroke-linecap="round"/>
+            <line class="drop-1" x1="35" y1="58" x2="35" y2="63" stroke="#81D4FA" stroke-width="2" stroke-linecap="round"/>
+            <defs>
+                <linearGradient id="cloudGrad8" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#C0C0C0"/>
+                    <stop offset="100%" style="stop-color:#A0A0A0"/>
+                </linearGradient>
+            </defs>
+        </g>
+    </svg>`;
 
     // Sélectionner l'icône selon le code WMO
     if (!isDay && (code === 0 || code === 1)) {
@@ -379,16 +543,16 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
         case 3: return cloudSVG;
         case 45: return fogSVG;
         case 48: return fogSVG;
-        case 51: return drizzleSVG;
-        case 53: return drizzleSVG;
-        case 55: return drizzleSVG;
-        case 56: return drizzleSVG;
-        case 57: return drizzleSVG;
-        case 61: return rainSVG;
-        case 63: return rainSVG;
-        case 65: return rainSVG;
-        case 66: return rainSVG;
-        case 67: return rainSVG;
+        case 51: return rainSVG;
+        case 53: return rainSVG;
+        case 55: return rainSVG;
+        case 56: return rainSVG;
+        case 57: return rainSVG;
+        case 61: return snowSVG;
+        case 63: return snowSVG;
+        case 65: return snowSVG;
+        case 66: return snowSVG;
+        case 67: return snowSVG;
         case 71: return snowSVG;
         case 73: return snowSVG;
         case 75: return snowSVG;
@@ -412,40 +576,4 @@ function createWeatherIcon(code, isDay = true, size = 32) {
 
 function createSmallWeatherIcon(code, isDay = true) {
     return createWeatherIcon(code, isDay, 28);
-}
-
-// Fonction pour obtenir la description des conditions météo
-function getWeatherIconDescription(code) {
-    const descriptions = {
-        0: 'Ciel dégagé',
-        1: 'Partiellement nuageux',
-        2: 'Nuageux',
-        3: 'Très nuageux',
-        45: 'Brouillard',
-        48: 'Brouillard givrant',
-        51: 'Bruine légère',
-        53: 'Bruine modérée',
-        55: 'Bruine dense',
-        56: 'Bruine légère verglaçante',
-        57: 'Bruine dense verglaçante',
-        61: 'Pluie légère',
-        63: 'Pluie modérée',
-        65: 'Pluie dense',
-        66: 'Pluie légère verglaçante',
-        67: 'Pluie dense verglaçante',
-        71: 'Neige légère',
-        73: 'Neige modérée',
-        75: 'Neige dense',
-        77: 'Grains de neige',
-        80: 'Averses de pluie légères',
-        81: 'Averses de pluie modérées',
-        82: 'Averses de pluie violentes',
-        85: 'Averses de neige légères',
-        86: 'Averses de neige denses',
-        95: 'Orage léger',
-        96: 'Orage avec grêle légère',
-        99: 'Orage avec grêle dense'
-    };
-    
-    return descriptions[code] || 'Condition inconnue';
 }
