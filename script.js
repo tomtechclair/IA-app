@@ -279,8 +279,24 @@ async function updateWeatherByCoords(lat, lon) {
             return;
         }
         
-        // Trouver le nom de la ville le plus proche (simplifié)
-        currentCity = 'Votre position';
+        // Trouver le nom de la ville le plus proche avec géocoding inverse
+        try {
+            const geoResponse = await fetch(
+                `https://geocoding-api.open-meteo.com/v1/search?latitude=${lat}&longitude=${lon}&count=1&language=fr&format=json`
+            );
+            const geoData = await geoResponse.json();
+            if (geoData.results && geoData.results.length > 0) {
+                currentCity = geoData.results[0].name;
+                if (geoData.results[0].admin1) {
+                    currentCity += ', ' + geoData.results[0].admin1;
+                }
+            } else {
+                currentCity = 'Ma position';
+            }
+        } catch (e) {
+            console.error('Erreur de géocoding inverse:', e);
+            currentCity = 'Ma position';
+        }
         document.getElementById('city-input').value = currentCity;
         
         await displayWeatherData(weatherData);
