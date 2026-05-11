@@ -297,6 +297,11 @@ async function updateWeatherByCoords(lat, lon) {
             console.error('Erreur de géocoding inverse:', e);
             currentCity = 'Ma position';
         }
+        // Mettre à jour l'affichage du nom de la ville immédiatement
+        const cityElementDisplay = document.querySelector('.city');
+        if (cityElementDisplay) {
+            cityElementDisplay.textContent = currentCity;
+        }
         document.getElementById('city-input').value = currentCity;
         
         await displayWeatherData(weatherData);
