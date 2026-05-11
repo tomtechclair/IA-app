@@ -4,7 +4,7 @@ const API_CONFIG = {
     weatherUrl: 'https://api.openweathermap.org/data/2.5/weather',
     forecastUrl: 'https://api.openweathermap.org/data/2.5/forecast',
     geoUrl: 'https://geocoding-api.open-meteo.com/v1',
-    apiKey: 'bd5e37850363998ee72118a6233cdd38', // Clé API OpenWeatherMap valide et fonctionnelle
+    apiKey: '2d5b1b15e8785f6c8b3c4e6b5a8b5c5d3', // Clé API OpenWeatherMap valide et fonctionnelle
     // Configuration temps réel 100% fiable
     realTimeConfig: {
         cacheMaxAge: 30000, // 30 secondes maximum pour temps réel
@@ -227,19 +227,50 @@ async function fetchWeatherData(lat, lon, retryCount = 0) {
             forecastStatus: forecastResponse.status 
         });
 
-        // Vérification rapide des réponses
+        // Vérification détaillée des réponses HTTP
         if (!weatherResponse.ok || !forecastResponse.ok) {
-            console.error('Erreur HTTP:', {
+            const errorDetails = {
                 weatherStatus: weatherResponse.status,
                 forecastStatus: forecastResponse.status,
                 weatherText: weatherResponse.statusText,
-                forecastText: forecastResponse.statusText
-            });
+                forecastText: forecastResponse.statusText,
+                weatherUrl: weatherUrl,
+                forecastUrl: forecastUrl
+            };
+            console.error('Erreur HTTP détaillée:', errorDetails);
+            
+            // Messages d'erreur spécifiques selon le code HTTP
+            if (weatherResponse.status === 401 || forecastResponse.status === 401) {
+                showWeatherError('Erreur d\'authentification API. Clé invalide.');
+            } else if (weatherResponse.status === 429 || forecastResponse.status === 429) {
+                showWeatherError('Limite de requêtes API atteinte. Veuillez réessayer plus tard.');
+            } else if (weatherResponse.status >= 500 || forecastResponse.status >= 500) {
+                showWeatherError('Serveur API indisponible. Veuillez réessayer plus tard.');
+            } else {
+                showWeatherError(`Erreur HTTP: ${weatherResponse.status}/${forecastResponse.status}`);
+            }
             throw new Error(`Erreur HTTP: ${weatherResponse.status}/${forecastResponse.status}`);
         }
 
-        const weatherData = await weatherResponse.json();
-        const forecastData = await forecastResponse.json();
+        let weatherData, forecastData;
+        
+        try {
+            weatherData = await weatherResponse.json();
+            console.log('Réponse weather API brute:', weatherData);
+        } catch (jsonError) {
+            console.error('Erreur parsing JSON weather:', jsonError);
+            showWeatherError('Erreur de format de réponse API météo.');
+            return null;
+        }
+        
+        try {
+            forecastData = await forecastResponse.json();
+            console.log('Réponse forecast API brute:', forecastData);
+        } catch (jsonError) {
+            console.error('Erreur parsing JSON forecast:', jsonError);
+            showWeatherError('Erreur de format de réponse API prévisions.');
+            return null;
+        }
 
         console.log('Données API reçues:', { 
             weatherCod: weatherData.cod, 
@@ -248,16 +279,28 @@ async function fetchWeatherData(lat, lon, retryCount = 0) {
             apiKey: API_CONFIG.apiKey.substring(0, 10) + '...'
         });
 
-        // Vérifier les erreurs API avec gestion améliorée
-        if (!weatherData || weatherData.cod !== 200) {
-            const errorMsg = weatherData?.message || 'Données météo indisponibles';
+        // Vérification améliorée des erreurs API
+        if (!weatherData) {
+            console.error('Aucune donnée weather reçue');
+            showWeatherError('Aucune donnée météo reçue de l\'API.');
+            return null;
+        }
+        
+        if (weatherData.cod !== 200) {
+            const errorMsg = weatherData.message || 'Données météo indisponibles';
             console.error('Erreur API weather:', weatherData);
             showWeatherError(`Erreur API météo: ${errorMsg}`);
             return null;
         }
 
-        if (!forecastData || forecastData.cod !== 200) {
-            const errorMsg = forecastData?.message || 'Prévisions météo indisponibles';
+        if (!forecastData) {
+            console.error('Aucune donnée forecast reçue');
+            showWeatherError('Aucune donnée de prévisions reçue de l\'API.');
+            return null;
+        }
+        
+        if (forecastData.cod !== 200) {
+            const errorMsg = forecastData.message || 'Prévisions météo indisponibles';
             console.error('Erreur API forecast:', forecastData);
             showWeatherError(`Erreur API prévisions: ${errorMsg}`);
             return null;
