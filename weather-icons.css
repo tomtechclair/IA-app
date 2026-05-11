@@ -1,117 +1,128 @@
-/* Apple Weather Icons - Style officiel */
+/* Styles pour les icônes météo améliorées */
 
 .weather-icon {
-    width: 48px;
-    height: 48px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .weather-icon svg {
     width: 100%;
     height: 100%;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    transition: transform 0.3s ease;
 }
 
-/* Sun */
-.icon-sun svg {
-    animation: rotate 20s linear infinite;
+.weather-icon:hover svg {
+    transform: scale(1.05);
 }
 
-@keyframes rotate {
+/* Animations des icônes */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes spin-slow {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
 
-/* Rain drops animation */
-.icon-rain .drop-1,
-.icon-rain .drop-2,
-.icon-rain .drop-3 {
-    animation: rain-fall 1.2s ease-in infinite;
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
-.icon-rain .drop-2 {
-    animation-delay: 0.4s;
-}
-
-.icon-rain .drop-3 {
-    animation-delay: 0.8s;
-}
-
-@keyframes rain-fall {
-    0% { transform: translateY(0); opacity: 1; }
-    100% { transform: translateY(6px); opacity: 0; }
-}
-
-/* Snow flakes animation */
-.icon-snow .flake-1,
-.icon-snow .flake-2,
-.icon-snow .flake-3 {
-    animation: snow-fall 2s ease-in-out infinite;
-}
-
-.icon-snow .flake-2 {
-    animation-delay: 0.7s;
-}
-
-.icon-snow .flake-3 {
-    animation-delay: 1.4s;
-}
-
-@keyframes snow-fall {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(4px) rotate(180deg); }
-}
-
-/* Cloud float animation */
-.icon-cloud .cloud-shape,
-.icon-cloud-sun .cloud-shape,
-.icon-rain .cloud-shape,
-.icon-thunder .cloud-shape,
-.icon-snow .cloud-shape {
+/* Icônes du soleil */
+.icon-sun-3d {
     animation: float 3s ease-in-out infinite;
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-2px); }
+/* Icônes de la lune */
+.icon-moon-3d {
+    animation: float 4s ease-in-out infinite;
 }
 
-/* Lightning flash */
-.icon-thunder .bolt {
-    animation: flash 2s ease-in-out infinite;
+/* Icônes des nuages */
+.icon-cloud-3d,
+.icon-cloud-sun-3d,
+.icon-cloud-moon {
+    animation: float 3.5s ease-in-out infinite;
 }
 
-@keyframes flash {
-    0%, 90%, 100% { opacity: 0; }
-    95% { opacity: 1; }
+/* Icônes de pluie */
+.icon-rain-3d,
+.icon-drizzle {
+    animation: float 2.5s ease-in-out infinite;
 }
 
-/* Hourly and daily icon sizing */
-.hourly-item .weather-icon,
-.daily-item .weather-icon {
-    width: 40px;
-    height: 40px;
+/* Animation des gouttes de pluie */
+.icon-rain-3d ellipse[fill*="rainDropGradient"],
+.icon-drizzle line[stroke="#4FC3F7"] {
+    animation: pulse 1.2s ease-in-out infinite;
 }
 
-/* Hero icon sizing */
-.weather-hero .condition.has-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
+/* Icônes de neige */
+.icon-snow-3d {
+    animation: float 4s ease-in-out infinite;
 }
 
-.weather-hero .condition .weather-icon {
-    width: 40px;
-    height: 40px;
+/* Animation des flocons de neige */
+.icon-snow-3d g[opacity="0.95"] {
+    animation: spin-slow 6s linear infinite;
 }
 
-/* Responsive sizing */
-@media (max-width: 375px) {
-    .hourly-item .weather-icon,
-    .daily-item .weather-icon {
-        width: 24px;
-        height: 24px;
+/* Icônes d'orage */
+.icon-thunder-3d {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Animation de l'éclair */
+.icon-thunder-3d path[fill*="thunderBoltGradient"] {
+    animation: pulse 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));
+}
+
+/* Icônes de brouillard */
+.icon-fog-3d {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Animation du brouillard */
+.icon-fog-3d ellipse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Responsivité des icônes */
+@media (max-width: 768px) {
+    .weather-icon svg {
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+    }
+    
+    .weather-icon:hover svg {
+        transform: scale(1.03);
+    }
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    .weather-icon svg {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+}
+
+/* Optimisations de performance */
+.weather-icon svg {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Support des animations réduites */
+@media (prefers-reduced-motion: reduce) {
+    .weather-icon svg {
+        animation: none !important;
     }
 }
