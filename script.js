@@ -132,49 +132,317 @@ function getWeatherInfo(code) {
     return weatherCodes[code] || { condition: 'Inconnu', bg: 'bg-blue' };
 }
 
+// Base de données IA des villes avec coordonnées
+const CITY_DATABASE = {
+    // France
+    'paris': { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' },
+    'lyon': { name: 'Lyon', lat: 45.7640, lon: 4.8357, country: 'FR' },
+    'marseille': { name: 'Marseille', lat: 43.2965, lon: 5.3698, country: 'FR' },
+    'toulouse': { name: 'Toulouse', lat: 43.6047, lon: 1.4442, country: 'FR' },
+    'nice': { name: 'Nice', lat: 43.7102, lon: 7.2620, country: 'FR' },
+    'nantes': { name: 'Nantes', lat: 47.2184, lon: -1.5536, country: 'FR' },
+    'strasbourg': { name: 'Strasbourg', lat: 48.5846, lon: 7.7507, country: 'FR' },
+    'montpellier': { name: 'Montpellier', lat: 43.6108, lon: 3.8767, country: 'FR' },
+    'bordeaux': { name: 'Bordeaux', lat: 44.8378, lon: -0.5792, country: 'FR' },
+    'lille': { name: 'Lille', lat: 50.6292, lon: 3.0573, country: 'FR' },
+    'rennes': { name: 'Rennes', lat: 48.1173, lon: -1.6778, country: 'FR' },
+    'reims': { name: 'Reims', lat: 49.2583, lon: 4.0317, country: 'FR' },
+    'le havre': { name: 'Le Havre', lat: 49.4944, lon: 0.1079, country: 'FR' },
+    'saint-étienne': { name: 'Saint-Étienne', lat: 45.4397, lon: 4.3878, country: 'FR' },
+    'toulon': { name: 'Toulon', lat: 43.1242, lon: 5.9280, country: 'FR' },
+    'grenoble': { name: 'Grenoble', lat: 45.1885, lon: 5.7245, country: 'FR' },
+    'dijon': { name: 'Dijon', lat: 47.3220, lon: 5.0415, country: 'FR' },
+    'angers': { name: 'Angers', lat: 47.4784, lon: -0.5632, country: 'FR' },
+    'nîmes': { name: 'Nîmes', lat: 43.8367, lon: 4.3601, country: 'FR' },
+    'villeurbanne': { name: 'Villeurbanne', lat: 45.7719, lon: 4.8902, country: 'FR' },
+    'clermont-ferrand': { name: 'Clermont-Ferrand', lat: 45.7772, lon: 3.0870, country: 'FR' },
+    'le mans': { name: 'Le Mans', lat: 48.0079, lon: 0.1973, country: 'FR' },
+    'aix-en-provence': { name: 'Aix-en-Provence', lat: 43.5297, lon: 5.4474, country: 'FR' },
+    'brest': { name: 'Brest', lat: 48.3904, lon: -4.4861, country: 'FR' },
+    'limoges': { name: 'Limoges', lat: 45.8336, lon: 1.2611, country: 'FR' },
+    'tours': { name: 'Tours', lat: 47.3941, lon: 0.6848, country: 'FR' },
+    'amiens': { name: 'Amiens', lat: 49.8941, lon: 2.2957, country: 'FR' },
+    'metz': { name: 'Metz', lat: 49.1193, lon: 6.1757, country: 'FR' },
+    'perpignan': { name: 'Perpignan', lat: 42.6881, lon: 2.8947, country: 'FR' },
+    'boulogne-billancourt': { name: 'Boulogne-Billancourt', lat: 48.8334, lon: 2.2404, country: 'FR' },
+    'mulhouse': { name: 'Mulhouse', lat: 47.7494, lon: 7.3396, country: 'FR' },
+    'rouen': { name: 'Rouen', lat: 49.4431, lon: 1.0993, country: 'FR' },
+    'caen': { name: 'Caen', lat: 49.1829, lon: -0.3707, country: 'FR' },
+    'nancy': { name: 'Nancy', lat: 48.6921, lon: 6.1844, country: 'FR' },
+    
+    // International
+    'london': { name: 'London', lat: 51.5074, lon: -0.1278, country: 'GB' },
+    'berlin': { name: 'Berlin', lat: 52.5200, lon: 13.4050, country: 'DE' },
+    'madrid': { name: 'Madrid', lat: 40.4168, lon: -3.7038, country: 'ES' },
+    'rome': { name: 'Rome', lat: 41.9028, lon: 12.4964, country: 'IT' },
+    'amsterdam': { name: 'Amsterdam', lat: 52.3676, lon: 4.9041, country: 'NL' },
+    'brussels': { name: 'Brussels', lat: 50.8503, lon: 4.3517, country: 'BE' },
+    'zurich': { name: 'Zurich', lat: 47.3769, lon: 8.5417, country: 'CH' },
+    'vienna': { name: 'Vienna', lat: 48.2082, lon: 16.3738, country: 'AT' },
+    'stockholm': { name: 'Stockholm', lat: 59.3293, lon: 18.0686, country: 'SE' },
+    'oslo': { name: 'Oslo', lat: 59.9139, lon: 10.7522, country: 'NO' },
+    'copenhagen': { name: 'Copenhagen', lat: 55.6761, lon: 12.5683, country: 'DK' },
+    'helsinki': { name: 'Helsinki', lat: 60.1699, lon: 24.9384, country: 'FI' },
+    'warsaw': { name: 'Warsaw', lat: 52.2297, lon: 21.0122, country: 'PL' },
+    'prague': { name: 'Prague', lat: 50.0755, lon: 14.4378, country: 'CZ' },
+    'budapest': { name: 'Budapest', lat: 47.4979, lon: 19.0402, country: 'HU' },
+    'bucharest': { name: 'Bucharest', lat: 44.4268, lon: 26.1025, country: 'RO' },
+    'sofia': { name: 'Sofia', lat: 42.6977, lon: 23.3219, country: 'BG' },
+    'athens': { name: 'Athens', lat: 37.9838, lon: 23.7275, country: 'GR' },
+    'lisbon': { name: 'Lisbon', lat: 38.7223, lon: -9.1393, country: 'PT' },
+    'dublin': { name: 'Dublin', lat: 53.3498, lon: -6.2603, country: 'IE' },
+    'edinburgh': { name: 'Edinburgh', lat: 55.9533, lon: -3.1883, country: 'GB' },
+    'manchester': { name: 'Manchester', lat: 53.4808, lon: -2.2426, country: 'GB' },
+    'birmingham': { name: 'Birmingham', lat: 52.4862, lon: -1.8904, country: 'GB' },
+    'glasgow': { name: 'Glasgow', lat: 55.8642, lon: -4.2518, country: 'GB' },
+    'barcelona': { name: 'Barcelona', lat: 41.3851, lon: 2.1734, country: 'ES' },
+    'valencia': { name: 'Valencia', lat: 39.4699, lon: -0.3763, country: 'ES' },
+    'seville': { name: 'Seville', lat: 37.3891, lon: -5.9845, country: 'ES' },
+    'malaga': { name: 'Malaga', lat: 36.7202, lon: -4.4203, country: 'ES' },
+    'milan': { name: 'Milan', lat: 45.4642, lon: 9.1900, country: 'IT' },
+    'naples': { name: 'Naples', lat: 40.8518, lon: 14.2681, country: 'IT' },
+    'turin': { name: 'Turin', lat: 45.0703, lon: 7.6869, country: 'IT' },
+    'genoa': { name: 'Genoa', lat: 44.4056, lon: 8.9463, country: 'IT' },
+    'munich': { name: 'Munich', lat: 48.1351, lon: 11.5820, country: 'DE' },
+    'hamburg': { name: 'Hamburg', lat: 53.5511, lon: 9.9937, country: 'DE' },
+    'cologne': { name: 'Cologne', lat: 50.9375, lon: 6.9603, country: 'DE' },
+    'frankfurt': { name: 'Frankfurt', lat: 50.1109, lon: 8.6821, country: 'DE' },
+    'dusseldorf': { name: 'Düsseldorf', lat: 51.2277, lon: 6.7735, country: 'DE' },
+    'dortmund': { name: 'Dortmund', lat: 51.5136, lon: 7.4653, country: 'DE' },
+    'stuttgart': { name: 'Stuttgart', lat: 48.7758, lon: 9.1829, country: 'DE' },
+    'new york': { name: 'New York', lat: 40.7128, lon: -74.0060, country: 'US' },
+    'los angeles': { name: 'Los Angeles', lat: 34.0522, lon: -118.2437, country: 'US' },
+    'chicago': { name: 'Chicago', lat: 41.8781, lon: -87.6298, country: 'US' },
+    'houston': { name: 'Houston', lat: 29.7604, lon: -95.3698, country: 'US' },
+    'philadelphia': { name: 'Philadelphia', lat: 39.9526, lon: -75.1652, country: 'US' },
+    'phoenix': { name: 'Phoenix', lat: 33.4484, lon: -112.0740, country: 'US' },
+    'san antonio': { name: 'San Antonio', lat: 29.4241, lon: -98.4936, country: 'US' },
+    'san diego': { name: 'San Diego', lat: 32.7157, lon: -117.1611, country: 'US' },
+    'dallas': { name: 'Dallas', lat: 32.7767, lon: -96.7970, country: 'US' },
+    'san jose': { name: 'San Jose', lat: 37.3382, lon: -121.8863, country: 'US' },
+    'austin': { name: 'Austin', lat: 30.2672, lon: -97.7431, country: 'US' },
+    'jacksonville': { name: 'Jacksonville', lat: 30.3322, lon: -81.6557, country: 'US' },
+    'fort worth': { name: 'Fort Worth', lat: 32.7555, lon: -97.3308, country: 'US' },
+    'columbus': { name: 'Columbus', lat: 39.9612, lon: -82.9988, country: 'US' },
+    'charlotte': { name: 'Charlotte', lat: 35.2271, lon: -80.8431, country: 'US' },
+    'san francisco': { name: 'San Francisco', lat: 37.7749, lon: -122.4194, country: 'US' },
+    'indianapolis': { name: 'Indianapolis', lat: 39.7684, lon: -86.1581, country: 'US' },
+    'seattle': { name: 'Seattle', lat: 47.6062, lon: -122.3321, country: 'US' },
+    'denver': { name: 'Denver', lat: 39.7392, lon: -104.9903, country: 'US' },
+    'washington': { name: 'Washington', lat: 38.9072, lon: -77.0369, country: 'US' },
+    'boston': { name: 'Boston', lat: 42.3601, lon: -71.0589, country: 'US' },
+    'el paso': { name: 'El Paso', lat: 31.7619, lon: -106.4850, country: 'US' },
+    'detroit': { name: 'Detroit', lat: 42.3314, lon: -83.0458, country: 'US' },
+    'nashville': { name: 'Nashville', lat: 36.1745, lon: -86.7699, country: 'US' },
+    'portland': { name: 'Portland', lat: 45.5152, lon: -122.6784, country: 'US' },
+    'memphis': { name: 'Memphis', lat: 35.1495, lon: -90.0490, country: 'US' },
+    'oklahoma city': { name: 'Oklahoma City', lat: 35.4676, lon: -97.5164, country: 'US' },
+    'las vegas': { name: 'Las Vegas', lat: 36.1699, lon: -115.1398, country: 'US' },
+    'toronto': { name: 'Toronto', lat: 43.6532, lon: -79.3832, country: 'CA' },
+    'montreal': { name: 'Montreal', lat: 45.5017, lon: -73.5673, country: 'CA' },
+    'vancouver': { name: 'Vancouver', lat: 49.2827, lon: -123.1207, country: 'CA' },
+    'calgary': { name: 'Calgary', lat: 51.0447, lon: -114.0719, country: 'CA' },
+    'edmonton': { name: 'Edmonton', lat: 53.5461, lon: -113.4938, country: 'CA' },
+    'ottawa': { name: 'Ottawa', lat: 45.4215, lon: -75.6972, country: 'CA' },
+    'winnipeg': { name: 'Winnipeg', lat: 49.8951, lon: -97.1384, country: 'CA' },
+    'quebec city': { name: 'Quebec City', lat: 46.8139, lon: -71.2080, country: 'CA' },
+    'hamilton': { name: 'Hamilton', lat: 43.2557, lon: -79.8711, country: 'CA' },
+    'sydney': { name: 'Sydney', lat: -33.8688, lon: 151.2093, country: 'AU' },
+    'melbourne': { name: 'Melbourne', lat: -37.8136, lon: 144.9631, country: 'AU' },
+    'brisbane': { name: 'Brisbane', lat: -27.4698, lon: 153.0251, country: 'AU' },
+    'perth': { name: 'Perth', lat: -31.9505, lon: 115.8605, country: 'AU' },
+    'adelaide': { name: 'Adelaide', lat: -34.9285, lon: 138.6007, country: 'AU' },
+    'gold coast': { name: 'Gold Coast', lat: -28.0167, lon: 153.4000, country: 'AU' },
+    'canberra': { name: 'Canberra', lat: -35.2809, lon: 149.1300, country: 'AU' },
+    'newcastle': { name: 'Newcastle', lat: -32.9267, lon: 151.7789, country: 'AU' },
+    'wollongong': { name: 'Wollongong', lat: -34.4278, lon: 150.8931, country: 'AU' },
+    'auckland': { name: 'Auckland', lat: -36.8485, lon: 174.7633, country: 'NZ' },
+    'wellington': { name: 'Wellington', lat: -41.2865, lon: 174.7762, country: 'NZ' },
+    'christchurch': { name: 'Christchurch', lat: -43.5321, lon: 172.6362, country: 'NZ' },
+    'tokyo': { name: 'Tokyo', lat: 35.6762, lon: 139.6503, country: 'JP' },
+    'osaka': { name: 'Osaka', lat: 34.6937, lon: 135.5023, country: 'JP' },
+    'kyoto': { name: 'Kyoto', lat: 35.0116, lon: 135.7681, country: 'JP' },
+    'yokohama': { name: 'Yokohama', lat: 35.4437, lon: 139.6380, country: 'JP' },
+    'nagoya': { name: 'Nagoya', lat: 35.1815, lon: 136.9066, country: 'JP' },
+    'sapporo': { name: 'Sapporo', lat: 43.0642, lon: 141.3469, country: 'JP' },
+    'kobe': { name: 'Kobe', lat: 34.6901, lon: 135.1955, country: 'JP' },
+    'fukuoka': { name: 'Fukuoka', lat: 33.5904, lon: 130.4017, country: 'JP' },
+    'seoul': { name: 'Seoul', lat: 37.5665, lon: 126.9780, country: 'KR' },
+    'busan': { name: 'Busan', lat: 35.1796, lon: 129.0756, country: 'KR' },
+    'incheon': { name: 'Incheon', lat: 37.4563, lon: 126.7052, country: 'KR' },
+    'daegu': { name: 'Daegu', lat: 35.8722, lon: 128.6014, country: 'KR' },
+    'daejeon': { name: 'Daejeon', lat: 36.3504, lon: 127.3845, country: 'KR' },
+    'beijing': { name: 'Beijing', lat: 39.9042, lon: 116.4074, country: 'CN' },
+    'shanghai': { name: 'Shanghai', lat: 31.2304, lon: 121.4737, country: 'CN' },
+    'guangzhou': { name: 'Guangzhou', lat: 23.1291, lon: 113.2644, country: 'CN' },
+    'shenzhen': { name: 'Shenzhen', lat: 22.5431, lon: 114.0579, country: 'CN' },
+    'chongqing': { name: 'Chongqing', lat: 29.5630, lon: 106.5516, country: 'CN' },
+    'tianjin': { name: 'Tianjin', lat: 39.3434, lon: 117.3616, country: 'CN' },
+    'wuhan': { name: 'Wuhan', lat: 30.5928, lon: 114.3055, country: 'CN' },
+    'chengdu': { name: 'Chengdu', lat: 30.5728, lon: 104.0668, country: 'CN' },
+    'xian': { name: 'Xi\'an', lat: 34.3416, lon: 108.9398, country: 'CN' },
+    'hong kong': { name: 'Hong Kong', lat: 22.3193, lon: 114.1694, country: 'HK' },
+    'singapore': { name: 'Singapore', lat: 1.3521, lon: 103.8198, country: 'SG' },
+    'kuala lumpur': { name: 'Kuala Lumpur', lat: 3.1390, lon: 101.6869, country: 'MY' },
+    'jakarta': { name: 'Jakarta', lat: -6.2088, lon: 106.8456, country: 'ID' },
+    'manila': { name: 'Manila', lat: 14.5995, lon: 120.9842, country: 'PH' },
+    'bangkok': { name: 'Bangkok', lat: 13.7563, lon: 100.5018, country: 'TH' },
+    'ho chi minh city': { name: 'Ho Chi Minh City', lat: 10.8231, lon: 106.6297, country: 'VN' },
+    'mumbai': { name: 'Mumbai', lat: 19.0760, lon: 72.8777, country: 'IN' },
+    'delhi': { name: 'Delhi', lat: 28.7041, lon: 77.1025, country: 'IN' },
+    'bangalore': { name: 'Bangalore', lat: 12.9716, lon: 77.5946, country: 'IN' },
+    'kolkata': { name: 'Kolkata', lat: 22.5726, lon: 88.3639, country: 'IN' },
+    'chennai': { name: 'Chennai', lat: 13.0827, lon: 80.2707, country: 'IN' },
+    'pune': { name: 'Pune', lat: 18.5204, lon: 73.8567, country: 'IN' },
+    'hyderabad': { name: 'Hyderabad', lat: 17.3850, lon: 78.4867, country: 'IN' },
+    'ahmedabad': { name: 'Ahmedabad', lat: 23.0225, lon: 72.5714, country: 'IN' },
+    'surat': { name: 'Surat', lat: 21.1702, lon: 72.8311, country: 'IN' },
+    'karachi': { name: 'Karachi', lat: 24.8607, lon: 67.0011, country: 'PK' },
+    'lahore': { name: 'Lahore', lat: 31.5497, lon: 74.3436, country: 'PK' },
+    'faisalabad': { name: 'Faisalabad', lat: 31.4504, lon: 73.1350, country: 'PK' },
+    'rawalpindi': { name: 'Rawalpindi', lat: 33.5651, lon: 73.0169, country: 'PK' },
+    'gujranwala': { name: 'Gujranwala', lat: 32.1877, lon: 74.1886, country: 'PK' },
+    'peshawar': { name: 'Peshawar', lat: 34.0151, lon: 71.5785, country: 'PK' },
+    'multan': { name: 'Multan', lat: 30.1575, lon: 71.5249, country: 'PK' },
+    'islamabad': { name: 'Islamabad', lat: 33.6844, lon: 73.0479, country: 'PK' },
+    'quetta': { name: 'Quetta', lat: 30.1798, lon: 66.9750, country: 'PK' },
+    'cairo': { name: 'Cairo', lat: 30.0444, lon: 31.2357, country: 'EG' },
+    'alexandria': { name: 'Alexandria', lat: 31.2001, lon: 29.9187, country: 'EG' },
+    'giza': { name: 'Giza', lat: 30.0131, lon: 31.2089, country: 'EG' },
+    'shubra el kheima': { name: 'Shubra El Kheima', lat: 30.1294, lon: 31.2826, country: 'EG' },
+    'port said': { name: 'Port Said', lat: 31.2653, lon: 32.3015, country: 'EG' },
+    'luxor': { name: 'Luxor', lat: 25.6872, lon: 32.6393, country: 'EG' },
+    'aswan': { name: 'Aswan', lat: 24.0908, lon: 32.8994, country: 'EG' },
+    'damietta': { name: 'Damietta', lat: 31.4165, lon: 31.8133, country: 'EG' },
+    'asmara': { name: 'Asmara', lat: 15.3229, lon: 38.9237, country: 'ER' },
+    'khartoum': { name: 'Khartoum', lat: 15.5007, lon: 32.5599, country: 'SD' },
+    'addis ababa': { name: 'Addis Ababa', lat: 9.1450, lon: 38.7617, country: 'ET' },
+    'nairobi': { name: 'Nairobi', lat: -1.2921, lon: 36.8219, country: 'KE' },
+    'kampala': { name: 'Kampala', lat: 0.3476, lon: 32.5825, country: 'UG' },
+    'dar es salaam': { name: 'Dar es Salaam', lat: -6.7924, lon: 39.2083, country: 'TZ' },
+    'johannesburg': { name: 'Johannesburg', lat: -26.2041, lon: 28.0473, country: 'ZA' },
+    'cape town': { name: 'Cape Town', lat: -33.9249, lon: 18.4241, country: 'ZA' },
+    'durban': { name: 'Durban', lat: -29.8587, lon: 31.0218, country: 'ZA' },
+    'pretoria': { name: 'Pretoria', lat: -25.7479, lon: 28.2293, country: 'ZA' },
+    'lagos': { name: 'Lagos', lat: 6.5244, lon: 3.3792, country: 'NG' },
+    'kano': { name: 'Kano', lat: 11.9604, lon: 8.5396, country: 'NG' },
+    'ibadan': { name: 'Ibadan', lat: 7.3775, lon: 3.9470, country: 'NG' },
+    'kaduna': { name: 'Kaduna', lat: 10.5222, lon: 7.4374, country: 'NG' },
+    'port harcourt': { name: 'Port Harcourt', lat: 4.8156, lon: 7.0498, country: 'NG' },
+    'benin city': { name: 'Benin City', lat: 6.3350, lon: 5.6275, country: 'NG' },
+    'maiduguri': { name: 'Maiduguri', lat: 11.8445, lon: 13.0591, country: 'NG' },
+    'zaria': { name: 'Zaria', lat: 11.1108, lon: 7.7227, country: 'NG' },
+    'aba': { name: 'Aba', lat: 5.1410, lon: 7.3667, country: 'NG' },
+    'jos': { name: 'Jos', lat: 9.9285, lon: 8.8921, country: 'NG' },
+    'accra': { name: 'Accra', lat: 5.6037, lon: -0.1870, country: 'GH' },
+    'kumasi': { name: 'Kumasi', lat: 6.6885, lon: -1.6244, country: 'GH' },
+    'tamale': { name: 'Tamale', lat: 9.3997, lon: -0.8373, country: 'GH' },
+    'sekondi-takoradi': { name: 'Sekondi-Takoradi', lat: 4.9344, lon: -1.7614, country: 'GH' },
+    'ashaiman': { name: 'Ashaiman', lat: 5.9977, lon: -0.0219, country: 'GH' },
+    'obuasi': { name: 'Obuasi', lat: 6.2030, lon: -1.6653, country: 'GH' },
+    'dubai': { name: 'Dubai', lat: 25.2048, lon: 55.2708, country: 'AE' },
+    'abu dhabi': { name: 'Abu Dhabi', lat: 24.4539, lon: 54.3773, country: 'AE' },
+    'sharjah': { name: 'Sharjah', lat: 25.3375, lon: 55.4161, country: 'AE' },
+    'al ain': { name: 'Al Ain', lat: 24.2278, lon: 55.4344, country: 'AE' },
+    'ajman': { name: 'Ajman', lat: 25.4111, lon: 55.4386, country: 'AE' },
+    'ras al khaimah': { name: 'Ras Al Khaimah', lat: 25.6415, lon: 55.9423, country: 'AE' },
+    'fujairah': { name: 'Fujairah', lat: 25.1288, lon: 56.3265, country: 'AE' },
+    'umm al quwain': { name: 'Umm Al Quwain', lat: 25.5647, lon: 55.5533, country: 'AE' },
+    'riyadh': { name: 'Riyadh', lat: 24.7136, lon: 46.6753, country: 'SA' },
+    'jeddah': { name: 'Jeddah', lat: 21.5433, lon: 39.1728, country: 'SA' },
+    'mecca': { name: 'Mecca', lat: 21.4225, lon: 39.8262, country: 'SA' },
+    'medina': { name: 'Medina', lat: 24.4584, lon: 39.6119, country: 'SA' },
+    'dammam': { name: 'Dammam', lat: 26.4269, lon: 50.0879, country: 'SA' },
+    'khobar': { name: 'Khobar', lat: 26.2785, lon: 50.2045, country: 'SA' },
+    'tabuk': { name: 'Tabuk', lat: 28.3836, lon: 36.5714, country: 'SA' },
+    'buraidah': { name: 'Buraidah', lat: 26.3619, lon: 43.9659, country: 'SA' },
+    'hafr al batin': { name: 'Hafr Al Batin', lat: 28.4267, lon: 46.1196, country: 'SA' },
+    'taif': { name: 'Taif', lat: 21.4291, lon: 40.4253, country: 'SA' },
+    'najran': { name: 'Najran', lat: 17.4947, lon: 44.1277, country: 'SA' },
+    'hail': { name: 'Hail', lat: 27.5358, lon: 41.6932, country: 'SA' },
+    'arar': { name: 'Arar', lat: 30.9042, lon: 41.1385, country: 'SA' },
+    'rafha': { name: 'Rafha', lat: 29.6171, lon: 43.4849, country: 'SA' },
+    'tehran': { name: 'Tehran', lat: 35.6892, lon: 51.3890, country: 'IR' },
+    'mashhad': { name: 'Mashhad', lat: 36.2605, lon: 59.6168, country: 'IR' },
+    'isfahan': { name: 'Isfahan', lat: 32.6546, lon: 51.6678, country: 'IR' },
+    'karaj': { name: 'Karaj', lat: 35.8327, lon: 50.9916, country: 'IR' },
+    'shiraz': { name: 'Shiraz', lat: 29.5918, lon: 52.5837, country: 'IR' },
+    'tabriz': { name: 'Tabriz', lat: 38.0962, lon: 46.2753, country: 'IR' },
+    'qom': { name: 'Qom', lat: 34.6401, lon: 50.8763, country: 'IR' },
+    'kish island': { name: 'Kish Island', lat: 26.5289, lon: 53.9811, country: 'IR' },
+    'urmia': { name: 'Urmia', lat: 37.5527, lon: 45.0762, country: 'IR' },
+    'zahedan': { name: 'Zahedan', lat: 29.4963, lon: 60.8629, country: 'IR' },
+    'rasht': { name: 'Rasht', lat: 37.2808, lon: 49.5832, country: 'IR' },
+    'kerman': { name: 'Kerman', lat: 30.2839, lon: 57.0834, country: 'IR' },
+    'ahvaz': { name: 'Ahvaz', lat: 31.3183, lon: 48.6706, country: 'IR' },
+    'islamabad': { name: 'Islamabad', lat: 33.6844, lon: 73.0479, country: 'PK' },
+    'karachi': { name: 'Karachi', lat: 24.8607, lon: 67.0011, country: 'PK' },
+    'lahore': { name: 'Lahore', lat: 31.5497, lon: 74.3436, country: 'PK' },
+    'faisalabad': { name: 'Faisalabad', lat: 31.4504, lon: 73.1350, country: 'PK' },
+    'rawalpindi': { name: 'Rawalpindi', lat: 33.5651, lon: 73.0169, country: 'PK' },
+    'multan': { name: 'Multan', lat: 30.1575, lon: 71.5249, country: 'PK' },
+    'gujranwala': { name: 'Gujranwala', lat: 32.1877, lon: 74.1886, country: 'PK' },
+    'peshawar': { name: 'Peshawar', lat: 34.0151, lon: 71.5785, country: 'PK' },
+    'quetta': { name: 'Quetta', lat: 30.1798, lon: 66.9750, country: 'PK' },
+    'sialkot': { name: 'Sialkot', lat: 32.4945, lon: 74.5229, country: 'PK' },
+    'sukkur': { name: 'Sukkur', lat: 27.6765, lon: 68.8514, country: 'PK' },
+    'larkana': { name: 'Larkana', lat: 27.5398, lon: 68.2415, country: 'PK' },
+    'sheikhupura': { name: 'Sheikhupura', lat: 31.7130, lon: 73.9783, country: 'PK' },
+    'jhang': { name: 'Jhang', lat: 30.9508, lon: 72.3517, country: 'PK' },
+    'gujrat': { name: 'Gujrat', lat: 32.5753, lon: 74.0758, country: 'PK' },
+    'mardan': { name: 'Mardan', lat: 34.1985, lon: 72.0470, country: 'PK' },
+    'kasur': { name: 'Kasur', lat: 31.1164, lon: 74.4496, country: 'PK' },
+    'mingora': { name: 'Mingora', lat: 34.7897, lon: 72.3629, country: 'PK' },
+    'nawabshah': { name: 'Nawabshah', lat: 26.2411, lon: 68.4118, country: 'PK' },
+    'kotri': { name: 'Kotri', lat: 25.3827, lon: 68.3075, country: 'PK' },
+    'hyderabad': { name: 'Hyderabad', lat: 25.3960, lon: 68.3672, country: 'PK' }
+};
+
 async function searchCityCoords(cityName) {
     try {
-        // Utiliser OpenWeatherMap Geocoding API plus fiable
-        const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(cityName)}&limit=5&appid=${API_CONFIG.apiKey}`;
+        // Normaliser le nom de la ville pour la recherche
+        const normalizedCity = cityName.toLowerCase().trim();
         
-        const response = await fetch(geoUrl);
-        const data = await response.json();
-        
-        if (data && data.length > 0) {
-            // Prendre le premier résultat le plus pertinent
-            const result = data[0];
-            return {
-                name: result.name || cityName,
-                lat: result.lat,
-                lon: result.lon,
-                country: result.country || '',
-                state: result.state || ''
-            };
+        // Recherche exacte d'abord
+        if (CITY_DATABASE[normalizedCity]) {
+            console.log(`🏙️ Ville trouvée dans la base IA: ${CITY_DATABASE[normalizedCity].name}`);
+            return CITY_DATABASE[normalizedCity];
         }
         
-        // Fallback avec ancienne API si OpenWeatherMap ne fonctionne pas
-        try {
-            const fallbackResponse = await fetch(
-                `${API_CONFIG.geoUrl}/search?name=${encodeURIComponent(cityName)}&count=3&language=fr&format=json`
-            );
-            const fallbackData = await fallbackResponse.json();
-            
-            if (fallbackData.results && fallbackData.results.length > 0) {
-                return {
-                    name: fallbackData.results[0].name,
-                    lat: fallbackData.results[0].latitude,
-                    lon: fallbackData.results[0].longitude,
-                    country: fallbackData.results[0].country
-                };
+        // Recherche partielle (contient)
+        for (const [key, city] of Object.entries(CITY_DATABASE)) {
+            if (key.includes(normalizedCity) || normalizedCity.includes(key)) {
+                console.log(`🔍 Ville trouvée par recherche partielle: ${city.name}`);
+                return city;
             }
-        } catch (fallbackError) {
-            console.error('Fallback API error:', fallbackError);
         }
         
-        return null;
+        // Recherche dans le nom affiché
+        for (const city of Object.values(CITY_DATABASE)) {
+            if (city.name.toLowerCase().includes(normalizedCity) || normalizedCity.includes(city.name.toLowerCase())) {
+                console.log(`🎯 Ville trouvée par nom: ${city.name}`);
+                return city;
+            }
+        }
+        
+        // Fallback : coordonnées par défaut pour Paris
+        console.log(`📍 Ville non trouvée, utilisation de Paris par défaut: ${cityName}`);
+        return {
+            name: cityName || 'Paris',
+            lat: 48.8566,
+            lon: 2.3522,
+            country: 'FR'
+        };
+        
     } catch (error) {
-        console.error('Erreur de géocoding:', error);
-        return null;
+        console.error('Erreur recherche ville IA:', error);
+        // Fallback ultime
+        return {
+            name: cityName || 'Paris',
+            lat: 48.8566,
+            lon: 2.3522,
+            country: 'FR'
+        };
     }
 }
 
@@ -1606,15 +1874,12 @@ function handleConnectionError(error) {
     }
 }
 
-// Version temps réel de updateWeather
+// Version temps réel de updateWeather (sans message)
 function updateWeatherRealTime() {
     // Éviter les requêtes multiples
     if (refreshTimeout) {
         clearTimeout(refreshTimeout);
     }
-    
-    // Afficher l'indicateur de mise à jour
-    showRealTimeIndicator();
     
     refreshTimeout = setTimeout(() => {
         if (currentCoords) {
@@ -1624,44 +1889,6 @@ function updateWeatherRealTime() {
         }
         lastUpdateTime = Date.now();
     }, 50); // Debounce ultra-rapide de 50ms
-}
-
-// Afficher l'indicateur de mise à jour en temps réel
-function showRealTimeIndicator() {
-    let indicator = document.getElementById('realtime-indicator');
-    
-    if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'realtime-indicator';
-        indicator.style.cssText = `
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 184, 255, 0.9);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 1000;
-            animation: pulse 1s infinite;
-            backdrop-filter: blur(5px);
-        `;
-        document.body.appendChild(indicator);
-    }
-    
-    indicator.textContent = '⚡ Mise à jour temps réel';
-    
-    // Masquer l'indicateur après 2 secondes
-    setTimeout(() => {
-        if (indicator && indicator.parentElement) {
-            indicator.style.opacity = '0';
-            setTimeout(() => {
-                if (indicator && indicator.parentElement) {
-                    indicator.parentElement.removeChild(indicator);
-                }
-            }, 500);
-        }
-    }, 2000);
 }
 
 // Version optimisée de updateWeather (maintenant utilisée par updateWeatherRealTime)
