@@ -99,6 +99,35 @@ const cities = [
     'Voronezh', 'Volgograd', 'Krasnodar', 'Saratov', 'Tolyatti', 'Izhevsk'
 ];
 
+// Configuration IA pour le cache
+const AI_CONFIG = {
+    aiCache: {
+        maxAge: 60000 // 1 minute
+    }
+};
+
+// Patterns météo pour l'IA
+const WEATHER_PATTERNS = {
+    seasonal: {
+        spring: { conditions: [0, 1, 2] },
+        summer: { conditions: [0, 1] },
+        autumn: { conditions: [0, 1, 2, 3] },
+        winter: { conditions: [0, 1, 2, 3, 71, 73] }
+    },
+    geographic: {
+        urban: { tempBonus: 1, humidityBonus: 5, windBonus: 0 },
+        coastal: { tempBonus: 2, humidityBonus: 10, windBonus: 5 },
+        mountain: { tempBonus: -5, humidityBonus: -5, windBonus: 10 },
+        rural: { tempBonus: 0, humidityBonus: 0, windBonus: 3 }
+    },
+    hourly: {
+        morning: { tempModifier: -2 },
+        afternoon: { tempModifier: 3 },
+        evening: { tempModifier: 0 },
+        night: { tempModifier: -3 }
+    }
+};
+
 const weatherCodes = {
     0: { condition: 'Ensoleillé', bg: 'bg-blue' },
     1: { condition: 'Partiellement nuageux', bg: 'bg-blue' },
