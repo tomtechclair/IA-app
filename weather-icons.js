@@ -189,6 +189,47 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
         </g>
     </svg>`;
     
+    const drizzleSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
+        <defs>
+            <linearGradient id="drizzleCloudGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#D8D8D8;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#B8B8B8;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="drizzleDropGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#4A90E2;stop-opacity:1" />
+            </linearGradient>
+            <filter id="drizzleShadow3D">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="1.5"/>
+                <feOffset dx="1" dy="1.5" result="offsetblur"/>
+                <feFlood flood-color="#000000" flood-opacity="0.2"/>
+                <feComposite in2="offsetblur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <g class="icon-drizzle" filter="url(#drizzleShadow3D)">
+            <!-- Nuage léger 3D -->
+            <ellipse cx="40" cy="45" rx="24" ry="17" fill="url(#drizzleCloudGradient3D)"/>
+            <ellipse cx="62" cy="42" rx="18" ry="13" fill="url(#drizzleCloudGradient3D)"/>
+            <!-- Ombres douces -->
+            <ellipse cx="35" cy="53" rx="16" ry="7" fill="#A0A0A0" opacity="0.25"/>
+            <ellipse cx="58" cy="50" rx="12" ry="5" fill="#A0A0A0" opacity="0.2"/>
+            <!-- Petites gouttes de bruine -->
+            <g opacity="0.85">
+                <ellipse cx="32" cy="68" rx="1.2" ry="3" fill="url(#drizzleDropGradient3D)" transform="rotate(10 32 68)"/>
+                <ellipse cx="43" cy="72" rx="1" ry="2.8" fill="url(#drizzleDropGradient3D)" transform="rotate(-8 43 72)"/>
+                <ellipse cx="54" cy="70" rx="1.1" ry="3.2" fill="url(#drizzleDropGradient3D)" transform="rotate(5 54 70)"/>
+                <ellipse cx="65" cy="75" rx="1" ry="2.8" fill="url(#drizzleDropGradient3D)" transform="rotate(-12 65 75)"/>
+            </g>
+            <!-- Effet de brillance léger -->
+            <ellipse cx="40" cy="48" rx="10" ry="5" fill="rgba(255,255,255,0.2)"/>
+            <ellipse cx="60" cy="43" rx="7" ry="3.5" fill="rgba(255,255,255,0.15)"/>
+        </g>
+    </svg>`;
+    
     const snowSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
         <defs>
             <linearGradient id="snowCloudGradient3D" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -325,29 +366,6 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
             <ellipse cx="60" cy="55" rx="20" ry="5" fill="#A0A0A0" opacity="0.25"/>
         </g>
     </svg>`;
-    
-    const drizzleSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">
-        <g class="icon-drizzle">
-            <path d="M30 65 Q20 65 20 55 Q20 45 30 45 Q30 35 45 35 Q55 35 60 42 Q70 42 70 52 Q70 62 60 65 Q50 65 40 65 Q35 65 30 65 Z" 
-                  fill="#F5F5F5" opacity="0.9"/>
-            <g opacity="0.8">
-                <line x1="35" y1="70" x2="33" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
-                <line x1="45" y1="70" x2="43" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
-                <line x1="55" y1="70" x2="53" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
-                <line x1="65" y1="70" x2="63" y2="80" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/>
-            </g>
-            <line class="drop-1" x1="30" y1="55" x2="30" y2="65" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
-            <line class="drop-2" x1="45" y1="55" x2="45" y2="68" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
-            <line class="drop-3" x1="55" y1="55" x2="55" y2="62" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
-            <line class="drop-1" x1="35" y1="58" x2="35" y2="63" stroke="#4FC3F7" stroke-width="2" stroke-linecap="round"/>
-            <defs>
-                <linearGradient id="cloudGrad4" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#C0C0C0"/>
-                    <stop offset="100%" style="stop-color:#A0A0A0"/>
-                </linearGradient>
-            </defs>
-        </g>
-    </svg>\`;
 
     // Sélectionner l'icône selon le code WMO
     if (!isDay && (code === 0 || code === 1)) {
@@ -361,16 +379,16 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
         case 3: return cloudSVG;
         case 45: return fogSVG;
         case 48: return fogSVG;
-        case 51: return rainSVG;
-        case 53: return rainSVG;
-        case 55: return rainSVG;
-        case 56: return rainSVG;
-        case 57: return rainSVG;
-        case 61: return snowSVG;
-        case 63: return snowSVG;
-        case 65: return snowSVG;
-        case 66: return snowSVG;
-        case 67: return snowSVG;
+        case 51: return drizzleSVG;
+        case 53: return drizzleSVG;
+        case 55: return drizzleSVG;
+        case 56: return drizzleSVG;
+        case 57: return drizzleSVG;
+        case 61: return rainSVG;
+        case 63: return rainSVG;
+        case 65: return rainSVG;
+        case 66: return rainSVG;
+        case 67: return rainSVG;
         case 71: return snowSVG;
         case 73: return snowSVG;
         case 75: return snowSVG;
@@ -394,4 +412,40 @@ function createWeatherIcon(code, isDay = true, size = 32) {
 
 function createSmallWeatherIcon(code, isDay = true) {
     return createWeatherIcon(code, isDay, 28);
+}
+
+// Fonction pour obtenir la description des conditions météo
+function getWeatherIconDescription(code) {
+    const descriptions = {
+        0: 'Ciel dégagé',
+        1: 'Partiellement nuageux',
+        2: 'Nuageux',
+        3: 'Très nuageux',
+        45: 'Brouillard',
+        48: 'Brouillard givrant',
+        51: 'Bruine légère',
+        53: 'Bruine modérée',
+        55: 'Bruine dense',
+        56: 'Bruine légère verglaçante',
+        57: 'Bruine dense verglaçante',
+        61: 'Pluie légère',
+        63: 'Pluie modérée',
+        65: 'Pluie dense',
+        66: 'Pluie légère verglaçante',
+        67: 'Pluie dense verglaçante',
+        71: 'Neige légère',
+        73: 'Neige modérée',
+        75: 'Neige dense',
+        77: 'Grains de neige',
+        80: 'Averses de pluie légères',
+        81: 'Averses de pluie modérées',
+        82: 'Averses de pluie violentes',
+        85: 'Averses de neige légères',
+        86: 'Averses de neige denses',
+        95: 'Orage léger',
+        96: 'Orage avec grêle légère',
+        99: 'Orage avec grêle dense'
+    };
+    
+    return descriptions[code] || 'Condition inconnue';
 }
