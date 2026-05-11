@@ -481,25 +481,17 @@ async function displayWeatherData(weatherData) {
             tempElement.textContent = `${Math.round(current.temperature_2m)}°`;
         }
         
-        // Condition météo
+        // Condition météo - pas d'icône, seulement le texte
         const conditionElement = document.querySelector('.condition');
         if (conditionElement && weatherInfo.condition) {
             conditionElement.textContent = weatherInfo.condition;
+            conditionElement.classList.remove('has-icon'); // S'assurer que la classe est retirée
         }
         // Vérifier que les données existent avant de les utiliser
         if (weatherData.daily && weatherData.daily.temperature_2m_max && weatherData.daily.temperature_2m_min) {
             document.querySelector('.high-low').innerHTML = 
                 `<span>H:${Math.round(weatherData.daily.temperature_2m_max[0])}°</span>` +
                 `<span>L:${Math.round(weatherData.daily.temperature_2m_min[0])}°</span>`;
-        }
-        
-        // Hero icon - nouvelle fonction SVG avec animations
-        const heroIcon = document.querySelector('.weather-hero .condition');
-        if (heroIcon && typeof createWeatherIconSVG === 'function') {
-            heroIcon.innerHTML = createWeatherIconSVG(current.weather_code, isDay, 40) + weatherInfo.condition;
-            heroIcon.classList.add('has-icon');
-            
-            // Pas d'animation - icônes statiques mais stylées
         }
         
         // Humidité
