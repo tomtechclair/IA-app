@@ -775,7 +775,7 @@ class WeatherAI {
                 conditionEvolution = this.generateWeatherCode(
                     this.getSeason(futureTime.getMonth()),
                     futureHour,
-                    this.getGeographicProfile(currentCity, currentCoords.lat, currentCoords.lon),
+                    this.getGeographicProfile(currentCity, currentCoords?.lat || 48.8566, currentCoords?.lon || 2.3522),
                     tempEvolution
                 );
             }
@@ -809,7 +809,7 @@ class WeatherAI {
             const dailyCondition = this.generateWeatherCode(
                 season,
                 14, // Milieu d'après-midi
-                this.getGeographicProfile(currentCity, currentCoords.lat, currentCoords.lon),
+                this.getGeographicProfile(currentCity, currentCoords?.lat || 48.8566, currentCoords?.lon || 2.3522),
                 maxTemp
             );
             
@@ -2029,9 +2029,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Legacy support
-document.getElementById('city-input').addEventListener('blur', function() {
-    if (this.value.trim() !== currentCity) {
-        searchCity();
+// Legacy support - attach after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    const legacyInput = document.getElementById('city-input');
+    if (legacyInput) {
+        legacyInput.addEventListener('blur', function() {
+            if (this.value.trim() !== currentCity) {
+                searchCity();
+            }
+        });
     }
 });
