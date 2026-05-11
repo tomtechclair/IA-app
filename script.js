@@ -1482,22 +1482,128 @@ function setupVisibilityHandlers() {
     document.addEventListener('visibilitychange', visibilityChangeHandler);
 }
 
-// Mettre en place les gestionnaires de réseau
-function setupNetworkHandlers() {
-    if (networkChangeHandler) {
-        window.removeEventListener('online', networkChangeHandler);
-        window.removeEventListener('offline', networkChangeHandler);
+// Vérifier si la page est visible
+function isPageVisible() {
+    try {
+        return !document.hidden;
+    } catch (error) {
+        console.warn('Erreur vérification visibilité page:', error);
+        return true; // Par défaut, considérer comme visible
     }
-    
-    networkChangeHandler = () => {
-        if (navigator.onLine && currentCity) {
-            // Mettre à jour dès qu'on retrouve la connexion
-            setTimeout(() => updateWeatherRealTime(), 1000);
+}
+
+// Vérifier si on est en ligne avec gestion d'erreur améliorée
+function isOnline() {
+    try {
+        // Vérification basique du navigateur
+        if (!navigator || typeof navigator.onLine === 'undefined') {
+            console.warn('API navigator.onLine non disponible');
+            return true; // Par défaut, considérer comme en ligne
         }
-    };
+        
+        const online = navigator.onLine;
+        
+        // Vérification supplémentaire avec une requête simple
+        if (online) {
+            // Test de connexion avec timeout très court
+            return testConnection();
+        }
+        
+        return online;
+    } catch (error) {
+        console.warn('Erreur vérification connexion:', error);
+        return true; // Par défaut, considérer comme en ligne
+    }
+}
+
+// Test de connexion rapide
+async function testConnection() {
+    try {
+        // Test avec une requête simple et rapide
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 secondes timeout
+        
+        const response = await fetch('https://httpbin.org/status/200', {
+            method: 'HEAD',
+            signal: controller.signal,
+            cache: 'no-cache'
+        });
+        
+        clearTimeout(timeoutId);
+        return response.ok;
+    } catch (error) {
+        console.warn('Test de connexion échoué:', error.message);
+        // Même si le test échoue, on considère qu'on est en ligne pour l'IA
+        return true; // L'IA fonctionne hors-ligne
+    }
+}
+
+// Mettre en place les gestionnaires de réseau avec gestion d'erreur
+function setupNetworkHandlers() {
+    try {
+        // Nettoyer les anciens gestionnaires
+        if (networkChangeHandler) {
+            try {
+                window.removeEventListener('online', networkChangeHandler);
+                window.removeEventListener('offline', networkChangeHandler);
+            } catch (error) {
+                console.warn('Erreur nettoyage gestionnaires réseau:', error);
+            }
+        }
+
+        // Nouveau gestionnaire de réseau
+        networkChangeHandler = async () => {
+            try {
+                console.log('Changement de connexion détecté:', navigator.onLine ? 'En ligne' : 'Hors ligne');
+                
+                if (navigator.onLine && currentCity) {
+                    console.log('🔄 Reconnexion détectée, mise à jour météo...');
+                    
+                    // Petite attente pour stabiliser la connexion
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Mettre à jour dès qu'on retrouve la connexion
+                    updateWeatherRealTime();
+                } else if (!navigator.onLine) {
+                    console.log('📵 Connexion perdue, l\'IA continue de fonctionner...');
+                    // L'IA météo fonctionne même hors-ligne
+                }
+            } catch (error) {
+                console.error('Erreur gestionnaire de changement réseau:', error);
+            }
+        };
+
+        // Ajouter les nouveaux gestionnaires
+        try {
+            window.addEventListener('online', networkChangeHandler);
+            window.addEventListener('offline', networkChangeHandler);
+            console.log('🌐 Gestionnaires réseau configurés avec succès');
+        } catch (error) {
+            console.warn('Erreur configuration gestionnaires réseau:', error);
+        }
+    } catch (error) {
+        console.error('Erreur setupNetworkHandlers:', error);
+    }
+}
+
+// Fonction de récupération d'erreur de connexion
+function handleConnectionError(error) {
+    console.error('Erreur de connexion météo:', error);
     
-    window.addEventListener('online', networkChangeHandler);
-    window.addEventListener('offline', networkChangeHandler);
+    // Vérifier si c'est une erreur de réseau
+    if (error.message && error.message.includes('fetch')) {
+        showWeatherError('Erreur de connexion. L\'IA météo fonctionne hors-ligne.');
+        
+        // Forcer l'utilisation de l'IA même sans connexion
+        setTimeout(() => {
+            if (currentCity) {
+                console.log('🤖 Activation IA météo hors-ligne...');
+                updateWeatherRealTime();
+            }
+        }, 1000);
+    } else {
+        showWeatherError('Erreur météo. L\'IA génère des données de secours.');
+    }
 }
 
 // Version temps réel de updateWeather
