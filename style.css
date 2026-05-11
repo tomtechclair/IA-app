@@ -640,8 +640,12 @@ body {
 }
 
 .hourly-item .icon {
-    font-size: 28px;
+    font-size: 40px;
     margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
 }
 
 /* Next Hour Forecast */
@@ -715,8 +719,12 @@ body {
 }
 
 .daily-item .icon {
-    font-size: 24px;
-    margin: 0 8px;
+    font-size: 40px;
+    margin: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
 }
 
 .daily-item .temp-low {

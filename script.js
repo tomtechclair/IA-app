@@ -281,17 +281,40 @@ async function updateWeatherByCoords(lat, lon) {
         
         // Trouver le nom de la ville le plus proche avec géocoding inverse
         try {
-            const geoResponse = await fetch(
-                `https://geocoding-api.open-meteo.com/v1/search?latitude=${lat}&longitude=${lon}&count=1&language=fr&format=json`
+            // Essayer d'abord avec Nominatim (OpenStreetMap) pour meilleure précision
+            const nominatimResponse = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1&language=fr`,
+                { headers: { 'Accept-Language': 'fr' } }
             );
-            const geoData = await geoResponse.json();
-            if (geoData.results && geoData.results.length > 0) {
-                currentCity = geoData.results[0].name;
-                if (geoData.results[0].admin1) {
-                    currentCity += ', ' + geoData.results[0].admin1;
+            const nominatimData = await nominatimResponse.json();
+            
+            if (nominatimData && nominatimData.address) {
+                // Chercher le nom de la ville dans l'ordre de préférence
+                currentCity = nominatimData.address.city || 
+                             nominatimData.address.town || 
+                             nominatimData.address.village || 
+                             nominatimData.address.hamlet ||
+                             nominatimData.address.county ||
+                             'Ma position';
+                
+                // Ajouter la région si disponible
+                if (nominatimData.address.state) {
+                    currentCity += ', ' + nominatimData.address.state;
                 }
             } else {
-                currentCity = 'Ma position';
+                // Fallback sur Open-Meteo si Nominatim échoue
+                const geoResponse = await fetch(
+                    `https://geocoding-api.open-meteo.com/v1/search?latitude=${lat}&longitude=${lon}&count=1&language=fr&format=json`
+                );
+                const geoData = await geoResponse.json();
+                if (geoData.results && geoData.results.length > 0) {
+                    currentCity = geoData.results[0].name;
+                    if (geoData.results[0].admin1) {
+                        currentCity += ', ' + geoData.results[0].admin1;
+                    }
+                } else {
+                    currentCity = 'Ma position';
+                }
             }
         } catch (e) {
             console.error('Erreur de géocoding inverse:', e);
@@ -401,8 +424,13 @@ async function displayWeatherData(weatherData) {
         // Hero icon - nouvelle fonction SVG avec animations
         const heroIcon = document.querySelector('.weather-hero .condition');
         if (heroIcon && typeof getEnhancedWeatherIcon === 'function') {
-            heroIcon.innerHTML = getEnhancedWeatherIcon(current.weather_code, isDay, 40) + weatherInfo.condition;
+            heroIcon.innerHTML = getEnhancedWeatherIcon(current.weather_code, isDay, 64) + weatherInfo.condition;
             heroIcon.classList.add('has-icon');
+            heroIcon.style.display = 'flex';
+            heroIcon.style.alignItems = 'center';
+            heroIcon.style.justifyContent = 'center';
+            heroIcon.style.gap = '12px';
+            heroIcon.style.flexWrap = 'wrap';
             
             // Pas d'animation - icônes statiques mais stylées
         }
@@ -583,7 +611,7 @@ async function displayWeatherData(weatherData) {
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
             
             const iconHTML = typeof getEnhancedWeatherIcon === 'function' 
-                ? getEnhancedWeatherIcon(code, hourlyIsDay, 28) 
+                ? getEnhancedWeatherIcon(code, hourlyIsDay, 40) 
                 : '';
             
             hourlyHTML += `
@@ -620,7 +648,7 @@ async function displayWeatherData(weatherData) {
             const code = daily.weather_code[i];
             
             const iconHTML = typeof getEnhancedWeatherIcon === 'function' 
-                ? getEnhancedWeatherIcon(code, true, 28) 
+                ? getEnhancedWeatherIcon(code, true, 40) 
                 : '';
             
             const tempLow = daily.temperature_2m_min[i];
