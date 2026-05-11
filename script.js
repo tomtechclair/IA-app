@@ -1758,9 +1758,9 @@ function isPageVisible() {
     return !document.hidden;
 }
 
-// Vérifier si on est en ligne
+// Vérifier si on est en ligne - L'IA météo fonctionne hors ligne
 function isOnline() {
-    return navigator.onLine;
+    return true; // L'IA météo fonctionne même sans connexion
 }
 
 // Mettre en place les gestionnaires de visibilité
@@ -1789,31 +1789,7 @@ function isPageVisible() {
     }
 }
 
-// Vérifier si on est en ligne avec gestion d'erreur améliorée
-function isOnline() {
-    try {
-        // Vérification basique du navigateur
-        if (!navigator || typeof navigator.onLine === 'undefined') {
-            console.warn('API navigator.onLine non disponible');
-            return true; // Par défaut, considérer comme en ligne
-        }
-        
-        const online = navigator.onLine;
-        
-        // Vérification supplémentaire avec une requête simple
-        if (online) {
-            // Test de connexion avec timeout très court
-            return testConnection();
-        }
-        
-        return online;
-    } catch (error) {
-        console.warn('Erreur vérification connexion:', error);
-        return true; // Par défaut, considérer comme en ligne
-    }
-}
-
-// Test de connexion rapide
+// Test de connexion rapide - désactivé car l'IA fonctionne hors ligne
 async function testConnection() {
     try {
         // Test avec une requête simple et rapide
