@@ -99,38 +99,22 @@
 
             <!-- Cards -->
             <div class="cards">
-                <!-- Next Hour Forecast -->
-                <div class="card">
-                    <div class="card-label">
-                        <span>🕐</span>
-                        <span>PRÉVISIONS POUR LA PROCHAINE HEURE</span>
-                    </div>
-                    <div class="separator"></div>
-                    <div class="next-hour-forecast">
-                        <div class="rain-chart" id="rain-chart"></div>
-                        <div class="rain-info">
-                            <div class="rain-percentage" id="rain-percentage">0%</div>
-                            <div class="rain-text">Pluie dans l'heure</div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Hourly -->
                 <div class="card">
-                    <div class="card-label">
-                        <span>🕐</span>
-                        <span>PRÉVISIONS HORAIRES</span>
-                    </div>
+                <div class="card-label" id="label-hourly">
+                    <span class="label-icon"></span>
+                    <span>PRÉVISIONS HORAIRES</span>
+                </div>
                     <div class="separator"></div>
                     <div class="hourly-scroll" id="hourly-list"></div>
                 </div>
 
                 <!-- Daily -->
                 <div class="card">
-                    <div class="card-label">
-                        <span>📅</span>
-                        <span>PRÉVISIONS SUR 10 JOURS</span>
-                    </div>
+                <div class="card-label" id="label-daily">
+                    <span class="label-icon"></span>
+                    <span>PRÉVISIONS SUR 10 JOURS</span>
+                </div>
                     <div class="separator"></div>
                     <div class="daily-list" id="daily-list"></div>
                 </div>
@@ -138,8 +122,8 @@
                 <!-- Details Grid -->
                 <div class="grid-2">
                     <div class="card detail-card">
-                        <div class="card-label">
-                            <span>💧</span>
+                        <div class="card-label" id="label-humidity">
+                            <span class="label-icon"></span>
                             <span>HUMIDITÉ</span>
                         </div>
                         <div class="detail-big" id="humidity">45%</div>
@@ -147,8 +131,8 @@
                     </div>
 
                     <div class="card detail-card">
-                        <div class="card-label">
-                            <span>🌬️</span>
+                        <div class="card-label" id="label-wind">
+                            <span class="label-icon"></span>
                             <span>VENT</span>
                         </div>
                         <div class="detail-big" id="wind">12 <span class="unit">km/h</span></div>
@@ -156,8 +140,8 @@
                     </div>
 
                     <div class="card detail-card">
-                        <div class="card-label">
-                            <span>👁️</span>
+                        <div class="card-label" id="label-visibility">
+                            <span class="label-icon"></span>
                             <span>VISIBILITÉ</span>
                         </div>
                         <div class="detail-big" id="visibility-value">10 <span class="unit">km</span></div>
@@ -165,8 +149,8 @@
                     </div>
 
                     <div class="card detail-card">
-                        <div class="card-label">
-                            <span>🌡️</span>
+                        <div class="card-label" id="label-feels-like">
+                            <span class="label-icon"></span>
                             <span>RESSENTI</span>
                         </div>
                         <div class="detail-big" id="feels-like">24°</div>
@@ -174,8 +158,8 @@
                     </div>
 
                     <div class="card detail-card">
-                        <div class="card-label">
-                            <span>☀️</span>
+                        <div class="card-label" id="label-uv">
+                            <span class="label-icon"></span>
                             <span>INDICE UV</span>
                         </div>
                         <div class="detail-big">5</div>
@@ -183,8 +167,8 @@
                     </div>
 
                     <div class="card detail-card">
-                        <div class="card-label">
-                            <span>🌅</span>
+                        <div class="card-label" id="label-pressure">
+                            <span class="label-icon"></span>
                             <span>PRESSION</span>
                         </div>
                         <div class="detail-big">1015 <span class="unit">hPa</span></div>
@@ -192,8 +176,8 @@
                     </div>
 
                     <div class="card detail-card">
-                        <div class="card-label">
-                            <span>🌅</span>
+                        <div class="card-label" id="label-sunrise">
+                            <span class="label-icon"></span>
                             <span>LEVER SOLEIL</span>
                         </div>
                         <div class="detail-big" id="sunrise">06:45</div>
@@ -201,8 +185,8 @@
                     </div>
 
                     <div class="card detail-card">
-                        <div class="card-label">
-                            <span>🌇</span>
+                        <div class="card-label" id="label-sunset">
+                            <span class="label-icon"></span>
                             <span>COUCHER SOLEIL</span>
                         </div>
                         <div class="detail-big" id="sunset">20:30</div>
@@ -214,6 +198,10 @@
         </div>
     </div>
 
+    <script src="apple-weather-icons.js"></script>
+    <script src="enhanced-icons.js"></script>
+    <script src="enhanced-weather-icons.js"></script>
+    <script src="init-icons.js"></script>
     <script src="weather-icons.js"></script>
     <script src="script.js"></script>
 </body>
