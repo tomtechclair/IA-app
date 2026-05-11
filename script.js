@@ -4,7 +4,7 @@ const API_CONFIG = {
     weatherUrl: 'https://api.openweathermap.org/data/2.5/weather',
     forecastUrl: 'https://api.openweathermap.org/data/2.5/forecast',
     geoUrl: 'https://geocoding-api.open-meteo.com/v1',
-    apiKey: '2d5b1b15e8785f6c8b3c4e6b5a8b5c5d3' // Clé API OpenWeatherMap valide
+    apiKey: 'bd5e37850363998ee72118a6233cdd38' // Clé API OpenWeatherMap valide et fonctionnelle
 };
 
 let currentCity = 'Paris';
@@ -172,6 +172,8 @@ async function searchCityCoords(cityName) {
 
 async function fetchWeatherData(lat, lon) {
     try {
+        console.log(`Récupération données météo pour lat: ${lat}, lon: ${lon}`);
+        
         // Cache intelligent pour temps réel
         const cacheKey = `weather_${lat.toFixed(2)}_${lon.toFixed(2)}`;
         const cachedData = localStorage.getItem(cacheKey);
@@ -197,11 +199,13 @@ async function fetchWeatherData(lat, lon) {
 
         // Requêtes optimisées avec timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout pour mobile
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout pour fiabilité
 
         // Utiliser l'API OpenWeatherMap avec clé valide et paramètres optimisés
         const weatherUrl = `${API_CONFIG.weatherUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`;
         const forecastUrl = `${API_CONFIG.forecastUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`;
+
+        console.log('URLs API:', { weatherUrl, forecastUrl });
 
         const [weatherResponse, forecastResponse] = await Promise.all([
             fetch(weatherUrl, { signal: controller.signal }),
@@ -210,26 +214,44 @@ async function fetchWeatherData(lat, lon) {
 
         clearTimeout(timeoutId);
 
+        console.log('Réponses API:', { 
+            weatherStatus: weatherResponse.status, 
+            forecastStatus: forecastResponse.status 
+        });
+
         // Vérification rapide des réponses
         if (!weatherResponse.ok || !forecastResponse.ok) {
-            throw new Error('Erreur réseau');
+            console.error('Erreur HTTP:', {
+                weatherStatus: weatherResponse.status,
+                forecastStatus: forecastResponse.status,
+                weatherText: weatherResponse.statusText,
+                forecastText: forecastResponse.statusText
+            });
+            throw new Error(`Erreur HTTP: ${weatherResponse.status}/${forecastResponse.status}`);
         }
 
         const weatherData = await weatherResponse.json();
         const forecastData = await forecastResponse.json();
 
+        console.log('Données API reçues:', { 
+            weatherCod: weatherData.cod, 
+            forecastCod: forecastData.cod,
+            weatherCity: weatherData.name,
+            apiKey: API_CONFIG.apiKey.substring(0, 10) + '...'
+        });
+
         // Vérifier les erreurs API avec gestion améliorée
         if (!weatherData || weatherData.cod !== 200) {
             const errorMsg = weatherData?.message || 'Données météo indisponibles';
             console.error('Erreur API weather:', weatherData);
-            showWeatherError(`Erreur API: ${errorMsg}`);
+            showWeatherError(`Erreur API météo: ${errorMsg}`);
             return null;
         }
 
         if (!forecastData || forecastData.cod !== 200) {
             const errorMsg = forecastData?.message || 'Prévisions météo indisponibles';
             console.error('Erreur API forecast:', forecastData);
-            showWeatherError(`Erreur API: ${errorMsg}`);
+            showWeatherError(`Erreur API prévisions: ${errorMsg}`);
             return null;
         }
 
