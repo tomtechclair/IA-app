@@ -493,6 +493,42 @@ async function searchCityCoords(cityName) {
     }
 }
 
+// Obtenir le nom de la ville à partir des coordonnées avec reverse geocoding
+async function getCityNameFromCoords(lat, lon) {
+    try {
+        // Utiliser Open-Meteo Geocoding API pour reverse geocoding
+        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?latitude=${lat}&longitude=${lon}&count=1&language=fr`, {
+            timeout: 5000
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.results && data.results.length > 0) {
+                const result = data.results[0];
+                console.log(`🏙️ Ville trouvée par reverse geocoding: ${result.name}`);
+                return {
+                    name: result.name,
+                    lat: lat,
+                    lon: lon,
+                    country: result.country || '',
+                    admin1: result.admin1 || ''
+                };
+            }
+        }
+    } catch (error) {
+        console.warn('Erreur reverse geocoding:', error);
+    }
+    
+    // Fallback : utiliser les coordonnées avec un nom générique
+    return {
+        name: 'Votre position',
+        lat: lat,
+        lon: lon,
+        country: '',
+        admin1: ''
+    };
+}
+
 // Système IA générative pour météo temps réel
 class WeatherAI {
     constructor() {
@@ -1122,16 +1158,17 @@ async function updateWeatherByCoords(lat, lon) {
         if (cityElement) cityElement.textContent = 'Localisation...';
         if (conditionElement) conditionElement.textContent = 'Recherche des données météo';
         
+        // Obtenir le nom réel de la ville avec reverse geocoding
+        const cityInfo = await getCityNameFromCoords(lat, lon);
+        currentCity = cityInfo.name;
+        document.getElementById('city-input').value = currentCity;
+        
         const weatherData = await fetchWeatherData(lat, lon);
         
         if (!weatherData) {
             showWeatherError('Impossible de récupérer les données météo. Vérifiez votre connexion internet.');
             return;
         }
-        
-        // Trouver le nom de la ville le plus proche (simplifié)
-        currentCity = 'Votre position';
-        document.getElementById('city-input').value = currentCity;
         
         await displayWeatherData(weatherData);
         
