@@ -843,21 +843,102 @@ class WeatherAI {
 // Instance globale de l'IA météo
 const weatherAI = new WeatherAI();
 
-// Fetch weather data from AI (source principale - fiable même hors-ligne)
+// -------------------------------------------------------
+// 🌤️ API Open-Meteo - Vraies données météo (gratuit, sans clé)
+// -------------------------------------------------------
+const OPEN_METEO_BASE = 'https://api.open-meteo.com/v1/forecast';
+
+async function fetchOpenMeteo(lat, lon) {
+    const params = new URLSearchParams({
+        latitude: lat,
+        longitude: lon,
+        current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,pressure_msl,visibility',
+        hourly: 'temperature_2m,weather_code,is_day',
+        daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset',
+        timezone: 'auto',
+        forecast_days: 10
+    });
+
+    const url = `${OPEN_METEO_BASE}?${params}`;
+    
+    const response = await fetch(url, { 
+        signal: AbortSignal.timeout(8000)
+    });
+    
+    if (!response.ok) {
+        throw new Error(`Open-Meteo HTTP ${response.status}`);
+    }
+    
+    const raw = await response.json();
+    
+    // Normaliser au format attendu par l'application
+    return {
+        current: {
+            temperature_2m: raw.current.temperature_2m,
+            relative_humidity_2m: raw.current.relative_humidity_2m,
+            apparent_temperature: raw.current.apparent_temperature,
+            is_day: raw.current.is_day,
+            weather_code: raw.current.weather_code,
+            wind_speed_10m: raw.current.wind_speed_10m,
+            pressure_msl: raw.current.pressure_msl,
+            visibility: raw.current.visibility,
+            sunrise: raw.daily?.sunrise?.[0] || null,
+            sunset: raw.daily?.sunset?.[0] || null
+        },
+        hourly: {
+            time: raw.hourly.time.map(t => new Date(t).getTime()),
+            temperature_2m: raw.hourly.temperature_2m,
+            weather_code: raw.hourly.weather_code,
+            is_day: raw.hourly.is_day
+        },
+        daily: {
+            time: raw.daily.time.map(t => new Date(t).getTime()),
+            temperature_2m_max: raw.daily.temperature_2m_max,
+            temperature_2m_min: raw.daily.temperature_2m_min,
+            weather_code: raw.daily.weather_code,
+            sunrise: raw.daily.sunrise,
+            sunset: raw.daily.sunset
+        }
+    };
+}
+
+// Cache pour Open-Meteo (5 minutes)
+let openMeteoCache = { key: null, data: null, timestamp: 0 };
+const OPEN_METEO_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Fetch weather data (Open-Meteo d'abord, fallback IA, puis simulé)
 async function fetchWeatherData(lat, lon, retryCount = 0) {
+    const cacheKey = `${lat.toFixed(2)}_${lon.toFixed(2)}`;
+    
     try {
-        console.log(`🤖 Génération météo IA pour lat: ${lat}, lon: ${lon}`);
+        // Vérifier le cache
+        if (openMeteoCache.key === cacheKey && Date.now() - openMeteoCache.timestamp < OPEN_METEO_CACHE_TTL) {
+            console.log('📦 Utilisation du cache Open-Meteo');
+            return openMeteoCache.data;
+        }
         
-        // Utiliser l'IA météo comme source principale (fiable, rapide, sans clé API)
-        const aiData = await fetchAIData(lat, lon, retryCount);
+        console.log(`🌤️ Appel API Open-Meteo pour lat: ${lat}, lon: ${lon}`);
+        const data = await fetchOpenMeteo(lat, lon);
         
-        console.log('✅ Données météo IA générées avec succès');
-        return aiData;
+        // Mettre en cache
+        openMeteoCache = { key: cacheKey, data, timestamp: Date.now() };
+        
+        console.log('✅ Données météo réelles reçues !');
+        return data;
         
     } catch (error) {
-        console.error('❌ Erreur génération IA:', error);
-        // Dernier recours : données simulées
-        return getSimulatedWeatherData();
+        console.warn('⚠️ Open-Meteo indisponible, fallback IA:', error.message);
+        
+        // Fallback : utiliser l'IA météo (simulation intelligente)
+        try {
+            const aiData = await fetchAIData(lat, lon, retryCount);
+            console.log('🤖 Données IA de secours générées');
+            return aiData;
+        } catch (aiError) {
+            console.error('❌ Erreur génération IA:', aiError);
+            // Dernier recours : données simulées basiques
+            return getSimulatedWeatherData();
+        }
     }
 }
 
