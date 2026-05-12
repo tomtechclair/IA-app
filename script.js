@@ -1313,18 +1313,28 @@ async function displayWeatherData(weatherData) {
         // Next hour forecast with rain chart
         updateNextHourForecast(weatherData);
         
-        // Hourly forecast - nouvelles icônes SVG
+        // Hourly forecast - 24h avec index basé sur le timestamp
         const hourly = weatherData.hourly;
         const now = new Date();
-        const currentHour = now.getHours();
+        const nowMs = now.getTime();
         const hourlyList = document.getElementById('hourly-list');
+        
+        // Trouver l'index de départ correspondant à l'heure actuelle
+        let startIndex = 0;
+        for (let j = 0; j < hourly.time.length; j++) {
+            if (hourly.time[j] >= nowMs - 1800000) { // tolérance 30min
+                startIndex = j;
+                break;
+            }
+        }
         
         let hourlyHTML = '';
         for (let i = 0; i < 24; i++) {
-            const hourIndex = currentHour + i;
+            const hourIndex = startIndex + i;
             if (hourIndex >= hourly.time.length) break;
             
-            const hour = (currentHour + i) % 24;
+            const hourDate = new Date(hourly.time[hourIndex]);
+            const hour = hourDate.getHours();
             const code = hourly.weather_code[hourIndex];
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
             
@@ -1740,31 +1750,38 @@ function updateNextHourForecast(weatherData) {
     
     if (!rainChart || !rainPercentage) return;
     
-    // Simuler les données de pluie pour la prochaine heure
+    // Données de pluie pour la prochaine heure
     const hourly = weatherData.hourly;
-    const now = new Date();
-    const currentHour = now.getHours();
+    const nowMs = Date.now();
     
-    // Créer un graphique avec 12 barres représentant les 5 prochaines minutes par barre
+    // Trouver l'index de départ (heure actuelle)
+    let startIdx = 0;
+    for (let j = 0; j < hourly.time.length; j++) {
+        if (hourly.time[j] >= nowMs - 1800000) {
+            startIdx = j;
+            break;
+        }
+    }
+    
+    // 12 barres = données des 2 prochaines heures (6 barres par heure)
     let chartHTML = '';
     let rainProbability = 0;
     
     for (let i = 0; i < 12; i++) {
-        const hourIndex = currentHour + Math.floor(i / 12);
+        const hourIndex = startIdx + Math.floor(i / 6);
         if (hourIndex >= hourly.time.length) break;
         
         const weatherCode = hourly.weather_code[hourIndex] || 0;
-        let barHeight = 5; // hauteur par défaut en px
+        let barHeight = 5;
         
-        // Calculer la probabilité de pluie basée sur le code météo
         if (weatherCode >= 51 && weatherCode <= 67) {
-            barHeight = Math.random() * 30 + 20; // 20-50px
+            barHeight = Math.random() * 30 + 20;
             rainProbability = Math.max(rainProbability, 60);
         } else if (weatherCode >= 80 && weatherCode <= 82) {
-            barHeight = Math.random() * 40 + 30; // 30-70px
+            barHeight = Math.random() * 40 + 30;
             rainProbability = Math.max(rainProbability, 80);
         } else if (weatherCode >= 95 && weatherCode <= 99) {
-            barHeight = Math.random() * 20 + 50; // 50-70px
+            barHeight = Math.random() * 20 + 50;
             rainProbability = Math.max(rainProbability, 90);
         }
         
