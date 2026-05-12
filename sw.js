@@ -5,12 +5,12 @@ const API_CACHE = 'api-v1';
 
 // Ressources critiques à mettre en cache
 const CRITICAL_RESOURCES = [
-    '/',
-    '/index.html',
-    '/style.css',
-    '/weather-icons.css',
-    '/weather-icons.js',
-    '/script.js'
+    '.',
+    './index.html',
+    './style.css',
+    './weather-icons.css',
+    './weather-icons.js',
+    './script.js'
 ];
 
 // Installation du Service Worker
@@ -20,7 +20,14 @@ self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(STATIC_CACHE)
             .then((cache) => {
-                return cache.addAll(CRITICAL_RESOURCES);
+                // Ajouter chaque ressource une par une pour éviter l'échec total
+                return Promise.allSettled(
+                    CRITICAL_RESOURCES.map(resource => 
+                        cache.add(resource).catch(err => {
+                            console.warn('⚠️ Ressource non mise en cache:', resource, err.message);
+                        })
+                    )
+                );
             })
             .then(() => {
                 // Forcer l'activation immédiate
@@ -115,12 +122,13 @@ function isAPIRequest(url) {
     return url.hostname.includes('openweathermap.org');
 }
 
-// Vérifier si c'est une ressource statique
+// Vérifier si c'est une ressource statique (fichiers du site)
 function isStaticResource(url) {
-    return CRITICAL_RESOURCES.some(resource => 
-        url.pathname.endsWith(resource) || 
-        url.pathname === resource
-    );
+    const staticFiles = [
+        '/index.html', '/style.css', '/weather-icons.css',
+        '/weather-icons.js', '/script.js'
+    ];
+    return staticFiles.some(file => url.pathname.endsWith(file));
 }
 
 // Vérifier la validité du cache

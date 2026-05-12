@@ -10,9 +10,6 @@
     <!-- Optimisations de performance -->
     <meta http-equiv="Cache-Control" content="max-age=31536000, public">
     <meta name="theme-color" content="#00BFFF">
-    <link rel="preconnect" href="https://api.openweathermap.org">
-    <link rel="dns-prefetch" href="https://api.openweathermap.org">
-    
     <title>Météo - Prévisions en temps réel</title>
     
     <!-- Chargement critique CSS inline -->
@@ -33,36 +30,10 @@
     <!-- Chargement différé des styles -->
     <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <link rel="preload" href="weather-icons.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="ai-weather-styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     
-    <!-- Script de performance -->
     <script>
-        // Optimisation du chargement
         if('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(console.log);
-        }
-        
-        // Préchargement des ressources critiques
-        function preloadCritical() {
-            const criticalResources = [
-                'weather-icons.js',
-                'script.js'
-            ];
-            
-            criticalResources.forEach(src => {
-                const link = document.createElement('link');
-                link.rel = 'preload';
-                link.as = 'script';
-                link.href = src;
-                document.head.appendChild(link);
-            });
-        }
-        
-        // Démarrer le préchargement
-        if(document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', preloadCritical);
-        } else {
-            preloadCritical();
+            navigator.serviceWorker.register('sw.js').catch(console.log);
         }
     </script>
 </head>
@@ -200,7 +171,7 @@
         </div>
     </div>
 
-    <script src="weather-icons-final.js"></script>
+    <script src="weather-icons.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

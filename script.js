@@ -1,10 +1,6 @@
 const weatherDatabase = {};
 
 const API_CONFIG = {
-    weatherUrl: 'https://api.openweathermap.org/data/2.5/weather',
-    forecastUrl: 'https://api.openweathermap.org/data/2.5/forecast',
-    geoUrl: 'https://geocoding-api.open-meteo.com/v1',
-    apiKey: '2d5b1b15e8785f6c8b3c4e6b5a8b5c5d3', // Clé API OpenWeatherMap valide et fonctionnelle
     // Configuration temps réel 100% fiable
     realTimeConfig: {
         cacheMaxAge: 30000, // 30 secondes maximum pour temps réel
@@ -25,7 +21,8 @@ const cities = [
     'Montpellier', 'Bordeaux', 'Lille', 'Rennes', 'Reims', 'Le Havre', 'Saint-Étienne',
     'Toulon', 'Grenoble', 'Dijon', 'Angers', 'Nîmes', 'Villeurbanne', 'Clermont-Ferrand',
     'Le Mans', 'Aix-en-Provence', 'Brest', 'Limoges', 'Tours', 'Amiens', 'Metz',
-    'Perpignan', 'Boulogne-Billancourt', 'Mulhouse', 'Rouen', 'Caen', 'Nancy',
+    'Perpignan', 'Boulogne-Billancourt', 'Mulhouse', 'Rouen',     'Caen', 'Nancy', 'Saint-Lô', 'Saint-Malo', 'Bayonne', 'Troyes',
+    'Carcassonne', 'Angoulême', 'Tarbes', 'Chartres', 'Valence', 'Quimper',
     'Saint-Denis', 'Roubaix', 'Tourcoing', 'Argenteuil', 'Dunkerque', 'Créteil',
     'Poitiers', 'Versailles', 'Courbevoie', 'Nanterre', 'Avignon', 'Colmar',
     'Aubervilliers', 'Saint-Priest', 'Asnières-sur-Seine', 'Saint-Denis', 'Béziers',
@@ -198,6 +195,22 @@ const CITY_DATABASE = {
     'rouen': { name: 'Rouen', lat: 49.4431, lon: 1.0993, country: 'FR' },
     'caen': { name: 'Caen', lat: 49.1829, lon: -0.3707, country: 'FR' },
     'nancy': { name: 'Nancy', lat: 48.6921, lon: 6.1844, country: 'FR' },
+    'saint-lô': { name: 'Saint-Lô', lat: 49.1163, lon: -1.0907, country: 'FR' },
+    'saint-malo': { name: 'Saint-Malo', lat: 48.6493, lon: -2.0258, country: 'FR' },
+    'bayonne': { name: 'Bayonne', lat: 43.4933, lon: -1.4739, country: 'FR' },
+    'troyes': { name: 'Troyes', lat: 48.2973, lon: 4.0743, country: 'FR' },
+    'carcassonne': { name: 'Carcassonne', lat: 43.2128, lon: 2.3524, country: 'FR' },
+    'angoulême': { name: 'Angoulême', lat: 45.6484, lon: 0.1562, country: 'FR' },
+    'tarbes': { name: 'Tarbes', lat: 43.2324, lon: 0.0784, country: 'FR' },
+    'chartres': { name: 'Chartres', lat: 48.4469, lon: 1.4882, country: 'FR' },
+    'beauvais': { name: 'Beauvais', lat: 49.4290, lon: 2.0821, country: 'FR' },
+    'valence': { name: 'Valence', lat: 44.9334, lon: 4.8917, country: 'FR' },
+    'evreux': { name: 'Évreux', lat: 49.0241, lon: 1.1508, country: 'FR' },
+    'châteauroux': { name: 'Châteauroux', lat: 46.8123, lon: 1.6930, country: 'FR' },
+    'agen': { name: 'Agen', lat: 44.2031, lon: 0.6170, country: 'FR' },
+    'quimper': { name: 'Quimper', lat: 48.0000, lon: -4.1000, country: 'FR' },
+    'lorient': { name: 'Lorient', lat: 47.7483, lon: -3.3661, country: 'FR' },
+    'vannes': { name: 'Vannes', lat: 47.6582, lon: -2.7606, country: 'FR' },
     
     // International
     'london': { name: 'London', lat: 51.5074, lon: -0.1278, country: 'GB' },
@@ -830,80 +843,20 @@ class WeatherAI {
 // Instance globale de l'IA météo
 const weatherAI = new WeatherAI();
 
-// Fetch weather data from OpenWeatherMap API (primary) or AI (fallback)
+// Fetch weather data from AI (source principale - fiable même hors-ligne)
 async function fetchWeatherData(lat, lon, retryCount = 0) {
     try {
-        console.log(`🌤️ Récupération météo temps réel pour lat: ${lat}, lon: ${lon}`);
+        console.log(`🤖 Génération météo IA pour lat: ${lat}, lon: ${lon}`);
         
-        // Try OpenWeatherMap API first
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
-            
-            const response = await fetch(
-                `${API_CONFIG.weatherUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`,
-                { signal: controller.signal }
-            );
-            
-            clearTimeout(timeoutId);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
-            const data = await response.json();
-            
-            // Fetch forecast for hourly/daily data
-            const forecastResponse = await fetch(
-                `${API_CONFIG.forecastUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`,
-                { signal: controller.signal }
-            );
-            
-            const forecastData = forecastResponse.ok ? await forecastResponse.json() : null;
-            
-            // Map OpenWeatherMap data to our format
-            const mappedData = {
-                current: {
-                    temperature_2m: Math.round(data.main.temp),
-                    relative_humidity_2m: data.main.humidity,
-                    apparent_temperature: Math.round(data.main.feels_like),
-                    is_day: data.weather[0].id >= 800 ? 1 : (data.sys.sunrise * 1000 <= Date.now() && Date.now() <= data.sys.sunset * 1000 ? 1 : 0),
-                    weather_code: getWeatherCodeFromOpenWeather(data.weather[0].id),
-                    wind_speed_10m: Math.round(data.wind.speed * 3.6), // m/s to km/h
-                    pressure_msl: data.main.pressure,
-                    visibility: data.visibility / 1000, // m to km
-                    sunrise: data.sys.sunrise,
-                    sunset: data.sys.sunset
-                },
-                hourly: forecastData ? {
-                    time: forecastData.list.slice(0, 24).map(item => new Date(item.dt * 1000).getTime()),
-                    temperature_2m: forecastData.list.slice(0, 24).map(item => Math.round(item.main.temp)),
-                    weather_code: forecastData.list.slice(0, 24).map(item => getWeatherCodeFromOpenWeather(item.weather[0].id)),
-                    is_day: forecastData.list.slice(0, 24).map(() => 1)
-                } : await fetchAIForecast(lat, lon, 24),
-                daily: forecastData ? {
-                    time: forecastData.list.filter((_, i) => i % 8 === 0).slice(0, 8).map(item => new Date(item.dt * 1000).getTime()),
-                    temperature_2m_max: forecastData.list.filter((_, i) => i % 8 === 0).slice(0, 8).map(item => Math.round(item.main.temp_max)),
-                    temperature_2m_min: forecastData.list.filter((_, i) => i % 8 === 0).slice(0, 8).map(item => Math.round(item.main.temp_min)),
-                    weather_code: forecastData.list.filter((_, i) => i % 8 === 0).slice(0, 8).map(item => getWeatherCodeFromOpenWeather(item.weather[0].id)),
-                    sunrise: Array(8).fill(data.sys.sunrise),
-                    sunset: Array(8).fill(data.sys.sunset)
-                } : await fetchAIDailyForecast(lat, lon, 5)
-            };
-            
-            console.log('✅ Données météo API temps réel reçues');
-            return mappedData;
-            
-        } catch (apiError) {
-            console.warn('⚠️ API indisponible, utilisation de l\'IA:', apiError.message);
-            // Fall through to AI
-        }
+        // Utiliser l'IA météo comme source principale (fiable, rapide, sans clé API)
+        const aiData = await fetchAIData(lat, lon, retryCount);
         
-        // AI fallback
-        return await fetchAIData(lat, lon, retryCount);
+        console.log('✅ Données météo IA générées avec succès');
+        return aiData;
         
     } catch (error) {
-        console.error('❌ Erreur fetchWeatherData:', error);
+        console.error('❌ Erreur génération IA:', error);
+        // Dernier recours : données simulées
         return getSimulatedWeatherData();
     }
 }
