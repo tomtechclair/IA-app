@@ -1355,7 +1355,7 @@ async function displayWeatherData(weatherData) {
         // Next hour forecast with rain chart
         updateNextHourForecast(weatherData);
         
-        // Hourly forecast - 24h avec index basé sur le timestamp
+        // Hourly forecast - 24h améliorée avec nouvelles icônes SVG
         const hourly = weatherData.hourly;
         const now = new Date();
         const nowMs = now.getTime();
@@ -1379,22 +1379,33 @@ async function displayWeatherData(weatherData) {
             const hour = hourDate.getHours();
             const code = hourly.weather_code[hourIndex];
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
+            const temp = Math.round(hourly.temperature_2m[hourIndex]);
             
+            // Créer l'icône SVG météo IA réaliste
             const iconHTML = typeof createWeatherIconSVG === 'function' 
-                ? createWeatherIconSVG(code, hourlyIsDay, 28) 
+                ? createWeatherIconSVG(code, hourlyIsDay, 32) 
                 : '';
             
+            // Ajouter des détails supplémentaires
+            const weatherInfo = getWeatherInfo(code);
+            const isCurrentHour = i === 0;
+            const timeLabel = isCurrentHour ? 'Maintenant' : `${hour.toString().padStart(2, '0')}h`;
+            
+            // Ajouter une classe spéciale pour l'heure actuelle
+            const currentClass = isCurrentHour ? 'current-hour' : '';
+            
             hourlyHTML += `
-                <div class="hourly-item">
-                    <div class="time">${i === 0 ? 'Maintenant' : `${hour.toString().padStart(2, '0')}h`}</div>
+                <div class="hourly-item ${currentClass}">
+                    <div class="time">${timeLabel}</div>
                     <div class="icon">${iconHTML}</div>
-                    <div class="temp">${Math.round(hourly.temperature_2m[hourIndex])}°</div>
+                    <div class="temp">${temp}°</div>
+                    <div class="condition">${weatherInfo.condition}</div>
                 </div>
             `;
         }
         hourlyList.innerHTML = hourlyHTML;
         
-        // Daily forecast - nouvelles icônes SVG
+        // Daily forecast - améliorée avec icônes SVG météo IA
         const daily = weatherData.daily;
         const dailyList = document.getElementById('daily-list');
         
@@ -1416,9 +1427,11 @@ async function displayWeatherData(weatherData) {
             const date = new Date(daily.time[i]);
             const dayName = i === 0 ? 'Auj.' : days[date.getDay()];
             const code = daily.weather_code[i];
+            const weatherInfo = getWeatherInfo(code);
             
+            // Créer l'icône SVG météo IA réaliste
             const iconHTML = typeof createWeatherIconSVG === 'function' 
-                ? createWeatherIconSVG(code, true, 28) 
+                ? createWeatherIconSVG(code, true, 36) 
                 : '';
             
             const tempLow = daily.temperature_2m_min[i];
@@ -1429,13 +1442,21 @@ async function displayWeatherData(weatherData) {
                 continue;
             }
             
-            const barStart = ((tempLow - minTemp) / range) * 100;
-            const barWidth = ((tempHigh - tempLow) / range) * 100;
+            // Calculer les positions pour la barre de température
+            const lowPos = ((tempLow - minTemp) / range) * 100;
+            const highPos = ((tempHigh - minTemp) / range) * 100;
+            const barStart = Math.min(lowPos, highPos);
+            const barWidth = Math.abs(highPos - lowPos);
+            
+            // Ajouter une classe spéciale pour aujourd'hui
+            const isToday = i === 0;
+            const todayClass = isToday ? 'today' : '';
             
             dailyHTML += `
-                <div class="daily-item">
+                <div class="daily-item ${todayClass}">
                     <div class="day">${dayName}</div>
                     <div class="icon">${iconHTML}</div>
+                    <div class="condition">${weatherInfo.condition}</div>
                     <div class="temp-low">${Math.round(tempLow)}°</div>
                     <div class="temp-bar-container">
                         <div class="temp-bar" style="left: ${Math.max(0, barStart)}%; width: ${Math.max(0, barWidth)}%"></div>
@@ -2041,6 +2062,315 @@ function updateWeatherRealTime() {
 // Version optimisée de updateWeather (maintenant utilisée par updateWeatherRealTime)
 function updateWeatherOptimized(city) {
     updateWeatherRealTime();
+}
+
+// Système d'icônes météo IA réalistes
+function createWeatherIconSVG(weatherCode, isDay, size = 32) {
+    const colors = {
+        day: {
+            sun: '#FFD700',
+            sunGlow: '#FFA500',
+            cloud: '#FFFFFF',
+            cloudDark: '#D3D3D3',
+            rain: '#4A90E2',
+            snow: '#FFFFFF',
+            thunder: '#FF6B6B',
+            moon: '#F0E68C',
+            moonGlow: '#E6E6FA'
+        },
+        night: {
+            sun: '#F0E68C',
+            sunGlow: '#E6E6FA',
+            cloud: '#E8E8E8',
+            cloudDark: '#C0C0C0',
+            rain: '#6495ED',
+            snow: '#F0F8FF',
+            thunder: '#FF69B4',
+            moon: '#F0E68C',
+            moonGlow: '#E6E6FA'
+        }
+    };
+    
+    const palette = isDay ? colors.day : colors.night;
+    
+    switch(weatherCode) {
+        case 0: // Ensoleillé
+            return createSunIcon(palette, size);
+        case 1: // Partiellement nuageux
+            return createPartlyCloudyIcon(palette, size);
+        case 2: // Nuageux
+            return createCloudyIcon(palette, size);
+        case 3: // Couvert
+            return createOvercastIcon(palette, size);
+        case 45: // Brouillard
+            return createFogIcon(palette, size);
+        case 48: // Brouillard givrant
+            return createFreezingFogIcon(palette, size);
+        case 51: // Bruine légère
+        case 53: // Bruine modérée
+        case 55: // Bruine forte
+            return createDrizzleIcon(palette, size);
+        case 61: // Pluie légère
+        case 63: // Pluie modérée
+        case 65: // Pluie forte
+            return createRainIcon(palette, size);
+        case 71: // Neige légère
+        case 73: // Neige modérée
+        case 75: // Neige forte
+            return createSnowIcon(palette, size);
+        case 80: // Averses légères
+        case 81: // Averses modérées
+        case 82: // Averses violentes
+            return createShowerIcon(palette, size);
+        case 85: // Averses de neige
+        case 86: // Averses de neige
+            return createSnowShowerIcon(palette, size);
+        case 95: // Orage
+        case 96: // Orage grêle
+        case 99: // Orage violent
+            return createThunderstormIcon(palette, size);
+        default:
+            return createSunIcon(palette, size);
+    }
+}
+
+function createSunIcon(palette, size) {
+    const center = size / 2;
+    const sunRadius = size * 0.25;
+    const rayLength = size * 0.4;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Rayons du soleil -->
+            ${[...Array(8)].map((_, i) => {
+                const angle = (i * 45) * Math.PI / 180;
+                const x1 = center + Math.cos(angle) * (sunRadius + 2);
+                const y1 = center + Math.sin(angle) * (sunRadius + 2);
+                const x2 = center + Math.cos(angle) * rayLength;
+                const y2 = center + Math.sin(angle) * rayLength;
+                return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${palette.sunGlow}" stroke-width="2" stroke-linecap="round"/>`;
+            }).join('')}
+            
+            <!-- Cercle du soleil -->
+            <circle cx="${center}" cy="${center}" r="${sunRadius}" fill="${palette.sun}"/>
+            <circle cx="${center}" cy="${center}" r="${sunRadius * 0.9}" fill="${palette.sunGlow}" opacity="0.3"/>
+        </svg>
+    `;
+}
+
+function createPartlyCloudyIcon(palette, size) {
+    const center = size / 2;
+    const sunRadius = size * 0.2;
+    const cloudX = center + size * 0.1;
+    const cloudY = center + size * 0.1;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Soleil partiellement visible -->
+            <circle cx="${center - size * 0.15}" cy="${center - size * 0.1}" r="${sunRadius}" fill="${palette.sun}"/>
+            
+            <!-- Nuage -->
+            <ellipse cx="${cloudX}" cy="${cloudY}" rx="${size * 0.25}" ry="${size * 0.15}" fill="${palette.cloud}"/>
+            <ellipse cx="${cloudX - size * 0.08}" cy="${cloudY - size * 0.05}" rx="${size * 0.18}" ry="${size * 0.12}" fill="${palette.cloud}"/>
+            <ellipse cx="${cloudX + size * 0.08}" cy="${cloudY - size * 0.03}" rx="${size * 0.15}" ry="${size * 0.1}" fill="${palette.cloud}"/>
+        </svg>
+    `;
+}
+
+function createCloudyIcon(palette, size) {
+    const center = size / 2;
+    const cloudY = center;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Nuages -->
+            <ellipse cx="${center}" cy="${cloudY}" rx="${size * 0.3}" ry="${size * 0.18}" fill="${palette.cloud}"/>
+            <ellipse cx="${center - size * 0.1}" cy="${cloudY - size * 0.05}" rx="${size * 0.22}" ry="${size * 0.15}" fill="${palette.cloud}"/>
+            <ellipse cx="${center + size * 0.1}" cy="${cloudY - size * 0.02}" rx="${size * 0.18}" ry="${size * 0.12}" fill="${palette.cloud}"/>
+            <ellipse cx="${center + size * 0.05}" cy="${cloudY + size * 0.08}" rx="${size * 0.2}" ry="${size * 0.1}" fill="${palette.cloudDark}"/>
+        </svg>
+    `;
+}
+
+function createOvercastIcon(palette, size) {
+    const center = size / 2;
+    const cloudY = center;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Nuages couverts -->
+            <ellipse cx="${center}" cy="${cloudY - size * 0.05}" rx="${size * 0.32}" ry="${size * 0.2}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center - size * 0.12}" cy="${cloudY - size * 0.08}" rx="${size * 0.25}" ry="${size * 0.16}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center + size * 0.12}" cy="${cloudY - size * 0.05}" rx="${size * 0.2}" ry="${size * 0.13}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center}" cy="${cloudY + size * 0.05}" rx="${size * 0.28}" ry="${size * 0.15}" fill="${palette.cloud}"/>
+        </svg>
+    `;
+}
+
+function createRainIcon(palette, size) {
+    const center = size / 2;
+    const cloudY = center - size * 0.15;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Nuage -->
+            <ellipse cx="${center}" cy="${cloudY}" rx="${size * 0.3}" ry="${size * 0.18}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center - size * 0.08}" cy="${cloudY - size * 0.03}" rx="${size * 0.2}" ry="${size * 0.12}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center + size * 0.08}" cy="${cloudY}" rx="${size * 0.18}" ry="${size * 0.1}" fill="${palette.cloudDark}"/>
+            
+            <!-- Gouttes de pluie -->
+            ${[...Array(5)].map((_, i) => {
+                const x = center - size * 0.2 + (i * size * 0.1);
+                const y = cloudY + size * 0.1;
+                return `<line x1="${x}" y1="${y}" x2="${x - 2}" y2="${y + size * 0.15}" stroke="${palette.rain}" stroke-width="2" stroke-linecap="round" opacity="0.8"/>`;
+            }).join('')}
+        </svg>
+    `;
+}
+
+function createSnowIcon(palette, size) {
+    const center = size / 2;
+    const cloudY = center - size * 0.15;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Nuage -->
+            <ellipse cx="${center}" cy="${cloudY}" rx="${size * 0.3}" ry="${size * 0.18}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center - size * 0.08}" cy="${cloudY - size * 0.03}" rx="${size * 0.2}" ry="${size * 0.12}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center + size * 0.08}" cy="${cloudY}" rx="${size * 0.18}" ry="${size * 0.1}" fill="${palette.cloudDark}"/>
+            
+            <!-- Flocons de neige -->
+            ${[...Array(6)].map((_, i) => {
+                const x = center - size * 0.2 + (i * size * 0.08);
+                const y = cloudY + size * 0.1;
+                return `<circle cx="${x}" cy="${y}" r="2" fill="${palette.snow}" opacity="0.9"/>`;
+            }).join('')}
+        </svg>
+    `;
+}
+
+function createThunderstormIcon(palette, size) {
+    const center = size / 2;
+    const cloudY = center - size * 0.15;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Nuage d'orage -->
+            <ellipse cx="${center}" cy="${cloudY}" rx="${size * 0.32}" ry="${size * 0.2}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center - size * 0.1}" cy="${cloudY - size * 0.05}" rx="${size * 0.22}" ry="${size * 0.15}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center + size * 0.1}" cy="${cloudY}" rx="${size * 0.18}" ry="${size * 0.12}" fill="${palette.cloudDark}"/>
+            
+            <!-- Éclair -->
+            <path d="M ${center - 2} ${cloudY + size * 0.05} L ${center + 2} ${cloudY + size * 0.12} L ${center - 1} ${cloudY + size * 0.12} L ${center + 1} ${cloudY + size * 0.2} Z" 
+                  fill="${palette.thunder}" opacity="0.9"/>
+            
+            <!-- Gouttes de pluie -->
+            ${[...Array(3)].map((_, i) => {
+                const x = center + size * 0.1 + (i * size * 0.06);
+                const y = cloudY + size * 0.15;
+                return `<line x1="${x}" y1="${y}" x2="${x - 2}" y2="${y + size * 0.1}" stroke="${palette.rain}" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>`;
+            }).join('')}
+        </svg>
+    `;
+}
+
+function createDrizzleIcon(palette, size) {
+    const center = size / 2;
+    const cloudY = center - size * 0.15;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Nuage -->
+            <ellipse cx="${center}" cy="${cloudY}" rx="${size * 0.28}" ry="${size * 0.16}" fill="${palette.cloud}"/>
+            <ellipse cx="${center - size * 0.06}" cy="${cloudY - size * 0.02}" rx="${size * 0.18}" ry="${size * 0.1}" fill="${palette.cloud}"/>
+            
+            <!-- Bruine -->
+            ${[...Array(7)].map((_, i) => {
+                const x = center - size * 0.15 + (i * size * 0.05);
+                const y = cloudY + size * 0.08;
+                return `<line x1="${x}" y1="${y}" x2="${x - 1}" y2="${y + size * 0.08}" stroke="${palette.rain}" stroke-width="1" stroke-linecap="round" opacity="0.6"/>`;
+            }).join('')}
+        </svg>
+    `;
+}
+
+function createShowerIcon(palette, size) {
+    const center = size / 2;
+    const cloudY = center - size * 0.15;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Nuage -->
+            <ellipse cx="${center}" cy="${cloudY}" rx="${size * 0.3}" ry="${size * 0.18}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center - size * 0.08}" cy="${cloudY - size * 0.03}" rx="${size * 0.2}" ry="${size * 0.12}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center + size * 0.08}" cy="${cloudY}" rx="${size * 0.18}" ry="${size * 0.1}" fill="${palette.cloudDark}"/>
+            
+            <!-- Averses -->
+            ${[...Array(6)].map((_, i) => {
+                const x = center - size * 0.18 + (i * size * 0.07);
+                const y = cloudY + size * 0.1;
+                return `<line x1="${x}" y1="${y}" x2="${x - 2}" y2="${y + size * 0.12}" stroke="${palette.rain}" stroke-width="2" stroke-linecap="round" opacity="0.8"/>`;
+            }).join('')}
+        </svg>
+    `;
+}
+
+function createSnowShowerIcon(palette, size) {
+    const center = size / 2;
+    const cloudY = center - size * 0.15;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Nuage -->
+            <ellipse cx="${center}" cy="${cloudY}" rx="${size * 0.3}" ry="${size * 0.18}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center - size * 0.08}" cy="${cloudY - size * 0.03}" rx="${size * 0.2}" ry="${size * 0.12}" fill="${palette.cloudDark}"/>
+            <ellipse cx="${center + size * 0.08}" cy="${cloudY}" rx="${size * 0.18}" ry="${size * 0.1}" fill="${palette.cloudDark}"/>
+            
+            <!-- Averses de neige -->
+            ${[...Array(8)].map((_, i) => {
+                const x = center - size * 0.2 + (i * size * 0.06);
+                const y = cloudY + size * 0.1;
+                return `<circle cx="${x}" cy="${y}" r="1.5" fill="${palette.snow}" opacity="0.9"/>`;
+            }).join('')}
+        </svg>
+    `;
+}
+
+function createFogIcon(palette, size) {
+    const center = size / 2;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Lignes de brouillard -->
+            ${[...Array(5)].map((_, i) => {
+                const y = center - size * 0.2 + (i * size * 0.1);
+                const width = size * (0.8 - i * 0.05);
+                return `<rect x="${center - width/2}" y="${y}" width="${width}" height="3" fill="${palette.cloud}" opacity="${0.6 - i * 0.1}" rx="1"/>`;
+            }).join('')}
+        </svg>
+    `;
+}
+
+function createFreezingFogIcon(palette, size) {
+    const center = size / 2;
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <!-- Brouillard givrant -->
+            ${[...Array(5)].map((_, i) => {
+                const y = center - size * 0.2 + (i * size * 0.1);
+                const width = size * (0.8 - i * 0.05);
+                return `<rect x="${center - width/2}" y="${y}" width="${width}" height="3" fill="${palette.cloudDark}" opacity="${0.7 - i * 0.1}" rx="1"/>`;
+            }).join('')}
+            
+            <!-- Cristaux de glace -->
+            ${[...Array(4)].map((_, i) => {
+                const x = center - size * 0.15 + (i * size * 0.1);
+                const y = center + size * 0.1;
+                return `<circle cx="${x}" cy="${y}" r="1.5" fill="${palette.snow}" opacity="0.8"/>`;
+            }).join('')}
+        </svg>
+    `;
 }
 
 // Détecter si on est sur mobile
