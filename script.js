@@ -1,14 +1,19 @@
 const weatherDatabase = {};
 
 const API_CONFIG = {
+    // Vraie API météo WeatherAPI.com (gratuite et fiable)
+    weatherApiKey: 'demo', // Clé de démonstration, remplacer par vraie clé si nécessaire
+    weatherUrl: 'https://api.weatherapi.com/v1/current.json',
+    forecastUrl: 'https://api.weatherapi.com/v1/forecast.json',
+    searchUrl: 'https://api.weatherapi.com/v1/search.json',
     // Configuration temps réel 100% fiable
     realTimeConfig: {
-        cacheMaxAge: 30000, // 30 secondes maximum pour temps réel
-        refreshInterval: 15000, // 15 secondes pour rafraîchissement automatique
-        timeoutDuration: 8000, // 8 secondes timeout
-        retryAttempts: 3, // 3 tentatives en cas d'échec
-        fallbackEnabled: true // Activer les données de secours
-    }
+        cacheMaxAge: 60000, // 1 minute pour temps réel
+        refreshInterval: 300000, // 5 minutes pour rafraîchissement automatique
+        retryAttempts: 2, // 2 tentatives en cas d'échec
+        fallbackEnabled: true // Activer le système de secours IA
+    },
+    timeout: 8000 // Timeout de 8 secondes
 };
 
 let currentCity = 'Paris';
@@ -529,10 +534,10 @@ class WeatherAI {
             humidity: humidity,
             windSpeed: windSpeed,
             pressure: pressure,
-            visibility: this.calculateVisibility(weatherCode, humidity),
-            uvIndex: this.calculateUVIndex(hour, weatherCode, season),
-            sunrise: this.calculateSunrise(now, season),
-            sunset: this.calculateSunset(now, season),
+            visibility: visibility,
+            uvIndex: uvIndex,
+            sunrise: sunrise,
+            sunset: sunset,
             condition: this.getWeatherCondition(weatherCode),
             isDay: hour >= 6 && hour <= 20 ? 1 : 0
         };
