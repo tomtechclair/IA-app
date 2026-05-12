@@ -99,6 +99,35 @@ const cities = [
     'Voronezh', 'Volgograd', 'Krasnodar', 'Saratov', 'Tolyatti', 'Izhevsk'
 ];
 
+// Configuration IA pour le cache
+const AI_CONFIG = {
+    aiCache: {
+        maxAge: 60000 // 1 minute
+    }
+};
+
+// Patterns météo pour l'IA
+const WEATHER_PATTERNS = {
+    seasonal: {
+        spring: { conditions: [0, 1, 2] },
+        summer: { conditions: [0, 1] },
+        autumn: { conditions: [0, 1, 2, 3] },
+        winter: { conditions: [0, 1, 2, 3, 71, 73] }
+    },
+    geographic: {
+        urban: { tempBonus: 1, humidityBonus: 5, windBonus: 0 },
+        coastal: { tempBonus: 2, humidityBonus: 10, windBonus: 5 },
+        mountain: { tempBonus: -5, humidityBonus: -5, windBonus: 10 },
+        rural: { tempBonus: 0, humidityBonus: 0, windBonus: 3 }
+    },
+    hourly: {
+        morning: { tempModifier: -2 },
+        afternoon: { tempModifier: 3 },
+        evening: { tempModifier: 0 },
+        night: { tempModifier: -3 }
+    }
+};
+
 const weatherCodes = {
     0: { condition: 'Ensoleillé', bg: 'bg-blue' },
     1: { condition: 'Partiellement nuageux', bg: 'bg-blue' },
@@ -746,7 +775,7 @@ class WeatherAI {
                 conditionEvolution = this.generateWeatherCode(
                     this.getSeason(futureTime.getMonth()),
                     futureHour,
-                    this.getGeographicProfile(currentCity, currentCoords.lat, currentCoords.lon),
+                    this.getGeographicProfile(currentCity, currentCoords?.lat || 48.8566, currentCoords?.lon || 2.3522),
                     tempEvolution
                 );
             }
@@ -780,7 +809,7 @@ class WeatherAI {
             const dailyCondition = this.generateWeatherCode(
                 season,
                 14, // Milieu d'après-midi
-                this.getGeographicProfile(currentCity, currentCoords.lat, currentCoords.lon),
+                this.getGeographicProfile(currentCity, currentCoords?.lat || 48.8566, currentCoords?.lon || 2.3522),
                 maxTemp
             );
             
@@ -801,108 +830,157 @@ class WeatherAI {
 // Instance globale de l'IA météo
 const weatherAI = new WeatherAI();
 
+// Fetch weather data from OpenWeatherMap API (primary) or AI (fallback)
 async function fetchWeatherData(lat, lon, retryCount = 0) {
     try {
-        console.log(`🤖 Génération IA météo temps réel pour lat: ${lat}, lon: ${lon} (tentative ${retryCount + 1})`);
+        console.log(`🌤️ Récupération météo temps réel pour lat: ${lat}, lon: ${lon}`);
         
-        // Cache intelligent pour l'IA
-        const cacheKey = `ai_weather_${lat.toFixed(2)}_${lon.toFixed(2)}`;
-        const cachedData = localStorage.getItem(cacheKey);
-        
-        if (cachedData) {
-            const { data, timestamp } = JSON.parse(cachedData);
-            const age = Date.now() - timestamp;
+        // Try OpenWeatherMap API first
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
             
-            // Cache pour l'IA (1 minute maximum)
-            const maxAge = AI_CONFIG.aiCache.maxAge;
+            const response = await fetch(
+                `${API_CONFIG.weatherUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`,
+                { signal: controller.signal }
+            );
             
-            if (age < maxAge) {
-                console.log(`🧠 Données IA fraîches (${Math.round(age/1000)}s)`);
-                return data;
-            } else {
-                // Cache expiré mais garder en backup
-                localStorage.setItem(`${cacheKey}_backup`, JSON.stringify({
-                    data,
-                    timestamp: Date.now() - maxAge + 5000
-                }));
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
+            
+            const data = await response.json();
+            
+            // Fetch forecast for hourly/daily data
+            const forecastResponse = await fetch(
+                `${API_CONFIG.forecastUrl}?lat=${lat}&lon=${lon}&appid=${API_CONFIG.apiKey}&units=metric&lang=fr`,
+                { signal: controller.signal }
+            );
+            
+            const forecastData = forecastResponse.ok ? await forecastResponse.json() : null;
+            
+            // Map OpenWeatherMap data to our format
+            const mappedData = {
+                current: {
+                    temperature_2m: Math.round(data.main.temp),
+                    relative_humidity_2m: data.main.humidity,
+                    apparent_temperature: Math.round(data.main.feels_like),
+                    is_day: data.weather[0].id >= 800 ? 1 : (data.sys.sunrise * 1000 <= Date.now() && Date.now() <= data.sys.sunset * 1000 ? 1 : 0),
+                    weather_code: getWeatherCodeFromOpenWeather(data.weather[0].id),
+                    wind_speed_10m: Math.round(data.wind.speed * 3.6), // m/s to km/h
+                    pressure_msl: data.main.pressure,
+                    visibility: data.visibility / 1000, // m to km
+                    sunrise: data.sys.sunrise,
+                    sunset: data.sys.sunset
+                },
+                hourly: forecastData ? {
+                    time: forecastData.list.slice(0, 24).map(item => new Date(item.dt * 1000).getTime()),
+                    temperature_2m: forecastData.list.slice(0, 24).map(item => Math.round(item.main.temp)),
+                    weather_code: forecastData.list.slice(0, 24).map(item => getWeatherCodeFromOpenWeather(item.weather[0].id)),
+                    is_day: forecastData.list.slice(0, 24).map(() => 1)
+                } : await fetchAIForecast(lat, lon, 24),
+                daily: forecastData ? {
+                    time: forecastData.list.filter((_, i) => i % 8 === 0).slice(0, 8).map(item => new Date(item.dt * 1000).getTime()),
+                    temperature_2m_max: forecastData.list.filter((_, i) => i % 8 === 0).slice(0, 8).map(item => Math.round(item.main.temp_max)),
+                    temperature_2m_min: forecastData.list.filter((_, i) => i % 8 === 0).slice(0, 8).map(item => Math.round(item.main.temp_min)),
+                    weather_code: forecastData.list.filter((_, i) => i % 8 === 0).slice(0, 8).map(item => getWeatherCodeFromOpenWeather(item.weather[0].id)),
+                    sunrise: Array(8).fill(data.sys.sunrise),
+                    sunset: Array(8).fill(data.sys.sunset)
+                } : await fetchAIDailyForecast(lat, lon, 5)
+            };
+            
+            console.log('✅ Données météo API temps réel reçues');
+            return mappedData;
+            
+        } catch (apiError) {
+            console.warn('⚠️ API indisponible, utilisation de l\'IA:', apiError.message);
+            // Fall through to AI
         }
-
-        // Génération IA des conditions météo actuelles
-        const currentConditions = weatherAI.analyzeWeatherConditions(lat, lon, currentCity);
         
-        // Génération IA des prévisions
-        const hourlyForecast = weatherAI.generateHourlyForecast(currentConditions, 24);
-        const dailyForecast = weatherAI.generateDailyForecast(currentConditions, 5);
+        // AI fallback
+        return await fetchAIData(lat, lon, retryCount);
         
-        // Mapping des données IA au format attendu
-        const mappedData = {
-            current: {
-                temperature_2m: currentConditions.temperature,
-                relative_humidity_2m: currentConditions.humidity,
-                apparent_temperature: currentConditions.feelsLike,
-                is_day: currentConditions.isDay,
-                weather_code: currentConditions.weatherCode,
-                wind_speed_10m: currentConditions.windSpeed,
-                pressure_msl: currentConditions.pressure,
-                visibility: currentConditions.visibility,
-                sunrise: currentConditions.sunrise,
-                sunset: currentConditions.sunset
-            },
-            hourly: {
-                time: hourlyForecast.map(item => item.time),
-                temperature_2m: hourlyForecast.map(item => item.temperature),
-                weather_code: hourlyForecast.map(item => item.weatherCode),
-                is_day: hourlyForecast.map(item => item.isDay)
-            },
-            daily: {
-                time: dailyForecast.map(item => item.time),
-                temperature_2m_max: dailyForecast.map(item => item.temperature_2m_max),
-                temperature_2m_min: dailyForecast.map(item => item.temperature_2m_min),
-                weather_code: dailyForecast.map(item => item.weatherCode),
-                sunrise: dailyForecast.map(item => item.sunrise),
-                sunset: dailyForecast.map(item => item.sunset)
-            }
-        };
-
-        // Mise en cache des données IA
-        localStorage.setItem(cacheKey, JSON.stringify({
-            data: mappedData,
-            timestamp: Date.now()
-        }));
-
-        console.log('🤖 Données météo IA générées avec succès:', {
-            temperature: currentConditions.temperature,
-            condition: currentConditions.condition,
-            humidity: currentConditions.humidity,
-            wind: currentConditions.windSpeed
-        });
-        
-        return mappedData;
-
     } catch (error) {
-        console.error(`❌ Erreur génération IA (tentative ${retryCount + 1}):`, error);
-        
-        // Retry automatique pour l'IA
-        if (retryCount < 2) {
-            console.log(`🔄 Nouvelle génération IA dans 1 seconde...`);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return fetchWeatherData(lat, lon, retryCount + 1);
-        }
-        
-        // Fallback vers les données de cache backup
-        const backupData = localStorage.getItem(`${cacheKey}_backup`);
-        if (backupData) {
-            console.log('📦 Utilisation des données IA de cache backup');
-            const { data } = JSON.parse(backupData);
+        console.error('❌ Erreur fetchWeatherData:', error);
+        return getSimulatedWeatherData();
+    }
+}
+
+// AI-generated data as fallback
+async function fetchAIData(lat, lon, retryCount = 0) {
+    const cacheKey = `ai_weather_${lat.toFixed(2)}_${lon.toFixed(2)}`;
+    const cachedData = localStorage.getItem(cacheKey);
+    
+    if (cachedData) {
+        const { data, timestamp } = JSON.parse(cachedData);
+        const age = Date.now() - timestamp;
+        if (age < AI_CONFIG.aiCache.maxAge) {
             return data;
         }
-        
-        // Dernier recours : données simulées de base
-        console.log('🛡️ Utilisation des données IA de secours');
-        const fallbackData = getSimulatedWeatherData();
-        return fallbackData;
     }
+    
+    const currentConditions = weatherAI.analyzeWeatherConditions(lat, lon, currentCity);
+    const hourlyForecast = weatherAI.generateHourlyForecast(currentConditions, 24);
+    const dailyForecast = weatherAI.generateDailyForecast(currentConditions, 5);
+    
+    const mappedData = {
+        current: {
+            temperature_2m: currentConditions.temperature,
+            relative_humidity_2m: currentConditions.humidity,
+            apparent_temperature: currentConditions.feelsLike,
+            is_day: currentConditions.isDay,
+            weather_code: currentConditions.weatherCode,
+            wind_speed_10m: currentConditions.windSpeed,
+            pressure_msl: currentConditions.pressure,
+            visibility: currentConditions.visibility,
+            sunrise: currentConditions.sunrise,
+            sunset: currentConditions.sunset
+        },
+        hourly: {
+            time: hourlyForecast.map(item => item.time),
+            temperature_2m: hourlyForecast.map(item => item.temperature),
+            weather_code: hourlyForecast.map(item => item.weatherCode),
+            is_day: hourlyForecast.map(item => item.isDay)
+        },
+        daily: {
+            time: dailyForecast.map(item => item.time),
+            temperature_2m_max: dailyForecast.map(item => item.temperature_2m_max),
+            temperature_2m_min: dailyForecast.map(item => item.temperature_2m_min),
+            weather_code: dailyForecast.map(item => item.weatherCode),
+            sunrise: dailyForecast.map(item => item.sunrise),
+            sunset: dailyForecast.map(item => item.sunset)
+        }
+    };
+    
+    localStorage.setItem(cacheKey, JSON.stringify({ data: mappedData, timestamp: Date.now() }));
+    return mappedData;
+}
+
+// Fallback forecast helpers
+async function fetchAIForecast(lat, lon, hours) {
+    const currentConditions = weatherAI.analyzeWeatherConditions(lat, lon, currentCity);
+    const hourlyForecast = weatherAI.generateHourlyForecast(currentConditions, hours);
+    return {
+        time: hourlyForecast.map(item => item.time),
+        temperature_2m: hourlyForecast.map(item => item.temperature),
+        weather_code: hourlyForecast.map(item => item.weatherCode),
+        is_day: hourlyForecast.map(item => item.isDay)
+    };
+}
+
+async function fetchAIDailyForecast(lat, lon, days) {
+    const currentConditions = weatherAI.analyzeWeatherConditions(lat, lon, currentCity);
+    const dailyForecast = weatherAI.generateDailyForecast(currentConditions, days);
+    return {
+        time: dailyForecast.map(item => item.time),
+        temperature_2m_max: dailyForecast.map(item => item.temperature_2m_max),
+        temperature_2m_min: dailyForecast.map(item => item.temperature_2m_min),
+        weather_code: dailyForecast.map(item => item.weatherCode),
+        sunrise: dailyForecast.map(item => item.sunrise),
+        sunset: dailyForecast.map(item => item.sunset)
+    };
 }
 
 function isDayTime(sunrise, sunset) {
@@ -1729,9 +1807,9 @@ function isPageVisible() {
     return !document.hidden;
 }
 
-// Vérifier si on est en ligne
+// Vérifier si on est en ligne - L'IA météo fonctionne hors ligne
 function isOnline() {
-    return navigator.onLine;
+    return true; // L'IA météo fonctionne même sans connexion
 }
 
 // Mettre en place les gestionnaires de visibilité
@@ -1760,31 +1838,7 @@ function isPageVisible() {
     }
 }
 
-// Vérifier si on est en ligne avec gestion d'erreur améliorée
-function isOnline() {
-    try {
-        // Vérification basique du navigateur
-        if (!navigator || typeof navigator.onLine === 'undefined') {
-            console.warn('API navigator.onLine non disponible');
-            return true; // Par défaut, considérer comme en ligne
-        }
-        
-        const online = navigator.onLine;
-        
-        // Vérification supplémentaire avec une requête simple
-        if (online) {
-            // Test de connexion avec timeout très court
-            return testConnection();
-        }
-        
-        return online;
-    } catch (error) {
-        console.warn('Erreur vérification connexion:', error);
-        return true; // Par défaut, considérer comme en ligne
-    }
-}
-
-// Test de connexion rapide
+// Test de connexion rapide - désactivé car l'IA fonctionne hors ligne
 async function testConnection() {
     try {
         // Test avec une requête simple et rapide
@@ -2024,9 +2078,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Legacy support
-document.getElementById('city-input').addEventListener('blur', function() {
-    if (this.value.trim() !== currentCity) {
-        searchCity();
+// Legacy support - attach after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    const legacyInput = document.getElementById('city-input');
+    if (legacyInput) {
+        legacyInput.addEventListener('blur', function() {
+            if (this.value.trim() !== currentCity) {
+                searchCity();
+            }
+        });
     }
 });
