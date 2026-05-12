@@ -518,18 +518,6 @@ function createWeatherIconSVG(code, isDay = true, size = 32) {
             </defs>
         </g>
     </svg>`;
-            <line class="drop-1" x1="30" y1="55" x2="30" y2="62" stroke="#81D4FA" stroke-width="2" stroke-linecap="round"/>
-            <line class="drop-2" x1="40" y1="55" x2="40" y2="63" stroke="#81D4FA" stroke-width="2" stroke-linecap="round"/>
-            <line class="drop-3" x1="50" y1="55" x2="50" y2="61" stroke="#81D4FA" stroke-width="2" stroke-linecap="round"/>
-            <line class="drop-1" x1="35" y1="58" x2="35" y2="63" stroke="#81D4FA" stroke-width="2" stroke-linecap="round"/>
-            <defs>
-                <linearGradient id="cloudGrad8" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#C0C0C0"/>
-                    <stop offset="100%" style="stop-color:#A0A0A0"/>
-                </linearGradient>
-            </defs>
-        </g>
-    </svg>`;
 
     // Sélectionner l'icône selon le code WMO
     if (!isDay && (code === 0 || code === 1)) {
