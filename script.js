@@ -976,10 +976,9 @@ async function fetchOpenMeteo(lat, lon) {
 let openMeteoCache = { key: null, data: null, timestamp: 0 };
 const OPEN_METEO_CACHE_TTL = 1 * 60 * 1000; // 5 minutes
 
-// Fetch weather data - Open-Meteo API (gratuite et fiable)
-function fetchWeatherData(lat, lon, retryCount = 0) {
-    // Utiliser données simulées directement (Open-Meteo a des problèmes)
-    console.log('Chargement données météo pour:', lat, lon);
+// Fetch weather data - utilise l'IA météo simulations
+async function fetchWeatherData(lat, lon, retryCount = 0) {
+    // Simulated weather data
     return getSimulatedWeatherData(lat, lon);
 }
 
