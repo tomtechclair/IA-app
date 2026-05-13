@@ -494,18 +494,56 @@ async function searchCityCoords(cityName) {
 }
 
 // Obtenir le nom de la ville à partir des coordonnées avec reverse geocoding
+// Utilise Nominatim (OpenStreetMap) pour un reverse geocoding fiable
 async function getCityNameFromCoords(lat, lon) {
     try {
-        // Utiliser Open-Meteo Geocoding API pour reverse geocoding
-        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?latitude=${lat}&longitude=${lon}&count=1&language=fr`, {
-            timeout: 5000
+        // Utiliser Nominatim pour reverse geocoding (fiable et gratuit)
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=fr`, {
+            headers: {
+                'User-Agent': 'MeteoApp/1.0'
+            },
+            signal: AbortSignal.timeout(5000)
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Priorité: ville > village > municipality > county
+            let cityName = data.address.city || data.address.town || data.address.village || 
+                          data.address.municipality || data.address.county || data.address.state;
+            
+            // Ajouter le pays si disponible et si different de la ville
+            const country = data.address.country_code?.toUpperCase();
+            if (country && !cityName?.includes(country)) {
+                // Garder juste le nom de la ville sans le pays
+            }
+            
+            if (cityName && cityName !== data.address.country) {
+                console.log(`🏙️ Ville trouvée par reverse geocoding: ${cityName}`);
+                return {
+                    name: cityName,
+                    lat: lat,
+                    lon: lon,
+                    country: data.address.country || country || '',
+                    admin1: data.address.state || data.address.region || ''
+                };
+            }
+        }
+    } catch (error) {
+        console.warn('Erreur Nominatim:', error.message);
+    }
+    
+    // Fallback 1: Essayer Open-Meteo Geocoding API
+    try {
+        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=fr`, {
+            signal: AbortSignal.timeout(5000)
         });
         
         if (response.ok) {
             const data = await response.json();
             if (data.results && data.results.length > 0) {
                 const result = data.results[0];
-                console.log(`🏙️ Ville trouvée par reverse geocoding: ${result.name}`);
+                console.log(`🏙️ Ville trouvée par Open-Meteo: ${result.name}`);
                 return {
                     name: result.name,
                     lat: lat,
@@ -516,12 +554,12 @@ async function getCityNameFromCoords(lat, lon) {
             }
         }
     } catch (error) {
-        console.warn('Erreur reverse geocoding:', error);
+        console.warn('Erreur Open-Meteo reverse:', error.message);
     }
     
-    // Fallback : utiliser les coordonnées avec un nom générique
+    // Fallback 2: Utiliser les coordonnées avec un nom générique
     return {
-        name: 'Votre position',
+        name: 'Position détectée',
         lat: lat,
         lon: lon,
         country: '',
