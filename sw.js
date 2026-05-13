@@ -1,17 +1,14 @@
 // Service Worker pour performances ULTRA-RAPIDES sur mobile
-const CACHE_NAME = 'weather-app-v3';
-const STATIC_CACHE = 'static-v3';
-const API_CACHE = 'api-v3';
+const CACHE_NAME = 'weather-app-v4';
+const STATIC_CACHE = 'static-v4';
+const API_CACHE = 'api-v4';
 
-// Ressources critiques à mettre en cache - TOUS les fichiers
+// Ressources critiques
 const CRITICAL_RESOURCES = [
     './',
     './index.html',
     './style.css',
-    './weather-icons.css',
-    './weather-icons.js',
-    './script.js',
-    './apple-weather-icons.js'
+    './script.js'
 ];
 
 // Installation du Service Worker
