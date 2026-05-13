@@ -6,11 +6,10 @@ if (!AbortSignal.timeout) {
     };
 }
 
-// Direct DOM update from Open-Meteo (working pattern)
-// FIX: Use window.load + longer delay for mobile compatibility
-window.addEventListener('load', function() {
-    // Wait 30 seconds to ensure data loads AFTER everything else, including mobile
-    setTimeout(function() {
+// Direct DOM update from Open-Meteo - RUN IMMEDIATELY on script load
+(function() {
+    // Run immediately when script loads (bypasses all DOM events)
+    const loadWeatherData = () => {
         console.log('Weather init: Loading Open-Meteo data...');
         const lat = 48.85, lon = 2.35;
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,wind_speed_10m,pressure_msl,cloud_cover&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&hourly=temperature_2m,weather_code&timezone=auto&forecast_days=7`;
@@ -23,14 +22,14 @@ window.addEventListener('load', function() {
             .then(d => {
                 console.log('Weather data loaded:', d);
                 
-                // Update temperature
+                // Update temperature - force override
                 const tempEl = document.querySelector('.big-temp');
                 if (tempEl && d.current && d.current.temperature_2m !== undefined) {
                     tempEl.textContent = Math.round(d.current.temperature_2m) + '°';
                     tempEl.dataset.loaded = 'true';
                 }
                 
-                // Update high/low
+                // Update high/low - force override
                 const hlEl = document.querySelector('.high-low');
                 if (hlEl && d.daily) {
                     const max = d.daily.temperature_2m_max?.[0];
@@ -41,7 +40,7 @@ window.addEventListener('load', function() {
                     }
                 }
                 
-                // Update condition based on weather code
+                // Update condition
                 const condEl = document.querySelector('.condition');
                 if (condEl && d.current) {
                     const code = d.current.weather_code;
@@ -100,8 +99,19 @@ window.addEventListener('load', function() {
                 console.log('Weather display updated successfully');
             })
             .catch(e => console.error('Weather load failed:', e));
-    }, 100); // Ultra-fast: just enough to ensure DOM is ready
-});
+    };
+    
+    // Run immediately when script loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadWeatherData);
+    } else {
+        // DOM already ready, run immediately
+        loadWeatherData();
+    }
+    
+    // Also run on window.load as backup
+    window.addEventListener('load', loadWeatherData);
+})();
 
 const weatherDatabase = {};
 
