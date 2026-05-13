@@ -1,6 +1,6 @@
 // Service Worker pour performances ULTRA-RAPIDES sur mobile
-const CACHE_NAME = 'weather-app-v5';
-const STATIC_CACHE = 'static-v5';
+const CACHE_NAME = 'static-v6';
+const STATIC_CACHE = 'static-v6';
 const API_CACHE = 'api-v5';
 
 // Ressources critiques
