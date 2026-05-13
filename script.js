@@ -566,10 +566,10 @@ class WeatherAI {
             humidity: humidity,
             windSpeed: windSpeed,
             pressure: pressure,
-            visibility: visibility,
-            uvIndex: uvIndex,
-            sunrise: sunrise,
-            sunset: sunset,
+            visibility: this.calculateVisibility(weatherCode, humidity),
+            uvIndex: this.calculateUVIndex(hour, weatherCode, season),
+            sunrise: this.calculateSunrise(new Date(), season),
+            sunset: this.calculateSunset(new Date(), season),
             condition: this.getWeatherCondition(weatherCode),
             isDay: hour >= 6 && hour <= 20 ? 1 : 0
         };
@@ -1312,12 +1312,14 @@ async function updateWeatherByCoords(lat, lon) {
         
         // Generate hourly with proper ISO format
         if (!weatherData.hourly || !weatherData.hourly.time) {
+            const now = new Date();
             const h = [];
             for (let i = 0; i < 48; i++) {
                 const d = new Date(now.getTime() + i*3600000);
                 h.push(d.toISOString().replace('Z', '').split('.')[0]);
             }
             const nh = now.getHours();
+            const base = 20;
             weatherData.hourly = {
                 time: h,
                 temperature_2m: h.map((_,i) => base + Math.sin((nh+i)%24 * Math.PI/12) * 5),
@@ -1328,6 +1330,8 @@ async function updateWeatherByCoords(lat, lon) {
         }
         
         if (!weatherData.daily || !weatherData.daily.time) {
+            const now = new Date();
+            const base = 20;
             const d = [];
             for (let i = 0; i < 7; i++) d.push(new Date(now.getTime() + i*86400000).toISOString().split('T')[0]);
             weatherData.daily = {
@@ -1368,7 +1372,7 @@ async function updateWeather(cityName) {
         currentCity = cityData.name;
         currentCoords = { lat: cityData.lat, lon: cityData.lon };
         
-        const weatherData = await fetchWeatherData(cityData.lat, cityData.lon);
+        let weatherData = await fetchWeatherData(cityData.lat, cityData.lon);
         
         if (!weatherData) {
             weatherData = getSimulatedWeatherData(cityData.lat, cityData.lon);
@@ -1743,9 +1747,9 @@ async function displayWeatherData(weatherData) {
         
     } catch (error) {
         console.error('Erreur:', error);
-        alert('Erreur lors de la récupération des données. Vérifiez votre connexion internet.');
+        showWeatherError('Erreur lors de la récupération des données. Vérifiez votre connexion internet.');
     } finally {
-        searchBtn.style.opacity = '1';
+        if (searchBtn) searchBtn.style.opacity = '1';
     }
 }
 
