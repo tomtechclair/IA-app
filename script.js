@@ -1589,9 +1589,8 @@ async function displayWeatherData(weatherData) {
             const nowUTCHour = new Date().getUTCHours();
             const deviceHour = new Date().getHours();
             
-            // Utiliser l'index i directement (correspond aux donnees API)
+            // Use the index i directly (correspond aux donnees API)
             const isCurrentHour = i === 0;
-            const hourIndex = i;
             const code = hourly.weather_code[hourIndex];
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
             const temp = Math.round(hourly.temperature_2m[hourIndex]);
