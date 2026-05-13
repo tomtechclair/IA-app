@@ -1622,10 +1622,6 @@ async function displayWeatherData(weatherData) {
             
             // Parse l'heure depuis le timestamp
             const ts = hourly.time[hourIndex];
-            // Utiliser getUTCHours() pour eviter les铅題 de timezone
-            const utcHour = new Date(ts).getUTCHours();
-            const nowUTCHour = new Date().getUTCHours();
-            const deviceHour = new Date().getHours();
             
             // Use the index i directly (correspond aux donnees API)
             const isCurrentHour = i === 0;
@@ -1648,7 +1644,6 @@ async function displayWeatherData(weatherData) {
             // Ajouter des détails supplémentaires
             const weatherInfo = getWeatherInfo(code);
             // Afficher l'heure basE sur l'index avec un format simple
-            const ts = hourly.time[hourIndex];
             const hourTime = ts ? new Date(ts).getHours() : i;
             const timeLabel = isCurrentHour ? 'Maint' : `${hourTime}h`;
             
