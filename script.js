@@ -494,57 +494,34 @@ async function searchCityCoords(cityName) {
 }
 
 // Obtenir le nom de la ville à partir des coordonnées avec reverse geocoding
-// Utilise Open-Meteo Geocoding API (gratuit, sans clé, pas de CORS)
+// IP-API.com - API gratuite sans CORS
 async function getCityNameFromCoords(lat, lon) {
+    // Essayer IP-API (gratuit, pas de CORS sur version gratuite)
     try {
-        // Open-Meteo Geocoding - endpoint correct pour reverse geocoding
-        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=fr`, {
+        const response = await fetch(`http://ip-api.com/json/${lat},${lon}?lang=fr`, {
             signal: AbortSignal.timeout(5000)
         });
         
         if (response.ok) {
             const data = await response.json();
-            if (data.results && data.results.length > 0) {
-                const result = data.results[0];
-                console.log(`🏙️ Ville trouvée: ${result.name}, ${result.country}`);
+            if (data.status === 'success' && data.city) {
+                console.log(`🏙️ Ville trouvée: ${data.city}, ${data.country}`);
                 return {
-                    name: result.name,
+                    name: data.city,
                     lat: lat,
                     lon: lon,
-                    country: result.country_code || result.country || '',
-                    admin1: result.admin1 || ''
+                    country: data.countryCode || '',
+                    admin1: data.regionName || ''
                 };
             }
         }
     } catch (error) {
-        console.warn('Erreur Open-Meteo:', error.message);
+        console.warn('Erreur IP-API:', error.message);
     }
     
-    // Fallback: Essayer avec IP API pour obtenir la ville basée sur l'IP
-    try {
-        const ipResponse = await fetch('https://ipapi.co/json/', {
-            signal: AbortSignal.timeout(5000)
-        });
-        if (ipResponse.ok) {
-            const ipData = await ipResponse.json();
-            if (ipData.city) {
-                console.log(`🏙️ Ville par IP: ${ipData.city}`);
-                return {
-                    name: ipData.city,
-                    lat: lat,
-                    lon: lon,
-                    country: ipData.country_code || '',
-                    admin1: ipData.region || ''
-                };
-            }
-        }
-    } catch (ipError) {
-        console.warn('Erreur IP API:', ipError.message);
-    }
-    
-    // Fallback final: coordonnées génériques
+    // Fallback: utiliser un nom générique
     return {
-        name: lat.toFixed(2) + ',' + lon.toFixed(2),
+        name: 'Ma position',
         lat: lat,
         lon: lon,
         country: '',
