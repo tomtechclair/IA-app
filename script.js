@@ -976,9 +976,18 @@ async function fetchOpenMeteo(lat, lon) {
 let openMeteoCache = { key: null, data: null, timestamp: 0 };
 const OPEN_METEO_CACHE_TTL = 1 * 60 * 1000; // 5 minutes
 
-// Fetch weather data - simulation fiable
-function fetchWeatherData(lat, lon, retryCount = 0) {
-    return getSimulatedWeatherData(lat, lon);
+// Fetch weather data - Open-Meteo API (gratuite et fiable)
+async function fetchWeatherData(lat, lon, retryCount = 0) {
+    try {
+        // Essayer d'abord Open-Meteo (API gratuite)
+        const data = await fetchOpenMeteo(lat, lon);
+        return data;
+    } catch (error) {
+        console.error('Erreur Open-Meteo:', error);
+        // Fallback sur données simulées en cas d'erreur
+        console.log('Utilisation des données de secours...');
+        return getSimulatedWeatherData(lat, lon);
+    }
 }
 
 // ============================================
