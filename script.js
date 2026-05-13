@@ -2774,12 +2774,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tempElement) tempElement.textContent = '--°';
     if (conditionElement) conditionElement.textContent = 'Chargement meteo...';
 
-    // Direct call - skip geo for now
-    const currentCity = 'Paris';
+    // DIRECT LOAD - skip geocoding
+    console.log('Direct load Paris');
     const cityElement2 = document.querySelector('.city');
-    if (cityElement2) cityElement2.textContent = currentCity;
-    console.log('Initial: Loading weather for', currentCity);
-    updateWeather(currentCity).then(() => console.log('Initial weather loaded'));
+    if (cityElement2) cityElement2.textContent = 'Paris';
+    const tempElement2 = document.querySelector('.big-temp');
+    if (tempElement2) tempElement2.textContent = '--°';
+    const conditionElement2 = document.querySelector('.condition');
+    if (conditionElement2) conditionElement2.textContent = 'Chargement...';
+    
+    // Direct call with coords
+    updateWeatherByCoords(48.8566, 2.3522).then(() => console.log('Loaded'));
     
     // Timeout fallback - charger Paris apres 5 secondes si pas de reponse
     const loadingTimeout = setTimeout(() => {
