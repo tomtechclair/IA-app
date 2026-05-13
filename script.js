@@ -446,33 +446,53 @@ const CITY_DATABASE = {
 };
 
 async function searchCityCoords(cityName) {
+    const city = cityName.trim();
+    if (!city || city.length < 2) return { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' };
+    
     try {
-        const normalizedCity = cityName.trim();
+        // Open-Meteo geocoding API
+        const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`;
         
-        // Direct API search - much faster
-        const response = await fetch(
-            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(normalizedCity)}&count=1&language=fr&format=json`,
-            { signal: AbortSignal.timeout(5000) }
+        const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        
+        if (!response.ok) throw new Error('API error');
+        
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+            const result = data.results[0];
+            console.log('Ville trouvee:', result.name);
+            return {
+                name: result.name,
+                lat: result.latitude,
+                lon: result.longitude,
+                country: result.country_code || ''
+            };
+        }
+        
+        // Nominatim fallback
+        const nomResponse = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`,
+            { headers: { 'User-Agent': 'MeteoApp/1.0' }, signal: AbortSignal.timeout(8000) }
         );
         
-        if (response.ok) {
-            const data = await response.json();
-            if (data.results && data.results.length > 0) {
-                const result = data.results[0];
+        if (nomResponse.ok) {
+            const nomData = await nomResponse.json();
+            if (nomData.length > 0) {
                 return {
-                    name: result.name,
-                    lat: result.latitude,
-                    lon: result.longitude,
-                    country: result.country_code || ''
+                    name: nomData[0].display_name?.split(',')[0] || city,
+                    lat: parseFloat(nomData[0].lat),
+                    lon: parseFloat(nomData[0].lon),
+                    country: ''
                 };
             }
         }
         
-        // Fallback - default Paris
+        // Fallback
         return { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' };
         
     } catch (error) {
-        console.error('Search error:', error);
+        console.error('Search error:', error.message);
         return { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' };
     }
 }
