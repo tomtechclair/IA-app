@@ -930,7 +930,7 @@ async function fetchOpenMeteo(lat, lon) {
         // Donnees quotidiennes completes
         daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,precipitation_sum,rain_sum,uv_index_max,wind_speed_10m_max,wind_direction_10m_dominant',
         timezone: 'auto',
-        timezoneOffset: raw.timezone_offset !== undefined ? raw.timezone_offset : 0,
+        timezoneOffset: 0,
         forecast_days: 10
     });
 
