@@ -926,6 +926,7 @@ async function fetchOpenMeteo(lat, lon) {
         // Donnees quotidiennes completes
         daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,precipitation_sum,rain_sum,uv_index_max,wind_speed_10m_max,wind_direction_10m_dominant',
         timezone: 'auto',
+        timezoneOffset: raw.timezone_offset !== undefined ? raw.timezone_offset : 0,
         forecast_days: 10
     });
 
@@ -1665,8 +1666,16 @@ async function displayWeatherData(weatherData) {
             
             // Ajouter des détails supplémentaires
             const weatherInfo = getWeatherInfo(code);
-            // Afficher l'heure basE sur l'index avec un format simple
-            const hourTime = ts ? new Date(ts).getHours() : i;
+            // Afficher l'heure en tenant compte du fuseau horaire
+            let hourTime = i;
+            if (ts) {
+                const hourMatch = ts.match(/T(\d{2}):/);
+                hourTime = hourMatch ? parseInt(hourMatch[1]) : i;
+            }
+            // Ajuster selon le décalage horaire du lieu
+            const tzOffset = window.timezoneOffset || 0;
+            hourTime = (hourTime + tzOffset) % 24;
+            if (hourTime < 0) hourTime += 24;
             const timeLabel = isCurrentHour ? 'Maint' : `${hourTime}h`;
             
             // Ajouter une classe spéciale pour l'heure actuelle
@@ -2408,9 +2417,23 @@ function createWeatherIconSVG(weatherCode, isDay = true, size = 32) {
     
     const getSun = () => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${colors.sun}"/>`;
     
-    const getRain = () => `<line x1="${s*0.35}" y1="${s*0.55}" x2="${s*0.3}" y2="${s*0.75}" stroke="${colors.rain}" stroke-width="${s*0.06}" stroke-linecap="round"/><line x1="${s*0.5}" y1="${s*0.55}" x2="${s*0.45}" y2="${s*0.75}" stroke="${colors.rain}" stroke-width="${s*0.06}" stroke-linecap="round"/><line x1="${s*0.65}" y1="${s*0.55}" x2="${s*0.6}" y2="${s*0.75}" stroke="${colors.rain}" stroke-width="${s*0.06}" stroke-linecap="round"/>`;
+    const getRain = () => `<g stroke="${colors.rain}" stroke-width="${s*0.05}" stroke-linecap="round" opacity="0.8">
+                <line x1="${s*0.32}" y1="${s*0.52}" x2="${s*0.27}" y2="${s*0.72}"/>
+                <line x1="${s*0.48}" y1="${s*0.52}" x2="${s*0.43}" y2="${s*0.72}"/>
+                <line x1="${s*0.64}" y1="${s*0.52}" x2="${s*0.59}" y2="${s*0.72}"/>
+                <line x1="${s*0.4}" y1="${s*0.55}" x2="${s*0.35}" y2="${s*0.75}"/>
+                <line x1="${s*0.56}" y1="${s*0.55}" x2="${s*0.51}" y2="${s*0.75}"/>
+            </g>`;
     
-    const getSnow = () => `<circle cx="${s*0.35}" cy="${s*0.6}" r="${s*0.05}" fill="${colors.snow}"/><circle cx="${s*0.5}" cy="${s*0.65}" r="${s*0.05}" fill="${colors.snow}"/><circle cx="${s*0.65}" cy="${s*0.6}" r="${s*0.05}" fill="${colors.snow}"/>`;
+    const getSnow = () => `<g fill="${colors.snow}">
+                <circle cx="${s*0.35}" cy="${s*0.58}" r="${s*0.04}"/>
+                <circle cx="${s*0.5}" cy="${s*0.62}" r="${s*0.045}"/>
+                <circle cx="${s*0.65}" cy="${s*0.58}" r="${s*0.04}"/>
+                <circle cx="${s*0.28}" cy="${s*0.68}" r="${s*0.035}"/>
+                <circle cx="${s*0.42}" cy="${s*0.7}" r="${s*0.04}"/>
+                <circle cx="${s*0.55}" cy="${s*0.72}" r="${s*0.035}"/>
+                <circle cx="${s*0.72}" cy="${s*0.68}" r="${s*0.03}"/>
+            </g>`;
     
     const getBolt = () => `<path d="M${s*0.5},${s*0.3} L${s*0.35},${s*0.55} L${s*0.45},${s*0.55} L${s*0.4},${s*0.8} L${s*0.6},${s*0.5} L${s*0.5},${s*0.5} L${s*0.55},${s*0.3} Z" fill="${colors.thunder}"/>`;
     
@@ -2897,3 +2920,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Enhanced weather animations
+if (!document.getElementById('weather-animations')) {
+    const style = document.createElement('style');
+    style.id = 'weather-animations';
+    style.textContent = `
+        .weather-icon { display: inline-block; }
+        @keyframes rain-drop { 0% { transform: translateY(0); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(${s*0.2}); opacity: 0; } }
+        @keyframes snow-fall { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(${s*0.3}) rotate(360deg); } }
+        @keyframes sun-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes cloud-drift { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(${s*0.02}); } }
+    `;
+    document.head.appendChild(style);
+}
