@@ -1573,11 +1573,10 @@ async function displayWeatherData(weatherData) {
                     <div class="day">${dayName}</div>
                     <div class="icon">${iconHTML}</div>
                     <div class="condition">${weatherInfo.condition}</div>
-                    <div class="temp-low">${Math.round(tempLow)}°</div>
-                    <div class="temp-bar-container">
-                        <div class="temp-bar" style="left: ${Math.max(0, barStart)}%; width: ${Math.max(0, barWidth)}%"></div>
+                    <div class="-temps">
+                        <span class="temp-low">${Math.round(tempLow)}°</span>
+                        <span class="temp-high">${Math.round(tempHigh)}°</span>
                     </div>
-                    <div class="temp-high">${Math.round(tempHigh)}°</div>
                 </div>
             `;
         }

@@ -719,8 +719,8 @@ body {
 .daily-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 0;
+    gap: 8px;
+    padding: 14px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     transition: all 0.3s ease;
 }
@@ -730,52 +730,56 @@ body {
 }
 
 .daily-item .day {
-    min-width: 55px;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
-    font-weight: 300;
+    min-width: 45px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
 }
 
 .daily-item .icon {
-    font-size: 40px;
-    margin: 0 12px;
+    font-size: 52px;
+    margin: 0 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 50px;
+    min-width: 55px;
+}
+
+.daily-item .condition {
+    flex: 1;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: left;
+    margin-right: 8px;
+}
+
+.daily-item .-temps {
+    display: flex;
+    gap: 12px;
+    min-width: 70px;
+    justify-content: flex-end;
 }
 
 .daily-item .temp-low {
-    font-size: 13px;
+    font-size: 14px;
     color: rgba(255, 255, 255, 0.5);
-    min-width: 22px;
+    min-width: 28px;
     text-align: right;
     font-weight: 300;
 }
 
-.daily-item .temp-bar-container {
-    flex: 1;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 2px;
-    position: relative;
-    margin: 0 8px;
-}
-
-.daily-item .temp-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #4a90e2, #7b68ee);
-    border-radius: 2px;
-    position: absolute;
-    top: 0;
-}
-
 .daily-item .temp-high {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
-    min-width: 22px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    min-width: 28px;
     text-align: left;
     font-weight: 400;
+}
+
+/* Remove old temp bar styles */
+.daily-item .temp-bar-container,
+.daily-item .temp-bar {
+    display: none;
 }
 
 /* Grid */
