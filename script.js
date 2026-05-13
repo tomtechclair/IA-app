@@ -2404,8 +2404,173 @@ function updateWeatherOptimized(city) {
 }
 
 // Apple-style weather icons
-function createWeatherIconSVG(weatherCode, isDay = true, size = 32) {
+// ============================================
+// REALISTIC WEATHER ICONS with details
+// ============================================
+function createWeatherIconSVG(code, isDay = true, size = 48) {
     const s = size;
+    const cx = s / 2;
+    const cy = s / 2;
+    const r = s * 0.35;
+    const rm = s * 0.4; // radius for moon
+    
+    // Helper to create circle
+    const circle = (cx, cy, r, fill) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/>`;
+    const circleS = (cx, cy, r, fill, op) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/>`;
+    
+    // Colors based on weather
+    let bgColor = '#FFF';
+    let fgColor = '#333';
+    let accentColor = '';
+    
+    // Weather-specific icons (WMO codes)
+    // 0: Clear, 1-3: Cloudy, 45-48: Fog, 51-67: Drizzle/Rain, 71-77: Snow, 80-82: Showers, 95-99: Thunder
+    
+    if (code === 0) { // CLEAR SKY
+        if (isDay) {
+            // Bright sun with rays
+            return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="sunGrad${code}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFE135"/>
+                        <stop offset="100%" style="stop-color:#FFD700"/>
+                    </linearGradient>
+                </defs>
+                <!-- Sun rays -->
+                <g stroke="#FFD700" stroke-width="${s*0.03}" stroke-linecap="round">
+                    <line x1="${cx}" y1="${s*0.1}" x2="${cx}" y2="${s*0.22}"/>
+                    <line x1="${cx}" y1="${s*0.9}" x2="${cx}" y2="${s*0.78}"/>
+                    <line x1="${s*0.1}" y1="${cx}" x2="${s*0.22}" y2="${cx}"/>
+                    <line x1="${s*0.9}" y1="${cx}" x2="${s*0.78}" y2="${cx}"/>
+                    <line x1="${s*0.18}" y1="${s*0.18}" x2="${s*0.28}" y2="${s*0.28}"/>
+                    <line x1="${s*0.82}" y1="${s*0.82}" x2="${s*0.72}" y2="${s*0.72}"/>
+                    <line x1="${s*0.18}" y1="${s*0.82}" x2="${s*0.28}" y2="${s*0.72}"/>
+                    <line x1="${s*0.82}" y1="${s*0.18}" x2="${s*0.72}" y2="${s*0.28}"/>
+                </g>
+                <!-- Sun circle -->
+                <circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#sunGrad${code})"/>
+            </svg>`;
+        } else {
+            // Crescent moon
+            return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="moonGrad${code}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#F4F6F0"/>
+                        <stop offset="100%" style="stop-color:#E8E8E8"/>
+                    </linearGradient>
+                </defs>
+                <!-- Moon body -->
+                <path d="M${s*0.55},${s*0.15} A${rm},${rm} 0 1,1 ${s*0.45},${s*0.85} A${rm},${rm} 0 1,0 ${s*0.55},${s*0.15}" fill="url(#moonGrad${code})"/>
+                <!-- Moon craters -->
+                <circle cx="${s*0.5}" cy="${s*0.4}" r="${s*0.06}" fill="#D0D0D0" opacity="0.5"/>
+                <circle cx="${s*0.58}" cy="${s*0.55}" r="${s*0.04}" fill="#D0D0D0" opacity="0.4"/>
+            </svg>`;
+        }
+    }
+    else if (code >= 1 && code <= 3) { // PARTLY CLOUDY
+        if (isDay) {
+            return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="cloudGrad${code}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFFFFF"/>
+                        <stop offset="100%" style="stop-color:#E8E8E8"/>
+                    </linearGradient>
+                </defs>
+                <!-- Sun behind -->
+                <circle cx="${s*0.65}" cy="${s*0.35}" r="${s*0.18}" fill="#FFD700"/>
+                <g stroke="#FFD700" stroke-width="${s*0.02}" stroke-linecap="round">
+                    <line x1="${s*0.7}" y1="${s*0.12}" x2="${s*0.7}" y2="${s*0.22}"/>
+                    <line x1="${s*0.82}" y1="${s*0.35}" x2="${s*0.72}" y2="${s*0.35}"/>
+                    <line x1="${s*0.78}" y1="${s*0.18}" x2="${s*0.72}" y2="${s*0.25}"/>
+                </g>
+                <!-- Cloud -->
+                <path d="M${s*0.15},${s*0.65} Q${s*0.1},${s*0.5} ${s*0.3},${s*0.55} Q${s*0.35},${s*0.45} ${s*0.5},${s*0.48} Q${s*0.6},${s*0.4} ${s*0.75},${s*0.5} Q${s*0.9},${s*0.55} ${s*0.8},${s*0.65} Q${s*0.85},${s*0.75} ${s*0.65},${s*0.75} Q${s*0.5},${s*0.8} ${s*0.15},${s*0.65}" fill="url(#cloudGrad${code})"/>
+            </svg>`;
+        } else {
+            return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="cloudGradN${code}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#B8C4CE"/>
+                        <stop offset="100%" style="stop-color:#8A9AAA"/>
+                    </linearGradient>
+                </defs>
+                <!-- Moon -->
+                <path d="M${s*0.7},${s*0.2} A${s*0.2},${s*0.2} 0 1,1 ${s*0.6},${s*0.7} A${s*0.2},${s*0.2} 0 1,0 ${s*0.7},${s*0.2}" fill="#E8E8E8"/>
+                <!-- Cloud -->
+                <path d="M${s*0.15},${s*0.65} Q${s*0.1},${s*0.5} ${s*0.3},${s*0.55} Q${s*0.35},${s*0.45} ${s*0.5},${s*0.48} Q${s*0.6},${s*0.4} ${s*0.75},${s*0.5} Q${s*0.9},${s*0.55} ${s*0.8},${s*0.65} Q${s*0.85},${s*0.75} ${s*0.65},${s*0.75} Q${s*0.5},${s*0.8} ${s*0.15},${s*0.65}" fill="url(#cloudGradN${code})"/>
+            </svg>`;
+        }
+    }
+    else if (code >= 45 && code <= 48) { // FOG
+        return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
+            <g fill="none" stroke="#B8C4CE" stroke-width="${s*0.04}" stroke-linecap="round">
+                <line x1="${s*0.2}" y1="${s*0.35}" x2="${s*0.8}" y2="${s*0.35}"/>
+                <line x1="${s*0.15}" y1="${s*0.5}" x2="${s*0.75}" y2="${s*0.5}"/>
+                <line x1="${s*0.25}" y1="${s*0.65}" x2="${s*0.85}" y2="${s*0.65}"/>
+                <line x1="${s*0.2}" y1="${s*0.8}" x2="${s*0.8}" y2="${s*0.8}"/>
+            </g>
+        </svg>`;
+    }
+    else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) { // RAIN/DRIZZLE/SHOWERS
+        return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="rainCloud${code}" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#A8B8C8"/>
+                    <stop offset="100%" style="stop-color:#8898A8"/>
+                </linearGradient>
+            </defs>
+            <!-- Cloud -->
+            <path d="M${s*0.15},${s*0.35} Q${s*0.1},${s*0.2} ${s*0.3},${s*0.25} Q${s*0.35},${s*0.15} ${s*0.5},${s*0.18} Q${s*0.6},${s*0.1} ${s*0.75},${s*0.2} Q${s*0.9},${s*0.25} ${s*0.8},${s*0.35} Q${s*0.85},${s*0.45} ${s*0.65},${s*0.45} Q${s*0.5},${s*0.5} ${s*0.15},${s*0.35}" fill="url(#rainCloud${code})"/>
+            <!-- Rain drops -->
+            <g fill="#4A90D9">
+                <ellipse cx="${s*0.3}" cy="${s*0.6}" rx="${s*0.025}" ry="${s*0.06}"/>
+                <ellipse cx="${s*0.5}" cy="${s*0.6}" rx="${s*0.025}" ry="${s*0.06}"/>
+                <ellipse cx="${s*0.7}" cy="${s*0.6}" rx="${s*0.025}" ry="${s*0.06}"/>
+                <ellipse cx="${s*0.4}" cy="${s*0.75}" rx="${s*0.025}" ry="${s*0.06}"/>
+                <ellipse cx="${s*0.6}" cy="${s*0.75}" rx="${s*0.025}" ry="${s*0.06}"/>
+            </g>
+        </svg>`;
+    }
+    else if (code >= 71 && code <= 77) { // SNOW
+        return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="snowCloud${code}" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#D0D8E0"/>
+                    <stop offset="100%" style="stop-color:#B8C0C8"/>
+                </linearGradient>
+            </defs>
+            <!-- Cloud -->
+            <path d="M${s*0.15},${s*0.35} Q${s*0.1},${s*0.2} ${s*0.3},${s*0.25} Q${s*0.35},${s*0.15} ${s*0.5},${s*0.18} Q${s*0.6},${s*0.1} ${s*0.75},${s*0.2} Q${s*0.9},${s*0.25} ${s*0.8},${s*0.35} Q${s*0.85},${s*0.45} ${s*0.65},${s*0.45} Q${s*0.5},${s*0.5} ${s*0.15},${s*0.35}" fill="url(#snowCloud${code})"/>
+            <!-- Snowflakes -->
+            <g fill="#E8F0F8">
+                <circle cx="${s*0.3}" cy="${s*0.55}" r="${s*0.035}"/>
+                <circle cx="${s*0.5}" cy="${s*0.6}" r="${s*0.04}"/>
+                <circle cx="${s*0.7}" cy="${s*0.55}" r="${s*0.035}"/>
+                <circle cx="${s*0.4}" cy="${s*0.72}" r="${s*0.035}"/>
+                <circle cx="${s*0.6}" cy="${s*0.72}" r="${s*0.04}"/>
+            </g>
+        </svg>`;
+    }
+    else if (code >= 95 && code <= 99) { // THUNDER
+        return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="stormCloud${code}" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#606878"/>
+                    <stop offset="100%" style="stop-color:#404858"/>
+                </linearGradient>
+            </defs>
+            <!-- Cloud -->
+            <path d="M${s*0.15},${s*0.35} Q${s*0.1},${s*0.2} ${s*0.3},${s*0.25} Q${s*0.35},${s*0.15} ${s*0.5},${s*0.18} Q${s*0.6},${s*0.1} ${s*0.75},${s*0.2} Q${s*0.9},${s*0.25} ${s*0.8},${s*0.35} Q${s*0.85},${s*0.45} ${s*0.65},${s*0.45} Q${s*0.5},${s*0.5} ${s*0.15},${s*0.35}" fill="url(#stormCloud${code})"/>
+            <!-- Lightning -->
+            <path d="M${s*0.48},${s*0.48} L${s*0.42},${s*0.62} L${s*0.52},${s*0.62} L${s*0.45},${s*0.85} L${s*0.58},${s*0.65} L${s*0.48},${s*0.65} Z" fill="#FFD700"/>
+        </svg>`;
+    }
+    
+    // Default: cloud
+    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
+        <path d="M${s*0.15},${s*0.55} Q${s*0.1},${s*0.4} ${s*0.3},${s*0.45} Q${s*0.35},${s*0.35} ${s*0.5},${s*0.38} Q${s*0.6},${s*0.3} ${s*0.75},${s*0.4} Q${s*0.9},${s*0.45} ${s*0.8},${s*0.55} Q${s*0.85},${s*0.65} ${s*0.65},${s*0.65} Q${s*0.5},${s*0.7} ${s*0.15},${s*0.55}" fill="#B8C4CE"/>
+    </svg>`;
+}const s = size;
     const s2 = s / 2;
     const r = s * 0.35;
     const cx = s2;
