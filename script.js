@@ -2786,6 +2786,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cityElement) cityElement.textContent = 'Chargement...';
     if (tempElement) tempElement.textContent = '--°';
     if (conditionElement) conditionElement.textContent = 'Chargement meteo...';
+
+    // Direct call - skip geo for now
+    const currentCity = 'Paris';
+    const cityElement2 = document.querySelector('.city');
+    if (cityElement2) cityElement2.textContent = currentCity;
+    console.log('Initial: Loading weather for', currentCity);
+    updateWeather(currentCity).then(() => console.log('Initial weather loaded'));
     
     // Timeout fallback - charger Paris apres 5 secondes si pas de reponse
     const loadingTimeout = setTimeout(() => {
