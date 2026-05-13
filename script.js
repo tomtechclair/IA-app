@@ -1272,6 +1272,10 @@ async function displayWeatherData(weatherData) {
         const weatherInfo = getWeatherInfo(current.weather_code || 0);
         const isDay = current.is_day === 1;
         
+        // Si de la pluie prevue dans les prochaines heures, afficher "Pluie previstas"
+        const hasRainSoon = hourlyForecast.slice(0, 3).some(h => h.precipitation > 0 || h.precipitation_probability > 30);
+        const showingWeather = hasRainSoon && current.weather_code !== 95 ? 'Pluie prevista' : weatherInfo.condition;
+        
         // Mettre à jour le premier chargement
         if (isFirstLoad) {
             isFirstLoad = false;
@@ -1287,10 +1291,10 @@ async function displayWeatherData(weatherData) {
             tempElement.textContent = `${Math.round(current.temperature_2m)}°`;
         }
         
-        // Condition météo - pas d'icône, seulement le texte
+        // Condition météo - texte
         const conditionElement = document.querySelector('.condition');
-        if (conditionElement && weatherInfo.condition) {
-            conditionElement.textContent = weatherInfo.condition;
+        if (conditionElement && showingWeather) {
+            conditionElement.textContent = showingWeather;
             conditionElement.classList.remove('has-icon'); // S'assurer que la classe est retirée
         }
         // Vérifier que les données existent avant de les utiliser
@@ -1585,7 +1589,9 @@ async function displayWeatherData(weatherData) {
         }
         
         // Mettre à jour le fond dynamique - une seule fois au premier chargement
-        const bgClass = getWeatherInfo(current.weather_code || 0).bg || 'bg-blue';
+        // Si pluie prevue soon, utiliser bg-rain
+        const willRainSoon = hourlyForecast.slice(0, 3).some(h => h.precipitation > 0 || h.precipitation_probability > 30);
+        const bgClass = willRainSoon ? 'bg-rain' : (getWeatherInfo(current.weather_code || 0).bg || 'bg-blue');
         
         // Seulement appliquer au premier chargement (quand pas de fond defini)
         if (!document.body.classList.contains('bg-')) {
