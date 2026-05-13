@@ -1606,6 +1606,23 @@ async function displayWeatherData(weatherData) {
             if (sunsetElement) sunsetElement.textContent = sunsetStr;
         }
         
+        // Temperature average (daily)
+        const tempAvgElement = document.getElementById('temp-avg');
+        if (tempAvgElement && weatherData.daily) {
+            const maxTemps = weatherData.daily.temperature_2m_max;
+            const minTemps = weatherData.daily.temperature_2m_min;
+            if (maxTemps && minTemps && maxTemps.length > 0 && minTemps.length > 0) {
+                const todayMax = maxTemps[0];
+                const todayMin = minTemps[0];
+                const avg = Math.round((todayMax + todayMin) / 2);
+                tempAvgElement.textContent = avg + '°';
+                const tempAvgDesc = document.getElementById('temp-avg-desc');
+                if (tempAvgDesc) {
+                    tempAvgDesc.textContent = 'Min: ' + Math.round(todayMin) + '° / Max: ' + Math.round(todayMax) + '°';
+                }
+            }
+        }
+
         // Cloudiness (simulated based on weather code)
         const cloudinessElement = document.getElementById('cloudiness');
         if (cloudinessElement) {
