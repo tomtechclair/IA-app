@@ -24,8 +24,8 @@ const API_CONFIG = {
     timeout: 5000 
 };
 
-let currentCity = 'Paris';
 let currentCoords = { lat: 48.8566, lon: 2.3522 };
+let currentCity = 'Paris'; // Always use name, never show coords
 
 // Liste étendue de villes pour autocomplete
 const cities = [
@@ -524,7 +524,11 @@ async function searchCityCoords(cityName) {
 
 // Obtenir le nom de la ville - avec Nominatim OpenStreetMap
 async function getCityNameFromCoords(lat, lon) {
-    // Essayer Nominatim (OpenStreetMap) - tres fiable
+    // First check if we have a valid currentCity from search
+    if (currentCity && currentCity !== 'Votre position' && !currentCity.match(/^[0-9.]+$/)) {
+        return currentCity;
+    }
+    // Only then try reverse geocoding
     try {
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=fr`, {
             headers: { 'User-Agent': 'MeteoApp/1.0' },
@@ -1443,7 +1447,11 @@ async function displayWeatherData(weatherData) {
         if (isFirstLoad) {
             isFirstLoad = false;
             const cityElement = document.querySelector('.city');
-            if (cityElement) cityElement.textContent = currentCity || 'Météo';
+            // Ensure we always show city NAME, never coordinates
+            let displayName = currentCity || 'Paris';
+            // Remove any coordinates-like strings
+            displayName = displayName.replace(/^[0-9.]+$/, 'Paris');
+            if (cityElement) cityElement.textContent = displayName;
             const inputElement = document.getElementById('city-input');
             if (inputElement) inputElement.value = currentCity || '';
         }
@@ -2063,8 +2071,11 @@ function searchCity() {
         // Arreter le rafraichissement auto
         stopAutoRefresh();
         
-        // Feedback instant
-        if (cityElement) cityElement.textContent = city;
+        // Feedback instant - ALWAYS show the city name user typed
+        if (cityElement) {
+            const cleanName = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
+            cityElement.textContent = cleanName;
+        }
         if (tempElement) tempElement.textContent = '...';
         if (conditionElement) conditionElement.textContent = 'Chargement...';
         
