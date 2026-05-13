@@ -1015,8 +1015,11 @@ function getSimulatedWeatherData(lat = 48.8566, lon = 2.3522) {
     
     for (let i = 0; i < 48; i++) {
         const h = (hour + i) % 24;
+        // Use local time directly
         const d = new Date(now.getTime() + i * 3600000);
-        hourlyData.time.push(d.toISOString().replace('Z', '').split('.')[0]);
+        const localHour = d.getHours();
+        const localTimeStr = `${String(localHour).padStart(2, '0')}:00`;
+        hourlyData.time.push(localTimeStr);
         
         // Start from currentTemp, then vary
         const tempVariation = h < 6 ? -4 : h < 15 ? (h - 6) * 1 : 15 - (h - 15) * 0.7;
