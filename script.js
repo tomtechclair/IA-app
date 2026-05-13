@@ -1390,11 +1390,21 @@ async function displayWeatherData(weatherData) {
             const hourIndex = startIndex + i;
             if (hourIndex >= hourly.time.length) break;
             
-            // Use timestamp as-is - API returns local time for the city
+            // Parse l'heure depuis le timestamp
             const ts = hourly.time[hourIndex];
-            // Parse l'heure directement depuis la string ISO
-            const hourMatch = ts.match(/T(\d{2}):/);
-            const hour = hourMatch ? parseInt(hourMatch[1]) : 0;
+            // Utiliser getUTCHours() pour eviter les铅題 de timezone
+            const utcHour = new Date(ts).getUTCHours();
+            const nowUTCHour = new Date().getUTCHours();
+            const deviceHour = new Date().getHours();
+            
+            //-Afficher l'heure de l'appareil (plus simple et plus juste)
+            let hour;
+            if (i === 0) {
+                hour = deviceHour; // Premiere heure = maintenant
+            } else {
+                hour = (deviceHour + i) % 24; // Heures suivantes
+            }
+            
             const isCurrentHour = i === 0;
             const code = hourly.weather_code[hourIndex];
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
