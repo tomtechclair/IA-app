@@ -216,6 +216,25 @@ body {
     transform: scale(1.05);
 }
 
+/* Apple Weather Icons - nouveau style */
+.weather-icon-apple {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.weather-icon-apple svg {
+    width: 100%;
+    height: 100%;
+}
+
+.weather-icon-apple svg circle,
+.weather-icon-apple svg path,
+.weather-icon-apple svg line {
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 /* Loading Animation */
 .loading {
     animation: pulse 1.5s ease-in-out infinite;

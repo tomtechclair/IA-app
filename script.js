@@ -2102,8 +2102,55 @@ function updateWeatherOptimized(city) {
     updateWeatherRealTime();
 }
 
-// Système d'icônes météo IA réalistes
-function createWeatherIconSVG(weatherCode, isDay, size = 32) {
+// Use Apple Weather Icons instead of custom icons
+function createWeatherIconSVG(weatherCode, isDay = true, size = 32) {
+    // Map weather codes to Apple icon format
+    const iconMap = {
+        0: isDay ? 'sun' : 'moon',                    // Clear sky
+        1: isDay ? 'cloud.sun' : 'cloud.moon',        // Mainly clear
+        2: isDay ? 'cloud.sun' : 'cloud.moon',        // Partly cloudy
+        3: 'cloud',                                // Overcast
+        45: 'fog',                                // Fog
+        48: 'fog',                                // Depositing rime fog
+        51: 'drizzle',                            // Light drizzle
+        53: 'drizzle',                            // Moderate drizzle
+        55: 'drizzle',                            // Dense drizzle
+        56: 'sleet',                              // Light freezing drizzle
+        57: 'sleet',                              // Dense freezing drizzle
+        61: 'rain',                               // Slight rain
+        63: 'rain',                               // Moderate rain
+        65: 'rain',                               // Heavy rain
+        66: 'sleet',                              // Light freezing rain
+        67: 'sleet',                              // Heavy freezing rain
+        71: 'snow',                               // Slight snow fall
+        73: 'snow',                               // Moderate snow fall
+        75: 'snow',                               // Heavy snow fall
+        77: 'snow',                               // Snow grains
+        80: 'rain',                               // Slight rain showers
+        81: 'rain',                               // Moderate rain showers
+        82: 'cloud.bolt.rain',                    // Violent rain showers
+        85: 'snow',                               // Slight snow showers
+        86: 'snow',                               // Heavy snow showers
+        95: 'cloud.bolt',                         // Thunderstorm
+        96: 'cloud.bolt.rain',                    // Thunderstorm with slight hail
+        99: 'cloud.bolt.rain'                     // Thunderstorm with heavy hail
+    };
+    
+    const iconType = iconMap[weatherCode] || (isDay ? 'sun' : 'moon');
+    const iconObj = appleWeatherIcons?.icons?.[iconType] || createOldWeatherIconSVG(weatherCode, isDay, size);
+    
+    // Get the SVG content from Apple icons or use fallback
+    if (typeof iconObj === 'string' && iconObj.includes('<svg')) {
+        // Apple icon is already SVG string, wrap it
+        return `<div class="weather-icon-apple" style="width:${size}px;height:${size}px;">${iconObj}</div>`;
+    }
+    
+    // Fallback to old icons
+    return createOldWeatherIconSVG(weatherCode, isDay, size);
+}
+
+// Fallback old weather icons
+function createOldWeatherIconSVG(weatherCode, isDay, size = 32) {
     const colors = {
         day: {
             sun: '#FFD700',
