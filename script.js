@@ -1739,10 +1739,10 @@ async function displayWeatherData(weatherData) {
             // Ajouter une classe spéciale pour aujourd'hui
             const isToday = i === 0;
             const todayClass = isToday ? 'today' : '';
+            const aiCondition = getAIDescription(code, tempHigh);
             
             dailyHTML += `
                 <div class="daily-item ${todayClass}">
-            const aiCondition = getAIDescription(code, tempHigh);
                     <div class="day">${dayName}</div>
                     <div class="icon">${iconHTML}</div>
                     <div class="condition">${aiCondition}</div>
