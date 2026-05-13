@@ -966,7 +966,7 @@ async function fetchOpenMeteo(lat, lon) {
 
 // Cache pour Open-Meteo (5 minutes)
 let openMeteoCache = { key: null, data: null, timestamp: 0 };
-const OPEN_METEO_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const OPEN_METEO_CACHE_TTL = 1 * 60 * 1000; // 5 minutes
 
 // Fetch weather data - toujours retourner quelque chose
 async function fetchWeatherData(lat, lon, retryCount = 0) {
