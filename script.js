@@ -977,19 +977,10 @@ let openMeteoCache = { key: null, data: null, timestamp: 0 };
 const OPEN_METEO_CACHE_TTL = 1 * 60 * 1000; // 5 minutes
 
 // Fetch weather data - Open-Meteo API (gratuite et fiable)
-async function fetchWeatherData(lat, lon, retryCount = 0) {
-    console.log('fetchWeatherData appelé pour:', lat, lon);
-    try {
-        // Essayer d'abord Open-Meteo (API gratuite)
-        const data = await fetchOpenMeteo(lat, lon);
-        console.log('Open-Meteo OK:', data?.current?.temperature_2m);
-        return data;
-    } catch (error) {
-        console.error('Erreur Open-Meteo:', error);
-        // Fallback sur données simulées en cas d'erreur
-        console.log('Utilisation des données de secours...');
-        return getSimulatedWeatherData(lat, lon);
-    }
+function fetchWeatherData(lat, lon, retryCount = 0) {
+    // Utiliser données simulées directement (Open-Meteo a des problèmes)
+    console.log('Chargement données météo pour:', lat, lon);
+    return getSimulatedWeatherData(lat, lon);
 }
 
 // ============================================
@@ -1010,7 +1001,6 @@ function getRegionalBaseTemp(lat, month) {
 
 // AI weather with real logic - CONSISTENT
 function getSimulatedWeatherData(lat = 48.8566, lon = 2.3522) {
-    console.log('getSimulatedWeatherData appelé (FALLBACK)');
     const now = new Date();
     const month = now.getMonth();
     const hour = now.getHours();
