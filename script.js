@@ -928,39 +928,45 @@ async function fetchOpenMeteo(lat, lon) {
 let openMeteoCache = { key: null, data: null, timestamp: 0 };
 const OPEN_METEO_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-// Fetch weather data (Open-Meteo d'abord, fallback IA, puis simulé)
+// Fetch weather data - toujours retourner quelque chose
 async function fetchWeatherData(lat, lon, retryCount = 0) {
     const cacheKey = `${lat.toFixed(2)}_${lon.toFixed(2)}`;
+    const maxRetries = 3;
     
-    try {
-        // Vérifier le cache
-        if (openMeteoCache.key === cacheKey && Date.now() - openMeteoCache.timestamp < OPEN_METEO_CACHE_TTL) {
-            console.log('📦 Utilisation du cache Open-Meteo');
-            return openMeteoCache.data;
-        }
-        
-        console.log(`🌤️ Appel API Open-Meteo pour lat: ${lat}, lon: ${lon}`);
-        const data = await fetchOpenMeteo(lat, lon);
-        
-        // Mettre en cache
-        openMeteoCache = { key: cacheKey, data, timestamp: Date.now() };
-        
-        console.log('✅ Données météo réelles reçues !');
-        return data;
-        
-    } catch (error) {
-        console.warn('⚠️ Open-Meteo indisponible, fallback IA:', error.message);
-        
-        // Fallback : utiliser l'IA météo (simulation intelligente)
+    while (retryCount < maxRetries) {
         try {
-            const aiData = await fetchAIData(lat, lon, retryCount);
-            console.log('🤖 Données IA de secours générées');
-            return aiData;
-        } catch (aiError) {
-            console.error('❌ Erreur génération IA:', aiError);
-            // Dernier recours : données simulées basiques
-            return getSimulatedWeatherData();
+            // Check cache
+            if (openMeteoCache.key === cacheKey && Date.now() - openMeteoCache.timestamp < OPEN_METEO_CACHE_TTL) {
+                console.log('📦 Cache');
+                return openMeteoCache.data;
+            }
+            
+            const data = await fetchOpenMeteo(lat, lon);
+            
+            // Validate data
+            if (data && data.current && data.hourly && data.daily) {
+                openMeteoCache = { key: cacheKey, data, timestamp: Date.now() };
+                console.log('✅ Données reçues');
+                return data;
+            }
+            
+            throw new Error('Données incomplètes');
+            
+        } catch (error) {
+            console.warn(`⚠️ Essai ${retryCount + 1} échoué:`, error.message);
+            retryCount++;
+            
+            if (retryCount < maxRetries) {
+                await new Promise(r => setTimeout(r, 500 * retryCount));
+            }
         }
+    }
+    
+    // Fallback: IA weather
+    try {
+        return await fetchAIData(lat, lon);
+    } catch (e) {
+        return getSimulatedWeatherData();
     }
 }
 
