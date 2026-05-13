@@ -1482,15 +1482,9 @@ async function displayWeatherData(weatherData) {
             const nowUTCHour = new Date().getUTCHours();
             const deviceHour = new Date().getHours();
             
-            //-Afficher l'heure de l'appareil (plus simple et plus juste)
-            let hour;
-            if (i === 0) {
-                hour = deviceHour; // Premiere heure = maintenant
-            } else {
-                hour = (deviceHour + i) % 24; // Heures suivantes
-            }
-            
+            // Utiliser l'index i directement (correspond aux donnees API)
             const isCurrentHour = i === 0;
+            const hourIndex = i;
             const code = hourly.weather_code[hourIndex];
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
             const temp = Math.round(hourly.temperature_2m[hourIndex]);
@@ -1509,7 +1503,10 @@ async function displayWeatherData(weatherData) {
             
             // Ajouter des détails supplémentaires
             const weatherInfo = getWeatherInfo(code);
-            const timeLabel = isCurrentHour ? 'Maint' : `${hour}h`;
+            // Afficher l'heure basE sur l'index avec un format simple
+            const ts = hourly.time[hourIndex];
+            const hourTime = ts ? new Date(ts).getHours() : i;
+            const timeLabel = isCurrentHour ? 'Maint' : `${hourTime}h`;
             
             // Ajouter une classe spéciale pour l'heure actuelle
             const currentClass = isCurrentHour ? 'current-hour' : '';
