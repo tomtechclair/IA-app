@@ -920,6 +920,7 @@ const weatherAI = new WeatherAI();
 const OPEN_METEO_BASE = 'https://api.open-meteo.com/v1/forecast';
 
 async function fetchOpenMeteo(lat, lon) {
+    console.log('fetchOpenMeteo called for', lat, lon);
     const params = new URLSearchParams({
         latitude: lat,
         longitude: lon,
@@ -941,6 +942,7 @@ async function fetchOpenMeteo(lat, lon) {
     });
     
     if (!response.ok) {
+        console.error('fetchOpenMeteo HTTP error', response.status);
         throw new Error(`Open-Meteo HTTP ${response.status}`);
     }
     
