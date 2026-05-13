@@ -1669,7 +1669,7 @@ async function displayWeatherData(weatherData) {
             
             // Créer l'icône SVG météo IA réaliste
             const iconHTML = typeof createWeatherIconSVG === 'function' 
-                ? createWeatherIconSVG(code, hourlyIsDay, 32) 
+                ? createWeatherIconSVG(code, hourlyIsDay, 48) 
                 : '';
             
             // Ajouter des détails supplémentaires
@@ -1682,8 +1682,8 @@ async function displayWeatherData(weatherData) {
             }
             // Ajuster selon le décalage horaire du lieu
             const tzOffset = window.timezoneOffset || 0;
-            hourTime = (hourTime + tzOffset) % 24;
-            if (hourTime < 0) hourTime += 24;
+            hourTime = hourTime; // FIX: No offset - API returns local time
+            // hourTime check removed - API gives valid 0-23
             const timeLabel = isCurrentHour ? 'Maint' : `${hourTime}h`;
             
             // Ajouter une classe spéciale pour l'heure actuelle
@@ -1736,7 +1736,7 @@ async function displayWeatherData(weatherData) {
             
             // Créer l'icône SVG météo IA réaliste
             const iconHTML = typeof createWeatherIconSVG === 'function' 
-                ? createWeatherIconSVG(code, true, 36) 
+                ? createWeatherIconSVG(code, true, 52) 
                 : '';
             
             const tempLow = daily.temperature_2m_min[i];
