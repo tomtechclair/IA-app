@@ -2501,26 +2501,36 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (cityElement) cityElement.textContent = 'Chargement...';
     if (tempElement) tempElement.textContent = '--°';
-    if (conditionElement) conditionElement.textContent = 'Recherche en cours';
+    if (conditionElement) conditionElement.textContent = 'Chargement meteo...';
     
-    // Géolocalisation automatique sur mobile
+    // Timeout fallback - charger Paris apres 5 secondes si pas de reponse
+    const loadingTimeout = setTimeout(() => {
+        console.log('Timeout - chargement Paris');
+        updateWeather('Paris');
+        startAutoRefresh();
+    }, 5000);
+    
+    //.Geolocalisation automatique sur mobile
     if (isMobileDevice()) {
-        // Sur mobile, géolocalisation automatique sans afficher "Paris" avant
         requestAutoGeolocation();
     } else {
-        // Sur desktop, comportement normal avec demande de permission
+        // Sur desktop, essayer geolocation avec timeout
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
+                    clearTimeout(loadingTimeout);
                     updateWeatherByCoords(position.coords.latitude, position.coords.longitude);
                     startAutoRefresh();
                 },
                 (error) => {
+                    clearTimeout(loadingTimeout);
                     updateWeather('Paris');
                     startAutoRefresh();
-                }
+                },
+                { timeout: 8000 }
             );
         } else {
+            clearTimeout(loadingTimeout);
             updateWeather('Paris');
             startAutoRefresh();
         }
