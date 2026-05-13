@@ -456,53 +456,40 @@ const CITY_DATABASE = {
 async function searchCityCoords(cityName) {
     const city = cityName.trim();
     if (!city || city.length < 2) return { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' };
+
+    // Fallback local - recherche rapide
+    const cityDB = {
+        'paris': { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' },
+        'london': { name: 'London', lat: 51.5074, lon: -0.1278, country: 'GB' },
+        'new york': { name: 'New York', lat: 40.7128, lon: -74.0060, country: 'US' },
+        'tokyo': { name: 'Tokyo', lat: 35.6762, lon: 139.6503, country: 'JP' },
+        'berlin': { name: 'Berlin', lat: 52.5200, lon: 13.4050, country: 'DE' },
+        'madrid': { name: 'Madrid', lat: 40.4168, lon: -3.7038, country: 'ES' },
+        'lyon': { name: 'Lyon', lat: 45.7640, lon: 4.8357, country: 'FR' },
+        'marseille': { name: 'Marseille', lat: 43.2965, lon: 5.3698, country: 'FR' }
+    };
     
+    const cityLower = city.toLowerCase();
+    if (cityDB[cityLower]) {
+        return cityDB[cityLower];
+    }
+
+    // Try Open-Meteo geocoding
     try {
-        // Open-Meteo geocoding API
         const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`;
-        
-        const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
-        
-        if (!response.ok) throw new Error('API error');
-        
-        const data = await response.json();
-        
-        if (data.results && data.results.length > 0) {
-            const result = data.results[0];
-            console.log('Ville trouvee:', result.name);
-            return {
-                name: result.name,
-                lat: result.latitude,
-                lon: result.longitude,
-                country: result.country_code || ''
-            };
-        }
-        
-        // Nominatim fallback
-        const nomResponse = await fetch(
-            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`,
-            { headers: { 'User-Agent': 'MeteoApp/1.0' }, signal: AbortSignal.timeout(5000) }
-        );
-        
-        if (nomResponse.ok) {
-            const nomData = await nomResponse.json();
-            if (nomData.length > 0) {
-                return {
-                    name: nomData[0].display_name?.split(',')[0] || city,
-                    lat: parseFloat(nomData[0].lat),
-                    lon: parseFloat(nomData[0].lon),
-                    country: ''
-                };
+        const response = await fetch(url, { signal: AbortSignal.timeout(3000) });
+        if (response.ok) {
+            const data = await response.json();
+            if (data.results && data.results.length > 0) {
+                const result = data.results[0];
+                return { name: result.name, lat: result.latitude, lon: result.longitude, country: result.country_code || '' };
             }
         }
-        
-        // Fallback
-        return { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' };
-        
-    } catch (error) {
-        console.error('Search error:', error.message);
-        return { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' };
+    } catch (e) {
+        console.log('Geocoding API failed');
     }
+    
+    return { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' };
 }
 
 // Obtenir le nom de la ville - avec Nominatim OpenStreetMap
