@@ -1,16 +1,17 @@
-// Service Worker pour performances ultra-rapides sur mobile
-const CACHE_NAME = 'weather-app-v2';
-const STATIC_CACHE = 'static-v2';
-const API_CACHE = 'api-v2';
+// Service Worker pour performances ULTRA-RAPIDES sur mobile
+const CACHE_NAME = 'weather-app-v3';
+const STATIC_CACHE = 'static-v3';
+const API_CACHE = 'api-v3';
 
-// Ressources critiques à mettre en cache
+// Ressources critiques à mettre en cache - TOUS les fichiers
 const CRITICAL_RESOURCES = [
-    '.',
+    './',
     './index.html',
     './style.css',
     './weather-icons.css',
     './weather-icons.js',
-    './script.js'
+    './script.js',
+    './apple-weather-icons.js'
 ];
 
 // Installation du Service Worker
@@ -117,9 +118,11 @@ self.addEventListener('fetch', (event) => {
     }
 });
 
-// Vérifier si c'est une requête API
+// Vérifier si c'est une requête API (inclut Open-Meteo et IP-API)
 function isAPIRequest(url) {
-    return url.hostname.includes('openweathermap.org');
+    return url.hostname.includes('openweathermap.org') || 
+           url.hostname.includes('open-meteo.com') ||
+           url.hostname.includes('ip-api.com');
 }
 
 // Vérifier si c'est une ressource statique (fichiers du site)

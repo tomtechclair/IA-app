@@ -28,12 +28,14 @@
     </style>
     
     <!-- Chargement différé des styles -->
-    <link rel="preload" href="style.css?v=2" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="style.css?v=3" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <link rel="preload" href="weather-icons.css?v=2" as="style" onload="this.onload=null;this.rel='stylesheet'">
     
     <script>
         if('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(console.log);
+            navigator.serviceWorker.register('sw.js').then(() => {
+                console.log('Service Worker activé - Mode ultra-rapide mobile');
+            }).catch(console.log);
         }
     </script>
 </head>
