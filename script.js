@@ -6,19 +6,32 @@ if (!AbortSignal.timeout) {
     };
 }
 
-// Debug: Direct fetch test on page load
+// Direct DOM update from Open-Meteo (working pattern)
 (function() {
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=48.85&longitude=2.35&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto', { cache: 'no-store' })
+    const lat = 48.85, lon = 2.35;
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m&timezone=auto`, { cache: 'no-store' })
         .then(r => r.json())
         .then(d => {
-            console.log('DIRECT:', d);
-            // Direct DOM update for testing
+            console.log('Weather data loaded:', d);
             const tempEl = document.querySelector('.big-temp');
             const hlEl = document.querySelector('.high-low');
-            if(tempEl) tempEl.textContent = d.current.temperature_2m + '°';
-            if(hlEl) hlEl.innerHTML = '<span>H:' + d.daily.temperature_2m_max[0] + '°</span><span>L:' + d.daily.temperature_2m_min[0] + '°</span>';
+            if(tempEl) {
+                tempEl.textContent = Math.round(d.current.temperature_2m) + '°';
+                tempEl.dataset.loaded = 'true';
+            }
+            if(hlEl) {
+                const max = Math.round(d.daily.temperature_2m_max[0]);
+                const min = Math.round(d.daily.temperature_2m_min[0]);
+                hlEl.innerHTML = `<span>H:${max}°</span><span>L:${min}°</span>`;
+                hlEl.dataset.loaded = 'true';
+            }
+            // Also update temp-avg
+            const avgEl = document.getElementById('temp-avg');
+            if(avgEl) {
+                avgEl.textContent = Math.round((d.daily.temperature_2m_max[0] + d.daily.temperature_2m_min[0]) / 2) + '°';
+            }
         })
-        .catch(e => console.error('ERR:', e));
+        .catch(e => console.error('Weather load failed:', e));
 })();
 
 const weatherDatabase = {};
