@@ -1588,9 +1588,13 @@ async function displayWeatherData(weatherData) {
         // Mettre à jour le fond dynamique
         const bgClass = getWeatherInfo(current.weather_code || 0).bg || 'bg-blue';
         
-        // Appliquer le fond sur le body directement
-        document.body.className = '';
-        document.body.classList.add(bgClass);
+        // Appliquer le fond sur le body directement (nuit si is_day = 0)
+        if (current.is_day === 0) {
+            document.body.className = 'bg-night';
+        } else {
+            document.body.className = '';
+            document.body.classList.add(bgClass);
+        }
         
         if (weatherInfo && current) {
             updateBackground(current.weather_code, current.is_day === 1);
