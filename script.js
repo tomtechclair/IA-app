@@ -493,40 +493,37 @@ async function searchCityCoords(cityName) {
     }
 }
 
-// Obtenir le nom de la ville à partir des coordonnées avec reverse geocoding
-// IP-API.com - API gratuite sans CORS
+// Obtenir le nom de la ville - avec Nominatim OpenStreetMap
 async function getCityNameFromCoords(lat, lon) {
-    // Essayer IP-API (gratuit, pas de CORS sur version gratuite)
+    // Essayer Nominatim (OpenStreetMap) - tres fiable
     try {
-        const response = await fetch(`http://ip-api.com/json/${lat},${lon}?lang=fr`, {
-            signal: AbortSignal.timeout(5000)
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=fr`, {
+            headers: { 'User-Agent': 'MeteoApp/1.0' },
+            signal: AbortSignal.timeout(8000)
         });
         
         if (response.ok) {
             const data = await response.json();
-            if (data.status === 'success' && data.city) {
-                console.log(`🏙️ Ville trouvée: ${data.city}, ${data.country}`);
-                return {
-                    name: data.city,
-                    lat: lat,
-                    lon: lon,
-                    country: data.countryCode || '',
-                    admin1: data.regionName || ''
-                };
+            if (data.address?.city || data.address?.town || data.address?.village) {
+                const cityName = data.address.city || data.address.town || data.address.village;
+                console.log(`🏙️ Ville: ${cityName}`);
+                return { name: cityName, country: data.address.country_code?.toUpperCase() || '', admin1: data.address.state || '' };
             }
         }
-    } catch (error) {
-        console.warn('Erreur IP-API:', error.message);
+    } catch (e) {
+        console.warn('Nominatim:', e.message);
     }
     
-    // Fallback: utiliser un nom générique
-    return {
-        name: 'Ma position',
-        lat: lat,
-        lon: lon,
-        country: '',
-        admin1: ''
-    };
+    // Fallback: IP-API (gratuit, parfois fonctionne)
+    try {
+        const r = await fetch(`http://ip-api.com/json/${lat},${lon}?lang=fr`, { signal: AbortSignal.timeout(5000) });
+        if (r.ok) {
+            const d = await r.json();
+            if (d.status === 'success' && d.city) return { name: d.city, country: d.countryCode || '', admin1: d.regionName || '' };
+        }
+    } catch (err) {}
+    
+    return { name: 'Position', country: '', admin1: '' };
 }
 
 // Système IA générative pour météo temps réel
