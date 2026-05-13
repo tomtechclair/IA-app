@@ -991,6 +991,7 @@ function getSimulatedWeatherData(lat = 48.8566, lon = 2.3522) {
     const hourlyTemp = [];
     const hourlyCode = [];
     const hourlyPrecip = [];
+    const hourlyIsDay = [];
     for (let i = 0; i < 48; i++) {
         const h = (hour + i) % 24;
         const t = baseTemp + Math.sin(h * Math.PI / 12) * 4 + Math.random() * 2;
@@ -998,6 +999,7 @@ function getSimulatedWeatherData(lat = 48.8566, lon = 2.3522) {
         hourlyTemp.push(Math.round(t * 10) / 10);
         hourlyCode.push(Math.random() > 0.7 ? 0 : (Math.random() > 0.5 ? 1 : 2));
         hourlyPrecip.push(Math.random() > 0.8 ? Math.random() * 30 : 0);
+        hourlyIsDay.push(h >= 6 && h <= 20 ? 1 : 0);
     }
     
     // Generate daily forecast
@@ -1026,7 +1028,8 @@ function getSimulatedWeatherData(lat = 48.8566, lon = 2.3522) {
             time: hourlyTime,
             temperature_2m: hourlyTemp,
             weather_code: hourlyCode,
-            precipitation: hourlyPrecip
+            precipitation_probability: hourlyPrecip,
+            is_day: hourlyIsDay
         },
         daily: {
             time: dailyTime,
@@ -1528,8 +1531,13 @@ async function displayWeatherData(weatherData) {
         
         // Hourly forecast - 24h améliorée avec nouvelles icônes SVG
         const hourly = weatherData.hourly;
-        const nowMs = Date.now();
         const hourlyList = document.getElementById('hourly-list');
+        
+        // Validations
+        if (!hourly || !hourly.time || !hourly.temperature_2m) {
+            console.error('Données horaires manquantes');
+            return;
+        }
         
         // Find current hour index - using the API hour strings
         let startIndex = 0;
@@ -1600,9 +1608,19 @@ async function displayWeatherData(weatherData) {
         const daily = weatherData.daily;
         const dailyList = document.getElementById('daily-list');
         
-        if (!daily || !daily.time || !daily.temperature_2m_min || !daily.temperature_2m_max) {
+        if (!daily || !daily.time || !daily.temperature_2m_min || !daily.temperature_2m_max || !daily.weather_code) {
             console.error('Données quotidiennes manquantes');
-            return;
+            // Generate placeholder data
+            daily.time = [];
+            daily.temperature_2m_min = [];
+            daily.temperature_2m_max = [];
+            daily.weather_code = [];
+            for(let i=0; i<7; i++) {
+                daily.time.push(new Date(Date.now() + i*86400000).toISOString().split('T')[0]);
+                daily.temperature_2m_min.push(15);
+                daily.temperature_2m_max.push(22);
+                daily.weather_code.push(0);
+            }
         }
         
         // Calculer les températures min/max pour l'échelle
