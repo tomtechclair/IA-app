@@ -1348,20 +1348,10 @@ async function displayWeatherData(weatherData) {
         
         // Hourly forecast - 24h améliorée avec nouvelles icônes SVG
         const hourly = weatherData.hourly;
-        const now = new Date();
         const hourlyList = document.getElementById('hourly-list');
         
-        // Trouver l'index de départ - utiliser l'heure actuelle de l'appareil
+        // Use API data as-is - it's already in local timezone
         let startIndex = 0;
-        const currentHour = now.getUTCHours();
-        
-        for (let j = 0; j < hourly.time.length; j++) {
-            const h = new Date(hourly.time[j]).getUTCHours();
-            if (h === currentHour) {
-                startIndex = j;
-                break;
-            }
-        }
         
         let hourlyHTML = '';
         for (let i = 0; i < 24; i++) {
