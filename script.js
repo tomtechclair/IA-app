@@ -2435,70 +2435,36 @@ function isMobileDevice() {
            (window.innerWidth <= 768 && 'ontouchstart' in window);
 }
 
-// Geolocalisation automatique
+// Geolocalisation simple - GPS avec fallback recherche
 function requestAutoGeolocation() {
     if (!navigator.geolocation) {
-        // Pas de geolocalisation, utiliser IP
-        requestIPLocation();
+        // Pas de GPS, afficher message
+        const cityElement = document.querySelector('.city');
+        if (cityElement) cityElement.textContent = 'Chercher une ville...';
         return;
     }
     
     const cityElement = document.querySelector('.city');
-    if (cityElement) cityElement.textContent = 'Localisation...';
+    if (cityElement) cityElement.textContent = 'Localisation GPS...';
     
     navigator.geolocation.getCurrentPosition(
         (position) => {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
             
-            // Stocker les coordonnées
             localStorage.setItem('lastCoords', JSON.stringify({lat, lon, timestamp: Date.now()}));
             
             updateWeatherByCoords(lat, lon);
             startAutoRefresh();
         },
         (error) => {
-            // Geolocation échoué, utiliser IP
-            console.log('Geolocation failed, using IP fallback');
-            requestIPLocation();
+            // GPS échoué - demander à l'utilisateur de chercher
+            if (cityElement) cityElement.textContent = 'Chercher une ville...';
+            updateWeather('Paris');
+            startAutoRefresh();
         },
-        {enableHighAccuracy: true, timeout: 10000, maximumAge: 300000}
+        {enableHighAccuracy: true, timeout: 15000, maximumAge: 600000}
     );
-}
-
-// Utiliser la localisation par IP
-async function requestIPLocation() {
-    const cityElement = document.querySelector('.city');
-    if (cityElement) cityElement.textContent = 'Chargement...';
-    
-    try {
-        // IP-API sans paramètres = localisation par IP
-        const response = await fetch('http://ip-api.com/json/?lang=fr', {signal: AbortSignal.timeout(8000)});
-        if (response.ok) {
-            const data = await response.json();
-            if (data.status === 'success' && data.city) {
-                currentCity = data.city;
-                currentCoords = {lat: data.lat, lon: data.lon};
-                
-                if (cityElement) cityElement.textContent = currentCity;
-                document.getElementById('city-input').value = currentCity;
-                
-                const weatherData = await fetchWeatherData(data.lat, data.lon);
-                if (weatherData) {
-                    await displayWeatherData(weatherData);
-                    startAutoRefresh();
-                    return;
-                }
-            }
-        }
-    } catch (e) {
-        console.warn('IP location error:', e);
-    }
-    
-    // Fallback final
-    if (cityElement) cityElement.textContent = 'Paris';
-    updateWeather('Paris');
-    startAutoRefresh();
 }
 
 // Initialize search listeners
