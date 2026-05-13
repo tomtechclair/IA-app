@@ -2425,89 +2425,70 @@ function isMobileDevice() {
            (window.innerWidth <= 768 && 'ontouchstart' in window);
 }
 
-// Géolocalisation automatique pour mobile
+// Geolocalisation automatique
 function requestAutoGeolocation() {
     if (!navigator.geolocation) {
-        updateWeather('Paris');
-        startAutoRefresh();
+        // Pas de geolocalisation, utiliser IP
+        requestIPLocation();
         return;
     }
     
-    // Options pour une géolocalisation plus précise
-    const options = {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000 // 5 minutes de cache
-    };
-    
-    // Mettre à jour l'interface pour montrer la recherche
     const cityElement = document.querySelector('.city');
-    const tempElement = document.querySelector('.big-temp');
-    const conditionElement = document.querySelector('.condition');
-    
-    if (cityElement) cityElement.textContent = 'Géolocalisation...';
-    if (tempElement) tempElement.textContent = '--°';
-    if (conditionElement) conditionElement.textContent = 'Recherche de votre position';
+    if (cityElement) cityElement.textContent = 'Localisation...';
     
     navigator.geolocation.getCurrentPosition(
         (position) => {
-            // Succès : utiliser les coordonnées exactes
-            updateWeatherByCoords(position.coords.latitude, position.coords.longitude);
-            startAutoRefresh();
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
             
-            // Stocker les coordonnées pour utilisation future
-            localStorage.setItem('lastCoords', JSON.stringify({
-                lat: position.coords.latitude,
-                lon: position.coords.longitude,
-                timestamp: Date.now()
-            }));
+            // Stocker les coordonnées
+            localStorage.setItem('lastCoords', JSON.stringify({lat, lon, timestamp: Date.now()}));
+            
+            updateWeatherByCoords(lat, lon);
+            startAutoRefresh();
         },
         (error) => {
-            console.error('Erreur de géolocalisation:', error);
-            
-            // Mettre à jour l'interface pour montrer l'erreur
-            if (cityElement) cityElement.textContent = 'Erreur de localisation';
-            if (conditionElement) conditionElement.textContent = 'Impossible de vous localiser';
-            
-            // Vérifier si on a des coordonnées en cache
-            const cachedCoords = localStorage.getItem('lastCoords');
-            if (cachedCoords) {
-                const coords = JSON.parse(cachedCoords);
-                const age = Date.now() - coords.timestamp;
+            // Geolocation échoué, utiliser IP
+            console.log('Geolocation failed, using IP fallback');
+            requestIPLocation();
+        },
+        {enableHighAccuracy: true, timeout: 10000, maximumAge: 300000}
+    );
+}
+
+// Utiliser la localisation par IP
+async function requestIPLocation() {
+    const cityElement = document.querySelector('.city');
+    if (cityElement) cityElement.textContent = 'Chargement...';
+    
+    try {
+        // IP-API sans paramètres = localisation par IP
+        const response = await fetch('http://ip-api.com/json/?lang=fr', {signal: AbortSignal.timeout(8000)});
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success' && data.city) {
+                currentCity = data.city;
+                currentCoords = {lat: data.lat, lon: data.lon};
                 
-                // Utiliser le cache si moins de 30 minutes
-                if (age < 1800000) {
-                    if (cityElement) cityElement.textContent = 'Position en cache...';
-                    if (conditionElement) conditionElement.textContent = 'Utilisation de votre dernière position';
-                    updateWeatherByCoords(coords.lat, coords.lon);
+                if (cityElement) cityElement.textContent = currentCity;
+                document.getElementById('city-input').value = currentCity;
+                
+                const weatherData = await fetchWeatherData(data.lat, data.lon);
+                if (weatherData) {
+                    await displayWeatherData(weatherData);
                     startAutoRefresh();
                     return;
                 }
             }
-            
-            // Fallback selon le type d'erreur
-            if (error.code === 1) {
-                // Permission refusée - utiliser une ville par défaut selon la langue
-                const userLang = navigator.language || navigator.userLanguage;
-                if (userLang.startsWith('fr')) {
-                    if (cityElement) cityElement.textContent = 'Permission refusée';
-                    if (conditionElement) conditionElement.textContent = 'Utilisation de Paris par défaut';
-                    updateWeather('Paris');
-                } else {
-                    if (cityElement) cityElement.textContent = 'Permission refusée';
-                    if (conditionElement) conditionElement.textContent = 'Utilisation de London par défaut';
-                    updateWeather('London');
-                }
-            } else {
-                // Autre erreur - utiliser la dernière position connue ou Paris
-                if (cityElement) cityElement.textContent = 'Erreur de géolocalisation';
-                if (conditionElement) conditionElement.textContent = 'Utilisation de Paris par défaut';
-                updateWeather('Paris');
-            }
-            startAutoRefresh();
-        },
-        options
-    );
+        }
+    } catch (e) {
+        console.warn('IP location error:', e);
+    }
+    
+    // Fallback final
+    if (cityElement) cityElement.textContent = 'Paris';
+    updateWeather('Paris');
+    startAutoRefresh();
 }
 
 // Initialize search listeners
