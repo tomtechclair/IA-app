@@ -1368,17 +1368,8 @@ async function updateWeatherByCoords(lat, lon) {
             };
         }
         
-        if (!weatherData.daily || !weatherData.daily.time) {
-            const now = new Date();
-            const base = 20;
-            const d = [];
-            for (let i = 0; i < 7; i++) d.push(new Date(now.getTime() + i*86400000).toISOString().split('T')[0]);
-            weatherData.daily = {
-                time: d,
-                temperature_2m_max: d.map(() => base + 6),
-                temperature_2m_min: d.map(() => base - 3),
-                weather_code: d.map(() => 0)
-            };
+        if (!weatherData.daily || !weatherData.daily.time || !weatherData.daily.temperature_2m_max) {
+            console.error('Invalid or missing weatherData.daily:', weatherData?.daily);
         }
         
         await displayWeatherData(weatherData);
@@ -1615,10 +1606,10 @@ async function displayWeatherData(weatherData) {
         // Temperature average (daily)
         // debug
         const tempAvgElement = document.getElementById('temp-avg');
-        if (tempAvgElement && weatherData.daily) {
-            const maxTemps = weatherData.daily.temperature_2m_max;
-            const minTemps = weatherData.daily.temperature_2m_min;
-            if (maxTemps && minTemps && maxTemps.length > 0 && minTemps.length > 0) {
+        const maxTemps = weatherData?.daily?.temperature_2m_max;
+        const minTemps = weatherData?.daily?.temperature_2m_min;
+        console.log('temp-avg debug: maxTemps =', maxTemps, 'minTemps =', minTemps);
+        if (tempAvgElement && maxTemps && minTemps && maxTemps.length > 0 && minTemps.length > 0) {
                 const todayMax = maxTemps[0];
                 const todayMin = minTemps[0];
                 const avg = Math.round((todayMax + todayMin) / 2);
