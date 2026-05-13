@@ -1772,7 +1772,7 @@ async function displayWeatherData(weatherData) {
         }
         if (dailyList) {
             dailyList.innerHTML = dailyHTML;
-        displayTempRange(weatherData);
+            displayTempRange(weatherData);
         }
         
         // Mettre à jour le fond dynamique - une seule fois au premier chargement
