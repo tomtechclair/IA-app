@@ -1772,6 +1772,9 @@ async function displayWeatherData(weatherData) {
         }
         if (dailyList) {
             dailyList.innerHTML = dailyHTML;
+        
+        // V57: Display temperature range card
+        displayTempRange(weatherData);
         }
         
         // Mettre à jour le fond dynamique - une seule fois au premier chargement
@@ -3109,4 +3112,51 @@ if (!document.getElementById('weather-animations')) {
         @keyframes cloud-drift { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(${s*0.02}); } }
     `;
     document.head.appendChild(style);
+}
+
+// ============================================
+// Températures journalières (Apple-style)
+// ============================================
+function displayTempRange(weatherData) {
+    const container = document.getElementById('temp-range-list');
+    if (!container || !weatherData.daily) return;
+    
+    const daily = weatherData.daily;
+    if (!daily.time || !daily.temperature_2m_max || !daily.temperature_2m_min) {
+        container.innerHTML = '<div class="temp-range-empty">Données non disponibles</div>';
+        return;
+    }
+    
+    const days = ['Aujourd\'hui', 'Demain', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche', 'Lundi', 'Mardi', 'Mercredi'];
+    let html = '';
+    
+    // Afficher les 7 prochains jours
+    for (let i = 0; i < Math.min(7, daily.time.length); i++) {
+        const date = new Date(daily.time[i]);
+        const dayName = i < 10 ? days[i] : days[date.getDay()];
+        const maxTemp = Math.round(daily.temperature_2m_max[i]);
+        const minTemp = Math.round(daily.temperature_2m_min[i]);
+        const avgTemp = Math.round((maxTemp + minTemp) / 2);
+        
+        // Code météo pour l'icône
+        const code = daily.weather_code[i];
+        const isDay = 1; // Assume day for daily
+        
+        const iconHTML = typeof createWeatherIconSVG === 'function' 
+            ? createWeatherIconSVG(code, isDay, 36) 
+            : getWeatherIcon(code, isDay, 36);
+        
+        html += `
+            <div class="temp-range-item">
+                <div class="temp-range-day">${dayName}</div>
+                <div class="temp-range-icon">${iconHTML}</div>
+                <div class="temp-range-temps">
+                    <span class="temp-max">${maxTemp}°</span>
+                    <span class="temp-min">${minTemp}°</span>
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
 }

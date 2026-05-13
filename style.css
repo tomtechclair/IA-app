@@ -964,3 +964,48 @@ body {
         margin-right: 6px;
     }
 }
+
+/* Temp Range Card (Apple-style) */
+.temp-range-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 0;
+}
+.temp-range-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+}
+.temp-range-day {
+    width: 80px;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+.temp-range-icon {
+    width: 36px;
+    height: 36px;
+}
+.temp-range-temps {
+    display: flex;
+    gap: 12px;
+    min-width: 70px;
+    justify-content: flex-end;
+}
+.temp-max {
+    font-weight: 600;
+    color: #fff;
+}
+.temp-min {
+    font-weight: 400;
+    color: rgba(255,255,255,0.7);
+}
+.temp-range-empty,
+.temp-range-loading {
+    text-align: center;
+    padding: 20px;
+    opacity: 0.7;
+}
