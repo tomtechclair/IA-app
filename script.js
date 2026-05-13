@@ -908,6 +908,7 @@ async function fetchOpenMeteo(lat, lon) {
             sunset: raw.daily?.sunset?.[0] || null
         },
         hourly: {
+            // Use times as-is - API returns local timezone with timezone:auto
             time: raw.hourly.time.map(t => new Date(t).getTime()),
             temperature_2m: raw.hourly.temperature_2m,
             weather_code: raw.hourly.weather_code,
@@ -1348,15 +1349,14 @@ async function displayWeatherData(weatherData) {
         // Hourly forecast - 24h améliorée avec nouvelles icônes SVG
         const hourly = weatherData.hourly;
         const now = new Date();
-        const nowMs = now.getTime();
         const hourlyList = document.getElementById('hourly-list');
         
-        // Trouver l'index de départ - commencer à l'heure actuelle pile
+        // Trouver l'index de départ - utiliser l'heure actuelle de l'appareil
         let startIndex = 0;
-        const currentHour = now.getHours();
+        const currentHour = now.getUTCHours();
         
         for (let j = 0; j < hourly.time.length; j++) {
-            const h = new Date(hourly.time[j]).getHours();
+            const h = new Date(hourly.time[j]).getUTCHours();
             if (h === currentHour) {
                 startIndex = j;
                 break;
@@ -1368,8 +1368,10 @@ async function displayWeatherData(weatherData) {
             const hourIndex = startIndex + i;
             if (hourIndex >= hourly.time.length) break;
             
-            const hourDate = new Date(hourly.time[hourIndex]);
-            const hour = hourDate.getHours();
+            // Get hour directly from timestamp without timezone conversion
+            const ts = hourly.time[hourIndex];
+            const hour = new Date(ts).getUTCHours(); // Use UTC to avoid local timezone
+            const hourMs = new Date(ts).getTime();
             const code = hourly.weather_code[hourIndex];
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
             const temp = Math.round(hourly.temperature_2m[hourIndex]);
