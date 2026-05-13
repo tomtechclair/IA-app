@@ -1392,7 +1392,7 @@ async function displayWeatherData(weatherData) {
             // Ajouter des détails supplémentaires
             const weatherInfo = getWeatherInfo(code);
             const isCurrentHour = i === 0;
-            const timeLabel = isCurrentHour ? 'Maintenant' : `${hour.toString().padStart(2, '0')}h`;
+            const timeLabel = isCurrentHour ? 'Maint' : `${hour}h`;
             
             // Ajouter une classe spéciale pour l'heure actuelle
             const currentClass = isCurrentHour ? 'current-hour' : '';
