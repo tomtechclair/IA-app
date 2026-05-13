@@ -1004,10 +1004,10 @@ async function fetchWeatherData(lat, lon, retryCount = 0) {
     
     // Fallback: IA weather
     try {
-        return null;
+        return await fetchAIData(lat, lon);
     } catch (e) {
         console.warn('IA fallback failed, using simulated data');
-        return null;
+        return getSimulatedWeatherData();
     }
 }
 
@@ -1301,13 +1301,8 @@ async function displayWeatherData(weatherData) {
     if (searchBtn) searchBtn.style.opacity = '0.5';
 
     try {
-        // Vérification robuste des données
-        if (!weatherData || !weatherData.current) {
-            // Ne pas lever d'erreur, utiliser des donnees par defaut
-            weatherData = null;
-        }
-        
-        const current = weatherData.current || {};
+        // Use data if available, else defaults handled below
+        const current = weatherData?.current || {};
         
         // Température par defaut si manquante
         if (current.temperature_2m === undefined || current.temperature_2m === null) {
