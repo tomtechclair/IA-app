@@ -1152,21 +1152,24 @@ async function updateWeatherByCoords(lat, lon) {
     try {
         currentCoords = { lat, lon };
         
-        // Mettre à jour l'interface pour montrer la recherche
+        // Afficher "Chargement..." pendant la recherche
         const cityElement = document.querySelector('.city');
         const conditionElement = document.querySelector('.condition');
-        if (cityElement) cityElement.textContent = 'Localisation...';
-        if (conditionElement) conditionElement.textContent = 'Recherche des données météo';
+        if (cityElement) cityElement.textContent = 'Chargement...';
         
-        // Obtenir le nom réel de la ville avec reverse geocoding
+        // Obtenir le nom réel de la ville avec geocoding
         const cityInfo = await getCityNameFromCoords(lat, lon);
         currentCity = cityInfo.name;
-        document.getElementById('city-input').value = currentCity;
+        
+        // Afficher le nom de la ville
+        if (cityElement) cityElement.textContent = currentCity;
+        const inputElement = document.getElementById('city-input');
+        if (inputElement) inputElement.value = currentCity;
         
         const weatherData = await fetchWeatherData(lat, lon);
         
         if (!weatherData) {
-            showWeatherError('Impossible de récupérer les données météo. Vérifiez votre connexion internet.');
+            showWeatherError('Impossible de récupérer les données météo.');
             return;
         }
         
@@ -1399,7 +1402,6 @@ async function displayWeatherData(weatherData) {
                     <div class="time">${timeLabel}</div>
                     <div class="icon">${iconHTML}</div>
                     <div class="temp">${temp}°</div>
-                    <div class="condition">${weatherInfo.condition}</div>
                 </div>
             `;
         }
