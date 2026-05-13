@@ -2357,51 +2357,67 @@ function updateWeatherOptimized(city) {
     updateWeatherRealTime();
 }
 
-// Use Apple Weather Icons instead of custom icons
+// Apple-style weather icons
 function createWeatherIconSVG(weatherCode, isDay = true, size = 32) {
-    // Map weather codes to Apple icon format
-    const iconMap = {
-        0: isDay ? 'sun' : 'moon',                    // Clear sky
-        1: isDay ? 'cloud.sun' : 'cloud.moon',        // Mainly clear
-        2: isDay ? 'cloud.sun' : 'cloud.moon',        // Partly cloudy
-        3: 'cloud',                                // Overcast
-        45: 'fog',                                // Fog
-        48: 'fog',                                // Depositing rime fog
-        51: 'drizzle',                            // Light drizzle
-        53: 'drizzle',                            // Moderate drizzle
-        55: 'drizzle',                            // Dense drizzle
-        56: 'sleet',                              // Light freezing drizzle
-        57: 'sleet',                              // Dense freezing drizzle
-        61: 'rain',                               // Slight rain
-        63: 'rain',                               // Moderate rain
-        65: 'rain',                               // Heavy rain
-        66: 'sleet',                              // Light freezing rain
-        67: 'sleet',                              // Heavy freezing rain
-        71: 'snow',                               // Slight snow fall
-        73: 'snow',                               // Moderate snow fall
-        75: 'snow',                               // Heavy snow fall
-        77: 'snow',                               // Snow grains
-        80: 'rain',                               // Slight rain showers
-        81: 'rain',                               // Moderate rain showers
-        82: 'cloud.bolt.rain',                    // Violent rain showers
-        85: 'snow',                               // Slight snow showers
-        86: 'snow',                               // Heavy snow showers
-        95: 'cloud.bolt',                         // Thunderstorm
-        96: 'cloud.bolt.rain',                    // Thunderstorm with slight hail
-        99: 'cloud.bolt.rain'                     // Thunderstorm with heavy hail
+    const s = size;
+    const s2 = s / 2;
+    const r = s * 0.35;
+    const cx = s2;
+    const cy = s2;
+    
+    // Color schemes
+    const dayColors = {
+        sun: '#FFD700', sunRing: '#FF9500', sky: '#007AFF', 
+        cloud: '#FFFFFF', cloudShade: '#E5E5EA', cloudDark: '#C7C7CC',
+        rain: '#5AC8FA', snow: '#FFFFFF', thunder: '#BF5AF2'
     };
+    const nightColors = {
+        sun: '#F5F5F5', sunRing: '#C7C7CC', sky: '#1C1C1E',
+        cloud: '#636366', cloudShade: '#48484A', cloudDark: '#3A3A3C',
+        rain: '#64D2FF', snow: '#BF5AF2', thunder: '#BF5AF2'
+    };
+    const colors = isDay ? dayColors : nightColors;
     
-    const iconType = iconMap[weatherCode] || (isDay ? 'sun' : 'moon');
-    const iconObj = appleWeatherIcons?.icons?.[iconType] || createOldWeatherIconSVG(weatherCode, isDay, size);
+    const getCloud = (offY = 0) => `<path d="M${s*0.15},${s*0.45+offY} a${s*0.2},${s*0.2} 0 0,1 ${s*0.25},0 a${s*0.15},${s*0.15} 0 0,1 ${s*0.15},${s*0.1} a${s*0.2},${s*0.2} 0 0,1 ${s*0.25},0 a${s*0.18},${s*0.18} 0 0,1 ${s*0.2},-${s*0.08} a${s*0.15},${s*0.15} 0 0,1 ${s*0.18},${s*0.05}" fill="${colors.cloud}"/>`;
     
-    // Get the SVG content from Apple icons or use fallback
-    if (typeof iconObj === 'string' && iconObj.includes('<svg')) {
-        // Apple icon is already SVG string, wrap it
-        return `<div class="weather-icon-apple" style="width:${size}px;height:${size}px;">${iconObj}</div>`;
+    const getSun = () => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${colors.sun}"/>`;
+    
+    const getRain = () => `<line x1="${s*0.35}" y1="${s*0.55}" x2="${s*0.3}" y2="${s*0.75}" stroke="${colors.rain}" stroke-width="${s*0.06}" stroke-linecap="round"/><line x1="${s*0.5}" y1="${s*0.55}" x2="${s*0.45}" y2="${s*0.75}" stroke="${colors.rain}" stroke-width="${s*0.06}" stroke-linecap="round"/><line x1="${s*0.65}" y1="${s*0.55}" x2="${s*0.6}" y2="${s*0.75}" stroke="${colors.rain}" stroke-width="${s*0.06}" stroke-linecap="round"/>`;
+    
+    const getSnow = () => `<circle cx="${s*0.35}" cy="${s*0.6}" r="${s*0.05}" fill="${colors.snow}"/><circle cx="${s*0.5}" cy="${s*0.65}" r="${s*0.05}" fill="${colors.snow}"/><circle cx="${s*0.65}" cy="${s*0.6}" r="${s*0.05}" fill="${colors.snow}"/>`;
+    
+    const getBolt = () => `<path d="M${s*0.5},${s*0.3} L${s*0.35},${s*0.55} L${s*0.45},${s*0.55} L${s*0.4},${s*0.8} L${s*0.6},${s*0.5} L${s*0.5},${s*0.5} L${s*0.55},${s*0.3} Z" fill="${colors.thunder}"/>`;
+    
+    // Generate SVG based on weather code
+    let svg = '';
+    
+    if (weatherCode === 0) { // Clear
+        svg = isDay 
+            ? `${getSun()}`
+            : `<circle cx="${cx}" cy="${cy}" r="${r*0.8}" fill="#F5F5F5"/><circle cx="${cx}" cy="${cy}" r="${r*0.4}" fill="#636366"/>`;
+    } else if (weatherCode === 1 || weatherCode === 2) { // Partly cloudy
+        svg = isDay 
+            ? `${getSun()}<g transform="translate(${-s*0.15}, ${-s*0.1})">${getCloud(-s*0.1)}</g>`
+            : `${getCloud()}`;
+    } else if (weatherCode === 3) { // Cloudy
+        svg = `${getCloud()}`;
+    } else if (weatherCode === 45 || weatherCode === 48) { // Fog
+        svg = `<rect x="${s*0.1}" y="${s*0.4}" width="${s*0.8}" height="${s*0.08}" rx="${s*0.04}" fill="${colors.cloud}"/><rect x="${s*0.15}" y="${s*0.5}" width="${s*0.7}" height="${s*0.06}" rx="${s*0.03}" fill="${colors.cloud}" opacity="0.6"/>`;
+    } else if (weatherCode >= 51 && weatherCode <= 67) { // Rain/drizzle
+        svg = `${getCloud()}${getRain()}`;
+    } else if (weatherCode >= 71 && weatherCode <= 77) { // Snow
+        svg = `${getCloud()}${getSnow()}`;
+    } else if (weatherCode >= 80 && weatherCode <= 82) { // Rain showers
+        svg = `${getCloud()}${getRain()}`;
+    } else if (weatherCode >= 85 && weatherCode <= 86) { // Snow showers
+        svg = `${getCloud()}${getSnow()}`;
+    } else if (weatherCode >= 95) { // Thunderstorm
+        svg = `${getCloud()}${getBolt()}`;
+    } else {
+        svg = isDay ? getSun() : `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#F5F5F5"/>`;
     }
     
-    // Fallback to old icons
-    return createOldWeatherIconSVG(weatherCode, isDay, size);
+    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">${svg}</svg>`;
 }
 
 // Fallback old weather icons
