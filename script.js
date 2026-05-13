@@ -1433,9 +1433,11 @@ async function displayWeatherData(weatherData) {
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
             const temp = Math.round(hourly.temperature_2m[hourIndex]);
             
-            // Ajouter le % de pluie si > 0
+            // Ajouter le % de pluie UNIQUEMENT s'il pleut (codes pluie)
             const precipProb = hourly.precipitation_probability?.[hourIndex] || 0;
-            const rainDisplay = (code >= 51 && code <= 99) || precipProb > 20 ? 
+            // Codes pluie: 51-67 (bruine/pluie), 80-82 (averses), 95-99 (orage)
+            const isRainCode = (code >= 51 && code <= 67) || (code >= 80 && code <= 99);
+            const rainDisplay = isRainCode ? 
                 `<div class="rain">💧 ${precipProb}%</div>` : '';
             
             // Créer l'icône SVG météo IA réaliste
