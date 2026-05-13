@@ -2627,9 +2627,18 @@ document.addEventListener('DOMContentLoaded', () => {
         startAutoRefresh();
     }, 5000);
     
-    //.Geolocalisation automatique sur mobile
+    //.Geolocalisation automatique sur mobile - avec fallback automatique
     if (isMobileDevice()) {
+        // Essayer GPS, sinon charger directement
         requestAutoGeolocation(loadingTimeout);
+        
+        // Fallback supplementaire si GPS echoue - charger sans attendre
+        setTimeout(() => {
+            if (document.querySelector('.city')?.textContent === 'Localisation GPS...') {
+                updateWeather('Paris');
+                startAutoRefresh();
+            }
+        }, 8000); // Timeout plus long pour GPS
     } else {
         // Sur desktop, essayer geolocation avec timeout
         if (navigator.geolocation) {
