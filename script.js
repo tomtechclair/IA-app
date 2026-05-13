@@ -1283,19 +1283,19 @@ async function updateWeatherByCoords(lat, lon) {
             return;
         }
         
-        // Ensure forecast data is present
-        const now = new Date();
-        const month = now.getMonth();
-        const base = [5,6,10,13,17,21,24,23,19,14,9,5][month];
-        
+        // Generate hourly with proper ISO format
         if (!weatherData.hourly || !weatherData.hourly.time) {
             const h = [];
-            for (let i = 0; i < 48; i++) h.push(now.getTime() + i*3600000);
+            for (let i = 0; i < 48; i++) {
+                const d = new Date(now.getTime() + i*3600000);
+                h.push(d.toISOString().replace('Z', '').split('.')[0]);
+            }
+            const nh = now.getHours();
             weatherData.hourly = {
                 time: h,
-                temperature_2m: h.map((_,i) => base + Math.sin((now.getHours()+i)%24 * Math.PI/12) * 5),
+                temperature_2m: h.map((_,i) => base + Math.sin((nh+i)%24 * Math.PI/12) * 5),
                 weather_code: h.map(() => 0),
-                is_day: h.map((_,i) => (now.getHours()+i)%24 >= 6 && (now.getHours()+i)%24 <= 20 ? 1 : 0),
+                is_day: h.map((_,i) => (nh+i)%24 >= 6 && (nh+i)%24 <= 20 ? 1 : 0),
                 precipitation_probability: h.map(() => 0)
             };
         }
