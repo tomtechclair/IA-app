@@ -7,9 +7,9 @@ if (!AbortSignal.timeout) {
 }
 
 // Direct DOM update from Open-Meteo (working pattern)
-// FIX: Run after DOMContentLoaded to override initial loading state
-document.addEventListener('DOMContentLoaded', function() {
-    // Use setTimeout to run AFTER other DOMContentLoaded handlers
+// FIX: Use window.onload to run AFTER all DOMContentLoaded handlers and page scripts
+window.addEventListener('load', function() {
+    // Run 100ms after page fully loads to ensure all scripts have executed
     setTimeout(function() {
         const lat = 48.85, lon = 2.35;
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,wind_speed_10m,pressure_msl,cloud_cover&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&hourly=temperature_2m,weather_code&timezone=auto&forecast_days=7`;
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Weather display updated successfully');
             })
             .catch(e => console.error('Weather load failed:', e));
-    }, 500); // Wait 500ms after DOMContentLoaded to ensure other handlers complete
+    }, 100); // Small delay to ensure everything is ready
 });
 
 const weatherDatabase = {};
