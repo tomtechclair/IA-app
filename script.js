@@ -1412,7 +1412,7 @@ async function updateWeather(cityName) {
         let weatherData = await fetchWeatherData(cityData.lat, cityData.lon);
         
         if (!weatherData) {
-            weatherData = fetchOpenMeteo(cityData.lat, cityData.lon);
+            weatherData = await fetchOpenMeteo(cityData.lat, cityData.lon);
         }
         
         await displayWeatherData(weatherData);
