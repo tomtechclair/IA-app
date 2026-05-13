@@ -447,49 +447,33 @@ const CITY_DATABASE = {
 
 async function searchCityCoords(cityName) {
     try {
-        // Normaliser le nom de la ville pour la recherche
-        const normalizedCity = cityName.toLowerCase().trim();
+        const normalizedCity = cityName.trim();
         
-        // Recherche exacte d'abord
-        if (CITY_DATABASE[normalizedCity]) {
-            console.log(`🏙️ Ville trouvée dans la base IA: ${CITY_DATABASE[normalizedCity].name}`);
-            return CITY_DATABASE[normalizedCity];
-        }
+        // Direct API search - much faster
+        const response = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(normalizedCity)}&count=1&language=fr&format=json`,
+            { signal: AbortSignal.timeout(5000) }
+        );
         
-        // Recherche partielle (contient)
-        for (const [key, city] of Object.entries(CITY_DATABASE)) {
-            if (key.includes(normalizedCity) || normalizedCity.includes(key)) {
-                console.log(`🔍 Ville trouvée par recherche partielle: ${city.name}`);
-                return city;
+        if (response.ok) {
+            const data = await response.json();
+            if (data.results && data.results.length > 0) {
+                const result = data.results[0];
+                return {
+                    name: result.name,
+                    lat: result.latitude,
+                    lon: result.longitude,
+                    country: result.country_code || ''
+                };
             }
         }
         
-        // Recherche dans le nom affiché
-        for (const city of Object.values(CITY_DATABASE)) {
-            if (city.name.toLowerCase().includes(normalizedCity) || normalizedCity.includes(city.name.toLowerCase())) {
-                console.log(`🎯 Ville trouvée par nom: ${city.name}`);
-                return city;
-            }
-        }
-        
-        // Fallback : coordonnées par défaut pour Paris
-        console.log(`📍 Ville non trouvée, utilisation de Paris par défaut: ${cityName}`);
-        return {
-            name: cityName || 'Paris',
-            lat: 48.8566,
-            lon: 2.3522,
-            country: 'FR'
-        };
+        // Fallback - default Paris
+        return { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' };
         
     } catch (error) {
-        console.error('Erreur recherche ville IA:', error);
-        // Fallback ultime
-        return {
-            name: cityName || 'Paris',
-            lat: 48.8566,
-            lon: 2.3522,
-            country: 'FR'
-        };
+        console.error('Search error:', error);
+        return { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' };
     }
 }
 
@@ -1750,16 +1734,27 @@ function selectCity(city) {
 function searchCity() {
     const input = document.getElementById('city-input');
     const city = input.value.trim();
+    const cityElement = document.querySelector('.city');
+    const tempElement = document.querySelector('.big-temp');
+    const conditionElement = document.querySelector('.condition');
     
     if (city && city.length > 1) {
-        // Arreter le rafraichissement auto pendant recherche
+        // Arreter le rafraichissement auto
         stopAutoRefresh();
         
-        // Recherche manuelle - desactiver geolocation
+        // Feedback instant
+        if (cityElement) cityElement.textContent = city;
+        if (tempElement) tempElement.textContent = '...';
+        if (conditionElement) conditionElement.textContent = 'Chargement...';
+        
+        // Recherche
         currentCity = city;
         currentCoords = { lat: null, lon: null, manual: true };
         
-        updateWeather(city);
+        updateWeather(city).then(() => {
+            // Replier le clavier mobile
+            input.blur();
+        });
     }
 }
 
