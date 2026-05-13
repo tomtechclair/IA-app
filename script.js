@@ -1606,7 +1606,9 @@ async function displayWeatherData(weatherData) {
             if (sunsetElement) sunsetElement.textContent = sunsetStr;
         }
         
+        console.log('DEBUG: weatherData.daily =', weatherData.daily);
         // Temperature average (daily)
+        console.log('DEBUG: weatherData.daily =', weatherData.daily);
         const tempAvgElement = document.getElementById('temp-avg');
         if (tempAvgElement && weatherData.daily) {
             const maxTemps = weatherData.daily.temperature_2m_max;
