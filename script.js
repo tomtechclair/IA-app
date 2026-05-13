@@ -920,7 +920,7 @@ const weatherAI = new WeatherAI();
 const OPEN_METEO_BASE = 'https://api.open-meteo.com/v1/forecast';
 
 async function fetchOpenMeteo(lat, lon) {
-    console.log('fetchOpenMeteo called for', lat, lon);
+    // fetchOpenMeteo called
     const params = new URLSearchParams({
         latitude: lat,
         longitude: lon,
@@ -1340,7 +1340,9 @@ async function updateWeatherByCoords(lat, lon) {
         const inputElement = document.getElementById('city-input');
         if (inputElement) inputElement.value = currentCity;
         
+        console.log('Fetching weather for', lat, lon);
         const weatherData = await fetchWeatherData(lat, lon);
+        console.log('Got weatherData:', weatherData ? 'yes' : 'no', weatherData?.daily ? 'with daily' : 'no daily');
         
         if (!weatherData) {
             showWeatherError('Impossible de récupérer les données météo.');
@@ -1609,9 +1611,9 @@ async function displayWeatherData(weatherData) {
             if (sunsetElement) sunsetElement.textContent = sunsetStr;
         }
         
-        console.log('DEBUG: weatherData.daily =', weatherData?.daily);
+        // debug
         // Temperature average (daily)
-        console.log('DEBUG temp-avg: calling');
+        // debug
         const tempAvgElement = document.getElementById('temp-avg');
         if (tempAvgElement && weatherData.daily) {
             const maxTemps = weatherData.daily.temperature_2m_max;
