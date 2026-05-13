@@ -494,47 +494,10 @@ async function searchCityCoords(cityName) {
 }
 
 // Obtenir le nom de la ville à partir des coordonnées avec reverse geocoding
-// Utilise Nominatim (OpenStreetMap) pour un reverse geocoding fiable
+// Utilise Open-Meteo Geocoding API (gratuit, sans clé, pas de CORS)
 async function getCityNameFromCoords(lat, lon) {
     try {
-        // Utiliser Nominatim pour reverse geocoding (fiable et gratuit)
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=fr`, {
-            headers: {
-                'User-Agent': 'MeteoApp/1.0'
-            },
-            signal: AbortSignal.timeout(5000)
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            
-            // Priorité: ville > village > municipality > county
-            let cityName = data.address.city || data.address.town || data.address.village || 
-                          data.address.municipality || data.address.county || data.address.state;
-            
-            // Ajouter le pays si disponible et si different de la ville
-            const country = data.address.country_code?.toUpperCase();
-            if (country && !cityName?.includes(country)) {
-                // Garder juste le nom de la ville sans le pays
-            }
-            
-            if (cityName && cityName !== data.address.country) {
-                console.log(`🏙️ Ville trouvée par reverse geocoding: ${cityName}`);
-                return {
-                    name: cityName,
-                    lat: lat,
-                    lon: lon,
-                    country: data.address.country || country || '',
-                    admin1: data.address.state || data.address.region || ''
-                };
-            }
-        }
-    } catch (error) {
-        console.warn('Erreur Nominatim:', error.message);
-    }
-    
-    // Fallback 1: Essayer Open-Meteo Geocoding API
-    try {
+        // Open-Meteo Geocoding - endpoint correct pour reverse geocoding
         const response = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=fr`, {
             signal: AbortSignal.timeout(5000)
         });
@@ -543,23 +506,45 @@ async function getCityNameFromCoords(lat, lon) {
             const data = await response.json();
             if (data.results && data.results.length > 0) {
                 const result = data.results[0];
-                console.log(`🏙️ Ville trouvée par Open-Meteo: ${result.name}`);
+                console.log(`🏙️ Ville trouvée: ${result.name}, ${result.country}`);
                 return {
                     name: result.name,
                     lat: lat,
                     lon: lon,
-                    country: result.country || '',
+                    country: result.country_code || result.country || '',
                     admin1: result.admin1 || ''
                 };
             }
         }
     } catch (error) {
-        console.warn('Erreur Open-Meteo reverse:', error.message);
+        console.warn('Erreur Open-Meteo:', error.message);
     }
     
-    // Fallback 2: Utiliser les coordonnées avec un nom générique
+    // Fallback: Essayer avec IP API pour obtenir la ville basée sur l'IP
+    try {
+        const ipResponse = await fetch('https://ipapi.co/json/', {
+            signal: AbortSignal.timeout(5000)
+        });
+        if (ipResponse.ok) {
+            const ipData = await ipResponse.json();
+            if (ipData.city) {
+                console.log(`🏙️ Ville par IP: ${ipData.city}`);
+                return {
+                    name: ipData.city,
+                    lat: lat,
+                    lon: lon,
+                    country: ipData.country_code || '',
+                    admin1: ipData.region || ''
+                };
+            }
+        }
+    } catch (ipError) {
+        console.warn('Erreur IP API:', ipError.message);
+    }
+    
+    // Fallback final: coordonnées génériques
     return {
-        name: 'Position détectée',
+        name: lat.toFixed(2) + ',' + lon.toFixed(2),
         lat: lat,
         lon: lon,
         country: '',
