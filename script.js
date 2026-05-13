@@ -990,7 +990,7 @@ function getRegionalBaseTemp(lat, month) {
     return seasonal[latBand][month];
 }
 
-// AI weather with real logic
+// AI weather with real logic - CONSISTENT
 function getSimulatedWeatherData(lat = 48.8566, lon = 2.3522) {
     const now = new Date();
     const month = now.getMonth();
@@ -1000,11 +1000,11 @@ function getSimulatedWeatherData(lat = 48.8566, lon = 2.3522) {
     // AI calculates realistic baseline
     const baseTemp = getRegionalBaseTemp(lat, month);
     
-    // Time of day variation (coldest at 6am, hottest at 3pm)
+    // Current temp (exactly as displayed)
     const timeOffset = hour < 6 ? -3 : hour < 15 ? (hour - 6) * 1.2 : 15 - (hour - 15) * 0.8;
-    const currentTemp = baseTemp + timeOffset + (Math.random() - 0.5) * 4;
+    const currentTemp = baseTemp + timeOffset;
     
-    // Hourly forecast with realistic patterns
+    // Hourly forecast - START FROM CURRENT TEMP for consistency
     const hourlyData = {
         time: [],
         temperature_2m: [],
@@ -1018,17 +1018,18 @@ function getSimulatedWeatherData(lat = 48.8566, lon = 2.3522) {
         const d = new Date(now.getTime() + i * 3600000);
         hourlyData.time.push(d.toISOString().replace('Z', '').split('.')[0]);
         
+        // Start from currentTemp, then vary
         const tempVariation = h < 6 ? -4 : h < 15 ? (h - 6) * 1 : 15 - (h - 15) * 0.7;
-        hourlyData.temperature_2m.push(Math.round((baseTemp + tempVariation + Math.random() * 3) * 10) / 10);
+        const temp = currentTemp + (tempVariation - timeOffset) + (i > 0 ? (Math.random() - 0.5) * 2 : 0);
+        hourlyData.temperature_2m.push(Math.round(temp));
         
-        // Weather patterns: mostly clear, occasional rain
-        const rainChance = (dayOfYear > 100 && dayOfYear < 300) ? 0.3 : 0.5; // More rain in spring/fall
-        const isNight = h < 6 || h > 21;
-        if (isNight) {
-            hourlyData.weather_code.push(Math.random() > 0.8 ? 0 : 1);
-        } else {
-            hourlyData.weather_code.push(Math.random() > rainChance ? 0 : (Math.random() > 0.5 ? 1 : 3));
-        }
+        // Weather
+        const rainChance = (dayOfYear > 100 && dayOfYear < 300) ? 0.3 : 0.5;
+        hourlyData.weather_code.push(
+            h >= 6 && h <= 21 
+                ? (Math.random() > rainChance ? 0 : (Math.random() > 0.5 ? 1 : 3))
+                : (Math.random() > 0.8 ? 0 : 1)
+        );
         
         hourlyData.is_day.push(h >= 6 && h <= 21 ? 1 : 0);
         hourlyData.precipitation_probability.push(
@@ -1036,18 +1037,16 @@ function getSimulatedWeatherData(lat = 48.8566, lon = 2.3522) {
         );
     }
     
-    // Daily forecast
+    // Daily - based on baseTemp (not current)
     const dailyData = { time: [], temperature_2m_max: [], temperature_2m_min: [], weather_code: [] };
     
     for (let i = 0; i < 7; i++) {
         const d = new Date(now.getTime() + i * 86400000);
         dailyData.time.push(d.toISOString().split('T')[0]);
         
-        // Max temps rising in day, min temps at night
-        dailyData.temperature_2m_max.push(Math.round(baseTemp + 6 + Math.random() * 4));
-        dailyData.temperature_2m_min.push(Math.round(baseTemp - 3 + Math.random() * 3));
-        
-        // Weather codes: 0=clear, 1=partly, 3=rain
+        // Max/min around baseTemp
+        dailyData.temperature_2m_max.push(baseTemp + 6 + Math.floor(Math.random() * 3));
+        dailyData.temperature_2m_min.push(baseTemp - 3 - Math.floor(Math.random() * 2));
         dailyData.weather_code.push(Math.random() > 0.5 ? 0 : (Math.random() > 0.5 ? 1 : 3));
     }
     
