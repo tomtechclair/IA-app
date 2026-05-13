@@ -1117,38 +1117,85 @@ function getWeatherCodeFromOpenWeather(openWeatherId) {
 }
 
 function getSimulatedWeatherData() {
-    // Données simulées en cas d'erreur API
+    // Données simulées en cas d'erreur API - TOUS LES CHAMPS REQUIS
     const now = new Date();
     const hour = now.getHours();
     const baseTemp = 15 + Math.sin(hour * Math.PI / 12) * 8;
+    const isDayNow = hour >= 6 && hour <= 20 ? 1 : 0;
+    
+    const hourlyTemps = Array.from({length: 48}, (_, i) => {
+        const h = (hour + i) % 24;
+        const temp = baseTemp + Math.sin(h * Math.PI / 12) * 8 + Math.random() * 3;
+        return {
+            time: new Date(now.getTime() + i * 3600000).getTime() / 1000,
+            temperature_2m: temp,
+            weather_code: Math.random() > 0.7 ? 0 : (Math.random() > 0.5 ? 51 : 1),
+            is_day: h >= 6 && h <= 20 ? 1 : 0,
+            precipitation: Math.random() > 0.8 ? Math.random() * 2 : 0,
+            precipitation_probability: Math.random() > 0.7 ? Math.floor(Math.random() * 50) : 0,
+            cloud_cover: Math.floor(Math.random() * 100),
+            wind_speed_10m: 5 + Math.random() * 15,
+            wind_direction_10m: Math.floor(Math.random() * 360),
+            uv_index: Math.random() * 8
+        };
+    });
+    
+    const dailyTemps = Array.from({length: 8}, (_, i) => {
+        const tempMax = baseTemp + 5 + Math.random() * 5;
+        const tempMin = baseTemp - 3 + Math.random() * 3;
+        return {
+            time: new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 12, 0, 0).getTime() / 1000,
+            temperature_2m_max: tempMax,
+            temperature_2m_min: tempMin,
+            weather_code: Math.random() > 0.6 ? 0 : (Math.random() > 0.5 ? 1 : 51),
+            precipitation_sum: Math.random() > 0.7 ? Math.random() * 5 : 0,
+            rain_sum: Math.random() > 0.7 ? Math.random() * 3 : 0,
+            uv_index_max: Math.random() * 8,
+            wind_speed_10m_max: 10 + Math.random() * 20,
+            wind_direction_10m_dominant: Math.floor(Math.random() * 360)
+        };
+    });
     
     return {
         current: {
-            temperature_2m: baseTemp + Math.random() * 5,
-            relative_humidity_2m: 50 + Math.random() * 30,
-            apparent_temperature: baseTemp + Math.random() * 3,
-            is_day: hour >= 6 && hour <= 20 ? 1 : 0,
-            weather_code: Math.random() > 0.7 ? (Math.random() > 0.5 ? 0 : 1) : (Math.random() > 0.5 ? 51 : 45),
-            wind_speed_10m: 5 + Math.random() * 20,
-            pressure_msl: 1010 + Math.random() * 20,
-            visibility: 5000 + Math.random() * 10000,
-            sunrise: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0).getTime() / 1000,
-            sunset: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 0, 0).getTime() / 1000
+            temperature_2m: baseTemp + Math.random() * 3,
+            relative_humidity_2m: 50 + Math.floor(Math.random() * 30),
+            apparent_temperature: baseTemp + Math.random() * 2,
+            is_day: isDayNow,
+            weather_code: 0,
+            wind_speed_10m: 5 + Math.random() * 10,
+            wind_direction_10m: Math.floor(Math.random() * 360),
+            pressure_msl: 1013 + Math.random() * 10,
+            visibility: 10000,
+            precipitation: 0,
+            rain: 0,
+            cloud_cover: 20,
+            dew_point_2m: baseTemp - 5 + Math.random() * 3
         },
-        hourly: Array.from({length: 24}, (_, i) => ({
-            time: new Date(now.getTime() + i * 3600000).getTime(),
-            temperature_2m: baseTemp + Math.random() * 5,
-            weather_code: Math.random() > 0.7 ? 0 : (Math.random() > 0.5 ? 51 : 1),
-            is_day: (hour + i) % 24 >= 6 && (hour + i) % 24 <= 20 ? 1 : 0
-        })),
-        daily: Array.from({length: 10}, (_, i) => ({
-            time: new Date(now.getTime() + i * 86400000).getTime(),
-            temperature_2m_max: baseTemp + 5 + Math.random() * 3,
-            temperature_2m_min: baseTemp - 3 + Math.random() * 3,
-            weather_code: Math.random() > 0.6 ? 0 : (Math.random() > 0.5 ? 1 : 51),
-            sunrise: new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 6, 0, 0).getTime() / 1000,
-            sunset: new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 20, 0, 0).getTime() / 1000
-        }))
+        hourly: {
+            time: hourlyTemps.map(h => h.time),
+            temperature_2m: hourlyTemps.map(h => h.temperature_2m),
+            weather_code: hourlyTemps.map(h => h.weather_code),
+            is_day: hourlyTemps.map(h => h.is_day),
+            precipitation: hourlyTemps.map(h => h.precipitation),
+            precipitation_probability: hourlyTemps.map(h => h.precipitation_probability),
+            rain: hourlyTemps.map(h => h.precipitation),
+            cloud_cover: hourlyTemps.map(h => h.cloud_cover),
+            wind_speed_10m: hourlyTemps.map(h => h.wind_speed_10m),
+            wind_direction_10m: hourlyTemps.map(h => h.wind_direction_10m),
+            uv_index: hourlyTemps.map(h => h.uv_index)
+        },
+        daily: {
+            time: dailyTemps.map(d => d.time),
+            temperature_2m_max: dailyTemps.map(d => d.temperature_2m_max),
+            temperature_2m_min: dailyTemps.map(d => d.temperature_2m_min),
+            weather_code: dailyTemps.map(d => d.weather_code),
+            precipitation_sum: dailyTemps.map(d => d.precipitation_sum),
+            rain_sum: dailyTemps.map(d => d.rain_sum),
+            uv_index_max: dailyTemps.map(d => d.uv_index_max),
+            wind_speed_10m_max: dailyTemps.map(d => d.wind_speed_10m_max),
+            wind_direction_10m_dominant: dailyTemps.map(d => d.wind_direction_10m_dominant)
+        }
     };
 }
 
