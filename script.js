@@ -894,9 +894,9 @@ async function fetchOpenMeteo(lat, lon) {
     const params = new URLSearchParams({
         latitude: lat,
         longitude: lon,
-        current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,pressure_msl,visibility',
-        hourly: 'temperature_2m,weather_code,is_day',
-        daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset',
+        current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,pressure_msl,visibility,precipitation,rain',
+        hourly: 'temperature_2m,weather_code,is_day,precipitation_probability',
+        daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,precipitation_sum',
         timezone: 'auto',
         forecast_days: 10
     });
@@ -925,6 +925,8 @@ async function fetchOpenMeteo(lat, lon) {
             wind_speed_10m: raw.current.wind_speed_10m,
             pressure_msl: raw.current.pressure_msl,
             visibility: raw.current.visibility,
+            precipitation: raw.current.precipitation || 0,
+            rain: raw.current.rain || 0,
             sunrise: raw.daily?.sunrise?.[0] || null,
             sunset: raw.daily?.sunset?.[0] || null
         },
@@ -933,7 +935,8 @@ async function fetchOpenMeteo(lat, lon) {
             time: raw.hourly.time,
             temperature_2m: raw.hourly.temperature_2m,
             weather_code: raw.hourly.weather_code,
-            is_day: raw.hourly.is_day
+            is_day: raw.hourly.is_day,
+            precipitation_probability: raw.hourly.precipitation_probability || []
         },
         daily: {
             time: raw.daily.time,
@@ -941,7 +944,8 @@ async function fetchOpenMeteo(lat, lon) {
             temperature_2m_min: raw.daily.temperature_2m_min,
             weather_code: raw.daily.weather_code,
             sunrise: raw.daily.sunrise,
-            sunset: raw.daily.sunset
+            sunset: raw.daily.sunset,
+            precipitation_sum: raw.daily.precipitation_sum || []
         }
     };
 }
@@ -1410,6 +1414,11 @@ async function displayWeatherData(weatherData) {
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
             const temp = Math.round(hourly.temperature_2m[hourIndex]);
             
+            // Ajouter le % de pluie si > 0
+            const precipProb = hourly.precipitation_probability?.[hourIndex] || 0;
+            const rainDisplay = (code >= 51 && code <= 99) || precipProb > 20 ? 
+                `<div class="rain">💧 ${precipProb}%</div>` : '';
+            
             // Créer l'icône SVG météo IA réaliste
             const iconHTML = typeof createWeatherIconSVG === 'function' 
                 ? createWeatherIconSVG(code, hourlyIsDay, 32) 
@@ -1427,6 +1436,7 @@ async function displayWeatherData(weatherData) {
                     <div class="time">${timeLabel}</div>
                     <div class="icon">${iconHTML}</div>
                     <div class="temp">${temp}°</div>
+                    ${rainDisplay}
                 </div>
             `;
         }

@@ -28,12 +28,12 @@
     </style>
     
     <!-- Chargement différé des styles -->
-    <link rel="preload" href="style.css?v=4" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="style.css?v=8" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <link rel="preload" href="weather-icons.css?v=2" as="style" onload="this.onload=null;this.rel='stylesheet'">
     
     <script>
         if('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js?v=4').then(() => {
+            navigator.serviceWorker.register('sw.js?v=8').then(() => {
                 console.log('Service Worker active - Mode ultra-rapide mobile');
             }).catch(console.log);
         }
@@ -175,6 +175,6 @@
 
     <script src="apple-weather-icons.js"></script>
     <script src="weather-icons.js?v=2"></script>
-    <script src="script.js?v=7"></script>
+    <script src="script.js?v=8"></script>
 </body>
 </html>
