@@ -1585,19 +1585,16 @@ async function displayWeatherData(weatherData) {
             dailyList.innerHTML = dailyHTML;
         }
         
-        // Mettre à jour le fond dynamique
+        // Mettre à jour le fond dynamique - une seule fois au premier chargement
         const bgClass = getWeatherInfo(current.weather_code || 0).bg || 'bg-blue';
         
-        // Appliquer le fond sur le body directement (nuit si is_day = 0)
-        if (current.is_day === 0) {
-            document.body.className = 'bg-night';
-        } else {
-            document.body.className = '';
-            document.body.classList.add(bgClass);
-        }
-        
-        if (weatherInfo && current) {
-            updateBackground(current.weather_code, current.is_day === 1);
+        // Seulement appliquer au premier chargement (quand pas de fond defini)
+        if (!document.body.classList.contains('bg-')) {
+            if (current.is_day === 0) {
+                document.body.className = 'bg-night';
+            } else {
+                document.body.className = bgClass;
+            }
         }
         
         // Réinitialiser le bouton de recherche
