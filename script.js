@@ -2784,19 +2784,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (conditionElement2) conditionElement2.textContent = 'Chargement...';
     
     // Direct call with coords - use simulated data directly
-    const simData = getSimulatedWeatherData(48.8566, 2.3522);
-    console.log('Simulated data:', simData?.current);
-    
-    // Direct display
-    const cityEl = document.querySelector('.city');
-    const tempEl = document.querySelector('.big-temp');
-    const condEl = document.querySelector('.condition');
-    if (cityEl) cityEl.textContent = 'Paris';
-    if (tempEl && simData?.current) tempEl.textContent = simData.current.temperature_2m + '°';
-    if (condEl) condEl.textContent = 'Ciel dégagé';
-    
-    // Show other data
-    displayWeatherData(simData);
+    try {
+        const simData = getSimulatedWeatherData(48.8566, 2.3522);
+        console.log('Sim data:', simData?.current);
+        
+        // Direct DOM update
+        const cityEl = document.querySelector('.city');
+        const tempEl = document.querySelector('.big-temp');
+        const condEl = document.querySelector('.condition');
+        if (cityEl) cityEl.textContent = 'Paris';
+        if (tempEl) tempEl.textContent = (simData?.current?.temperature_2m || 20) + '°';
+        if (condEl) condEl.textContent = 'Ciel dégagé';
+        
+        // Update high/low
+        const highEl = document.querySelector('.high-low');
+        if (highEl && simData?.daily) {
+            const max = simData.daily.temperature_2m_max?.[0] || 24;
+            const min = simData.daily.temperature_2m_min?.[0] || 16;
+            highEl.innerHTML = `<span>H:${max}°</span><span>L:${min}°</span>`;
+        }
+        
+        console.log('Displayed temp:', simData?.current?.temperature_2m);
+    } catch(e) {
+        console.error('Init error:', e);
+    }
     
     // Timeout fallback - charger Paris apres 5 secondes si pas de reponse
     const loadingTimeout = setTimeout(() => {
