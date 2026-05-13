@@ -7,29 +7,94 @@ if (!AbortSignal.timeout) {
 }
 
 // Direct DOM update from Open-Meteo (working pattern)
+// FIX: Ensure data loads and displays properly on initial load
 (function() {
     const lat = 48.85, lon = 2.35;
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m&timezone=auto`, { cache: 'no-store' })
-        .then(r => r.json())
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,wind_speed_10m,pressure_msl,cloud_cover&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&hourly=temperature_2m,weather_code&timezone=auto&forecast_days=7`;
+    
+    fetch(url, { cache: 'no-store' })
+        .then(r => {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
         .then(d => {
             console.log('Weather data loaded:', d);
+            
+            // Update temperature
             const tempEl = document.querySelector('.big-temp');
-            const hlEl = document.querySelector('.high-low');
-            if(tempEl) {
+            if (tempEl && d.current && d.current.temperature_2m !== undefined) {
                 tempEl.textContent = Math.round(d.current.temperature_2m) + '°';
                 tempEl.dataset.loaded = 'true';
             }
-            if(hlEl) {
-                const max = Math.round(d.daily.temperature_2m_max[0]);
-                const min = Math.round(d.daily.temperature_2m_min[0]);
-                hlEl.innerHTML = `<span>H:${max}°</span><span>L:${min}°</span>`;
-                hlEl.dataset.loaded = 'true';
+            
+            // Update high/low
+            const hlEl = document.querySelector('.high-low');
+            if (hlEl && d.daily) {
+                const max = d.daily.temperature_2m_max?.[0];
+                const min = d.daily.temperature_2m_min?.[0];
+                if (max !== undefined && min !== undefined) {
+                    hlEl.innerHTML = `<span>H:${Math.round(max)}°</span><span>L:${Math.round(min)}°</span>`;
+                    hlEl.dataset.loaded = 'true';
+                }
             }
-            // Also update temp-avg
+            
+            // Update condition based on weather code
+            const condEl = document.querySelector('.condition');
+            if (condEl && d.current) {
+                const code = d.current.weather_code;
+                const condition = getWeatherInfo(code).condition || 'Ensoleillé';
+                condEl.textContent = condition;
+            }
+            
+            // Update temp-avg
             const avgEl = document.getElementById('temp-avg');
-            if(avgEl) {
-                avgEl.textContent = Math.round((d.daily.temperature_2m_max[0] + d.daily.temperature_2m_min[0]) / 2) + '°';
+            if (avgEl && d.daily) {
+                const max = d.daily.temperature_2m_max?.[0];
+                const min = d.daily.temperature_2m_min?.[0];
+                if (max !== undefined && min !== undefined) {
+                    avgEl.textContent = Math.round((max + min) / 2) + '°';
+                }
             }
+            
+            // Update humidity
+            const humEl = document.getElementById('humidity');
+            if (humEl && d.current && d.current.relative_humidity_2m !== undefined) {
+                humEl.textContent = d.current.relative_humidity_2m + '%';
+            }
+            
+            // Update clouds
+            const cloudEl = document.getElementById('clouds');
+            if (cloudEl && d.current && d.current.cloud_cover !== undefined) {
+                cloudEl.textContent = d.current.cloud_cover + '%';
+            }
+            
+            // Update pressure
+            const presEl = document.getElementById('pressure');
+            if (presEl && d.current && d.current.pressure_msl !== undefined) {
+                presEl.textContent = Math.round(d.current.pressure_msl) + ' hPa';
+            }
+            
+            // Update wind
+            const windEl = document.getElementById('wind');
+            if (windEl && d.current && d.current.wind_speed_10m !== undefined) {
+                windEl.innerHTML = Math.round(d.current.wind_speed_10m) + ' <span class="unit">km/h</span>';
+            }
+            
+            // Update sunrise/sunset
+            const srEl = document.getElementById('sunrise');
+            const ssEl = document.getElementById('sunset');
+            if (d.daily && d.daily.sunrise && d.daily.sunset) {
+                if (srEl) {
+                    const srTime = new Date(d.daily.sunrise[0]);
+                    srEl.textContent = String(srTime.getHours()).padStart(2, '0') + ':' + String(srTime.getMinutes()).padStart(2, '0');
+                }
+                if (ssEl) {
+                    const ssTime = new Date(d.daily.sunset[0]);
+                    ssEl.textContent = String(ssTime.getHours()).padStart(2, '0') + ':' + String(ssTime.getMinutes()).padStart(2, '0');
+                }
+            }
+            
+            console.log('Weather display updated successfully');
         })
         .catch(e => console.error('Weather load failed:', e));
 })();
