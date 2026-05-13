@@ -13,7 +13,7 @@ const API_CONFIG = {
         retryAttempts: 2, // 2 tentatives en cas d'échec
         fallbackEnabled: true // Activer le système de secours IA
     },
-    timeout: 8000 // Timeout de 8 secondes
+    timeout: 3000 // Timeout ultra-rapide 3 secondes
 };
 
 let currentCity = 'Paris';
@@ -453,7 +453,7 @@ async function searchCityCoords(cityName) {
         // Open-Meteo geocoding API
         const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`;
         
-        const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        const response = await fetch(url, { signal: AbortSignal.timeout(3000) });
         
         if (!response.ok) throw new Error('API error');
         
@@ -473,7 +473,7 @@ async function searchCityCoords(cityName) {
         // Nominatim fallback
         const nomResponse = await fetch(
             `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`,
-            { headers: { 'User-Agent': 'MeteoApp/1.0' }, signal: AbortSignal.timeout(8000) }
+            { headers: { 'User-Agent': 'MeteoApp/1.0' }, signal: AbortSignal.timeout(3000) }
         );
         
         if (nomResponse.ok) {
@@ -503,7 +503,7 @@ async function getCityNameFromCoords(lat, lon) {
     try {
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=fr`, {
             headers: { 'User-Agent': 'MeteoApp/1.0' },
-            signal: AbortSignal.timeout(8000)
+            signal: AbortSignal.timeout(3000)
         });
         
         if (response.ok) {
@@ -520,7 +520,7 @@ async function getCityNameFromCoords(lat, lon) {
     
     // Fallback: IP-API (gratuit, parfois fonctionne)
     try {
-        const r = await fetch(`http://ip-api.com/json/${lat},${lon}?lang=fr`, { signal: AbortSignal.timeout(5000) });
+        const r = await fetch(`http://ip-api.com/json/${lat},${lon}?lang=fr`, { signal: AbortSignal.timeout(3000) });
         if (r.ok) {
             const d = await r.json();
             if (d.status === 'success' && d.city) return { name: d.city, country: d.countryCode || '', admin1: d.regionName || '' };
@@ -907,7 +907,7 @@ async function fetchOpenMeteo(lat, lon) {
     const url = `${OPEN_METEO_BASE}?${params}`;
     
     const response = await fetch(url, { 
-        signal: AbortSignal.timeout(8000)
+        signal: AbortSignal.timeout(3000)
     });
     
     if (!response.ok) {
@@ -966,7 +966,7 @@ async function fetchOpenMeteo(lat, lon) {
 
 // Cache pour Open-Meteo (5 minutes)
 let openMeteoCache = { key: null, data: null, timestamp: 0 };
-const OPEN_METEO_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const OPEN_METEO_CACHE_TTL = 2 * 60 * 1000; // 5 minutes
 
 // Fetch weather data - toujours retourner quelque chose
 async function fetchWeatherData(lat, lon, retryCount = 0) {
