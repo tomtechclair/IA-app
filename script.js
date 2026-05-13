@@ -6,112 +6,7 @@ if (!AbortSignal.timeout) {
     };
 }
 
-// Direct DOM update from Open-Meteo - RUN IMMEDIATELY on script load
-(function() {
-    // Run immediately when script loads (bypasses all DOM events)
-    const loadWeatherData = () => {
-        console.log('Weather init: Loading Open-Meteo data...');
-        const lat = 48.85, lon = 2.35;
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,wind_speed_10m,pressure_msl,cloud_cover&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&hourly=temperature_2m,weather_code&timezone=auto&forecast_days=7`;
-        
-        fetch(url, { cache: 'no-store' })
-            .then(r => {
-                if (!r.ok) throw new Error('HTTP ' + r.status);
-                return r.json();
-            })
-            .then(d => {
-                console.log('Weather data loaded:', d);
-                
-                // Update temperature - force override
-                const tempEl = document.querySelector('.big-temp');
-                if (tempEl && d.current && d.current.temperature_2m !== undefined) {
-                    tempEl.textContent = Math.round(d.current.temperature_2m) + '°';
-                    tempEl.dataset.loaded = 'true';
-                }
-                
-                // Update high/low - force override
-                const hlEl = document.querySelector('.high-low');
-                if (hlEl && d.daily) {
-                    const max = d.daily.temperature_2m_max?.[0];
-                    const min = d.daily.temperature_2m_min?.[0];
-                    if (max !== undefined && min !== undefined) {
-                        hlEl.innerHTML = `<span>H:${Math.round(max)}°</span><span>L:${Math.round(min)}°</span>`;
-                        hlEl.dataset.loaded = 'true';
-                    }
-                }
-                
-                // Update condition
-                const condEl = document.querySelector('.condition');
-                if (condEl && d.current) {
-                    const code = d.current.weather_code;
-                    const condition = getWeatherInfo(code).condition || 'Ensoleillé';
-                    condEl.textContent = condition;
-                }
-                
-                // Update temp-avg
-                const avgEl = document.getElementById('temp-avg');
-                if (avgEl && d.daily) {
-                    const max = d.daily.temperature_2m_max?.[0];
-                    const min = d.daily.temperature_2m_min?.[0];
-                    if (max !== undefined && min !== undefined) {
-                        avgEl.textContent = Math.round((max + min) / 2) + '°';
-                    }
-                }
-                
-                // Update humidity
-                const humEl = document.getElementById('humidity');
-                if (humEl && d.current && d.current.relative_humidity_2m !== undefined) {
-                    humEl.textContent = d.current.relative_humidity_2m + '%';
-                }
-                
-                // Update clouds
-                const cloudEl = document.getElementById('clouds');
-                if (cloudEl && d.current && d.current.cloud_cover !== undefined) {
-                    cloudEl.textContent = d.current.cloud_cover + '%';
-                }
-                
-                // Update pressure
-                const presEl = document.getElementById('pressure');
-                if (presEl && d.current && d.current.pressure_msl !== undefined) {
-                    presEl.textContent = Math.round(d.current.pressure_msl) + ' hPa';
-                }
-                
-                // Update wind
-                const windEl = document.getElementById('wind');
-                if (windEl && d.current && d.current.wind_speed_10m !== undefined) {
-                    windEl.innerHTML = Math.round(d.current.wind_speed_10m) + ' <span class="unit">km/h</span>';
-                }
-                
-                // Update sunrise/sunset
-                const srEl = document.getElementById('sunrise');
-                const ssEl = document.getElementById('sunset');
-                if (d.daily && d.daily.sunrise && d.daily.sunset) {
-                    if (srEl) {
-                        const srTime = new Date(d.daily.sunrise[0]);
-                        srEl.textContent = String(srTime.getHours()).padStart(2, '0') + ':' + String(srTime.getMinutes()).padStart(2, '0');
-                    }
-                    if (ssEl) {
-                        const ssTime = new Date(d.daily.sunset[0]);
-                        ssEl.textContent = String(ssTime.getHours()).padStart(2, '0') + ':' + String(ssTime.getMinutes()).padStart(2, '0');
-                    }
-                }
-                
-                console.log('Weather display updated successfully');
-            })
-            .catch(e => console.error('Weather load failed:', e));
-    };
-    
-    // Run immediately when script loads
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadWeatherData);
-    } else {
-        // DOM already ready, run immediately
-        loadWeatherData();
-    }
-    
-    // Also run on window.load as backup
-    window.addEventListener('load', loadWeatherData);
-})();
+// Weather app - loads data on DOMContentLoaded
 
 const weatherDatabase = {};
 
@@ -3120,39 +3015,84 @@ document.addEventListener('DOMContentLoaded', () => {
     if (conditionElement) conditionElement.textContent = 'Chargement meteo...';
 
     // DIRECT LOAD - skip geocoding
-    console.log('Direct load Paris');
+    console.log('Direct load Paris - fetching real API data');
     const cityElement2 = document.querySelector('.city');
     if (cityElement2) cityElement2.textContent = 'Paris';
     const tempElement2 = document.querySelector('.big-temp');
-    if (tempElement2) tempElement2.textContent = '--°';
+    if (tempElement2) tempElement2.textContent = '⏳';
     const conditionElement2 = document.querySelector('.condition');
     if (conditionElement2) conditionElement2.textContent = 'Chargement...';
     
-    // Direct call with coords - use simulated data directly
-    try {
-        const simData = getSimulatedWeatherData(48.8566, 2.3522);
-        console.log('Sim data:', simData?.current);
+    // Direct call with API - fetch REAL weather data from Open-Meteo
+    fetchOpenMeteo(48.8566, 2.3522).then(apiData => {
+        console.log('API data received:', apiData?.current);
         
-        // Direct DOM update
+        if (!apiData || !apiData.current) {
+            console.error('No API data');
+            return;
+        }
+        
+        // Update city
         const cityEl = document.querySelector('.city');
-        const tempEl = document.querySelector('.big-temp');
-        const condEl = document.querySelector('.condition');
         if (cityEl) cityEl.textContent = 'Paris';
-        if (tempEl) tempEl.textContent = (simData?.current?.temperature_2m || 20) + '°';
-        if (condEl) condEl.textContent = 'Ciel dégagé';
+        
+        // Update temperature
+        const tempEl = document.querySelector('.big-temp');
+        if (tempEl && apiData.current?.temperature_2m !== undefined) {
+            tempEl.textContent = Math.round(apiData.current.temperature_2m) + '°';
+        }
+        
+        // Update condition based on weather code
+        const condEl = document.querySelector('.condition');
+        if (condEl && apiData.current?.weather_code !== undefined) {
+            const condition = getWeatherInfo(apiData.current.weather_code).condition || 'Ensoleillé';
+            condEl.textContent = condition;
+        }
         
         // Update high/low
         const highEl = document.querySelector('.high-low');
-        if (highEl && simData?.daily) {
-            const max = simData.daily.temperature_2m_max?.[0] || 24;
-            const min = simData.daily.temperature_2m_min?.[0] || 16;
-            highEl.innerHTML = `<span>H:${max}°</span><span>L:${min}°</span>`;
+        if (highEl && apiData.daily) {
+            const max = apiData.daily.temperature_2m_max?.[0];
+            const min = apiData.daily.temperature_2m_min?.[0];
+            if (max !== undefined && min !== undefined) {
+                highEl.innerHTML = `<span>H:${Math.round(max)}°</span><span>L:${Math.round(min)}°</span>`;
+            }
         }
         
-        console.log('Displayed temp:', simData?.current?.temperature_2m);
-    } catch(e) {
-        console.error('Init error:', e);
-    }
+        // Update other details
+        const humEl = document.getElementById('humidity');
+        if (humEl && apiData.current?.relative_humidity_2m) {
+            humEl.textContent = apiData.current.relative_humidity_2m + '%';
+        }
+        
+        const cloudEl = document.getElementById('clouds');
+        if (cloudEl && apiData.current?.cloud_cover !== undefined) {
+            cloudEl.textContent = apiData.current.cloud_cover + '%';
+        }
+        
+        const presEl = document.getElementById('pressure');
+        if (presEl && apiData.current?.pressure_msl) {
+            presEl.textContent = Math.round(apiData.current.pressure_msl) + ' hPa';
+        }
+        
+        const windEl = document.getElementById('wind');
+        if (windEl && apiData.current?.wind_speed_10m) {
+            windEl.innerHTML = Math.round(apiData.current.wind_speed_10m) + ' <span class="unit">km/h</span>';
+        }
+        
+        const avgEl = document.getElementById('temp-avg');
+        if (avgEl && apiData.daily) {
+            const max = apiData.daily.temperature_2m_max?.[0];
+            const min = apiData.daily.temperature_2m_min?.[0];
+            if (max !== undefined && min !== undefined) {
+                avgEl.textContent = Math.round((max + min) / 2) + '°';
+            }
+        }
+        
+        console.log('Weather data displayed from API');
+    }).catch(e => {
+        console.error('API fetch error:', e);
+    });
     
     // Timeout fallback - charger Paris apres 5 secondes si pas de reponse
     const loadingTimeout = setTimeout(() => {
