@@ -131,9 +131,9 @@ const WEATHER_PATTERNS = {
 };
 
 const weatherCodes = {
-    0: { condition: 'Ensoleillé', bg: 'bg-blue' },
-    1: { condition: 'Partiellement nuageux', bg: 'bg-blue' },
-    2: { condition: 'Nuageux', bg: 'bg-cloudy' },
+    0: { condition: 'Ensoleillé', bg: 'bg-sunny' },
+    1: { condition: 'Plutôt ensoleillé', bg: 'bg-blue' },
+    2: { condition: 'Partiellement nuageux', bg: 'bg-cloudy' },
     3: { condition: 'Couvert', bg: 'bg-cloudy' },
     45: { condition: 'Brouillard', bg: 'bg-cloudy' },
     48: { condition: 'Brouillard givrant', bg: 'bg-cloudy' },
@@ -143,18 +143,18 @@ const weatherCodes = {
     61: { condition: 'Pluie légère', bg: 'bg-rain' },
     63: { condition: 'Pluie modérée', bg: 'bg-rain' },
     65: { condition: 'Pluie forte', bg: 'bg-rain' },
-    71: { condition: 'Neige légère', bg: 'bg-cloudy' },
-    73: { condition: 'Neige modérée', bg: 'bg-cloudy' },
-    75: { condition: 'Neige forte', bg: 'bg-cloudy' },
-    77: { condition: 'Grains de neige', bg: 'bg-cloudy' },
+    71: { condition: 'Neige légère', bg: 'bg-snow' },
+    73: { condition: 'Neige modérée', bg: 'bg-snow' },
+    75: { condition: 'Neige forte', bg: 'bg-snow' },
+    77: { condition: 'Grains de neige', bg: 'bg-snow' },
     80: { condition: 'Averses légères', bg: 'bg-rain' },
     81: { condition: 'Averses modérées', bg: 'bg-rain' },
     82: { condition: 'Averses violentes', bg: 'bg-rain' },
-    85: { condition: 'Averses de neige', bg: 'bg-cloudy' },
-    86: { condition: 'Averses de neige', bg: 'bg-cloudy' },
-    95: { condition: 'Orage', bg: 'bg-rain' },
-    96: { condition: 'Orage grêle', bg: 'bg-rain' },
-    99: { condition: 'Orage violent', bg: 'bg-rain' }
+    85: { condition: 'Averses de neige', bg: 'bg-snow' },
+    86: { condition: 'Averses de neige', bg: 'bg-snow' },
+    95: { condition: 'Orage', bg: 'bg-storm' },
+    96: { condition: 'Orage grêle', bg: 'bg-storm' },
+    99: { condition: 'Orage violent', bg: 'bg-storm' }
 };
 
 const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
@@ -1586,6 +1586,12 @@ async function displayWeatherData(weatherData) {
         }
         
         // Mettre à jour le fond dynamique
+        const bgClass = getWeatherInfo(current.weather_code || 0).bg || 'bg-blue';
+        
+        // Appliquer le fond sur le body directement
+        document.body.className = '';
+        document.body.classList.add(bgClass);
+        
         if (weatherInfo && current) {
             updateBackground(current.weather_code, current.is_day === 1);
         }

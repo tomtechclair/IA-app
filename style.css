@@ -42,39 +42,31 @@ body {
 }
 
 .bg-blue {
-    background: linear-gradient(180deg, 
-        #1a1a2e 0%, 
-        #16213e 30%,
-        #0f3460 60%,
-        #533483 100%
-    );
+    background: linear-gradient(180deg, #4CA1AF 0%, #2C3E50 50%, #4CA1AF 100%);
+}
+
+.bg-sunny {
+    background: linear-gradient(180deg, #2980B9 0%, #6DD5FA 50%, #F7971E 100%);
 }
 
 .bg-cloudy {
-    background: linear-gradient(180deg, 
-        #2d2d44 0%, 
-        #40407a 30%,
-        #3d5a80 60%,
-        #2c3e50 100%
-    );
+    background: linear-gradient(180deg, #606c88 0%, #3f4c6b 50%, #2c3e50 100%);
 }
 
 .bg-rain {
-    background: linear-gradient(180deg, 
-        #1e3c72 0%, 
-        #2a5298 30%,
-        #3d5a80 60%,
-        #2c3e50 100%
-    );
+    background: linear-gradient(180deg, #1e3c72 0%, #2a5298 30%, #1e3c72 60%, #0f3460 100%);
+}
+
+.bg-storm {
+    background: linear-gradient(180deg, #0f0c29 0%, #302b63 30%, #24243e 60%, #0f0c29 100%);
+}
+
+.bg-snow {
+    background: linear-gradient(180deg, #E6DADA 0%, #274046 50%, #E6DADA 100%);
 }
 
 .bg-night {
-    background: linear-gradient(180deg, 
-        rgba(20, 30, 60, 0.95) 0%, 
-        rgba(15, 25, 50, 0.9) 30%,
-        rgba(10, 20, 40, 0.85) 60%,
-        rgba(5, 15, 30, 0.9) 100%
-    );
+    background: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
 }
 
 /* Scroll Container */
