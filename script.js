@@ -1361,10 +1361,13 @@ async function displayWeatherData(weatherData) {
         const nowMs = now.getTime();
         const hourlyList = document.getElementById('hourly-list');
         
-        // Trouver l'index de départ correspondant à l'heure actuelle
+        // Trouver l'index de départ - commencer à l'heure actuelle pile
         let startIndex = 0;
+        const currentHour = now.getHours();
+        
         for (let j = 0; j < hourly.time.length; j++) {
-            if (hourly.time[j] >= nowMs - 1800000) { // tolérance 30min
+            const h = new Date(hourly.time[j]).getHours();
+            if (h === currentHour) {
                 startIndex = j;
                 break;
             }
