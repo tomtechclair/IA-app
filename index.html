@@ -28,12 +28,12 @@
     </style>
     
     <!-- Chargement différé des styles -->
-    <link rel="preload" href="style.css?v=9" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="style.css?v=10" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <link rel="preload" href="weather-icons.css?v=2" as="style" onload="this.onload=null;this.rel='stylesheet'">
     
     <script>
         if('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js?v=9').then(() => {
+            navigator.serviceWorker.register('sw.js?v=10').then(() => {
                 console.log('Service Worker active - Mode ultra-rapide mobile');
             }).catch(console.log);
         }
@@ -142,39 +142,57 @@
                     </div>
 
                     <div class="card detail-card">
-                        <div class="card-label" id="label-uv">
-                            <span class="label-icon"></span>
-                            <span>INDICE UV</span>
-                        </div>
-                        <div class="detail-big">5</div>
-                        <div class="detail-small">Modéré</div>
-                    </div>
-
-                    <div class="card detail-card">
                         <div class="card-label" id="label-pressure">
                             <span class="label-icon"></span>
                             <span>PRESSION</span>
                         </div>
-                        <div class="detail-big">1015 <span class="unit">hPa</span></div>
-                        <div class="detail-small">Stable</div>
+                        <div class="detail-big" id="pressure">1015 <span class="unit">hPa</span></div>
+                        <div class="detail-small" id="pressure-trend">Stable</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label" id="label-cloud">
+                            <span class="label-icon"></span>
+                            <span>NUAJES</span>
+                        </div>
+                        <div class="detail-big" id="clouds">0 <span class="unit">%</span></div>
+                        <div class="detail-small" id="cloud-desc">Ciel dégagé</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label" id="label-dew">
+                            <span class="label-icon"></span>
+                            <span>POINT DE ROSÉE</span>
+                        </div>
+                        <div class="detail-big" id="dewpoint">10°</div>
+                        <div class="detail-small" id="dew-desc">Confortable</div>
+                    </div>
+
+                    <div class="card detail-card">
+                        <div class="card-label" id="label-uv">
+                            <span class="label-icon"></span>
+                            <span>INDICE UV</span>
+                        </div>
+                        <div class="detail-big" id="uv-index">5</div>
+                        <div class="detail-small" id="uv-desc">Modéré</div>
                     </div>
 
                     <div class="card detail-card">
                         <div class="card-label" id="label-sunrise">
                             <span class="label-icon"></span>
-                            <span>LEVER SOLEIL</span>
+                            <span>LEVER</span>
                         </div>
                         <div class="detail-big" id="sunrise">06:45</div>
-                        <div class="detail-small">Matin</div>
+                        <div class="detail-small" id="sunrise-desc">Matin</div>
                     </div>
 
                     <div class="card detail-card">
                         <div class="card-label" id="label-sunset">
                             <span class="label-icon"></span>
-                            <span>COUCHER SOLEIL</span>
+                            <span>COUCHER</span>
                         </div>
                         <div class="detail-big" id="sunset">20:30</div>
-                        <div class="detail-small">Soir</div>
+                        <div class="detail-small" id="sunset-desc">Soir</div>
                     </div>
 
                                     </div>
@@ -184,6 +202,6 @@
 
     <script src="apple-weather-icons.js"></script>
     <script src="weather-icons.js?v=2"></script>
-    <script src="script.js?v=9"></script>
+    <script src="script.js?v=10"></script>
 </body>
 </html>

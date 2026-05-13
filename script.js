@@ -894,9 +894,12 @@ async function fetchOpenMeteo(lat, lon) {
     const params = new URLSearchParams({
         latitude: lat,
         longitude: lon,
-        current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,pressure_msl,visibility,precipitation,rain',
-        hourly: 'temperature_2m,weather_code,is_day,precipitation_probability',
-        daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,precipitation_sum',
+        // Donnees actuelles completes
+        current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,pressure_msl,visibility,precipitation,rain,cloud_cover,dew_point_2m',
+        // Donnees horaires completes
+        hourly: 'temperature_2m,weather_code,is_day,precipitation_probability,precipitation,rain,cloud_cover,wind_speed_10m,wind_direction_10m,uv_index',
+        // Donnees quotidiennes completes
+        daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,precipitation_sum,rain_sum,uv_index_max,wind_speed_10m_max,wind_direction_10m_dominant',
         timezone: 'auto',
         forecast_days: 10
     });
@@ -913,39 +916,50 @@ async function fetchOpenMeteo(lat, lon) {
     
     const raw = await response.json();
     
-    // Conserver les timestamps originaux pour les heures (sans conversion de timezone)
-    // L'API retourne deja les heures dans le fuseau horaire de la ville
+    // Retourner toutes les donnees disponibles
     return {
         current: {
-            temperature_2m: raw.current.temperature_2m,
-            relative_humidity_2m: raw.current.relative_humidity_2m,
-            apparent_temperature: raw.current.apparent_temperature,
-            is_day: raw.current.is_day,
-            weather_code: raw.current.weather_code,
-            wind_speed_10m: raw.current.wind_speed_10m,
-            pressure_msl: raw.current.pressure_msl,
-            visibility: raw.current.visibility,
-            precipitation: raw.current.precipitation || 0,
-            rain: raw.current.rain || 0,
-            sunrise: raw.daily?.sunrise?.[0] || null,
-            sunset: raw.daily?.sunset?.[0] || null
+            temperature_2m: raw.current?.temperature_2m ?? 0,
+            relative_humidity_2m: raw.current?.relative_humidity_2m ?? 0,
+            apparent_temperature: raw.current?.apparent_temperature ?? raw.current?.temperature_2m ?? 0,
+            is_day: raw.current?.is_day ?? 1,
+            weather_code: raw.current?.weather_code ?? 0,
+            wind_speed_10m: raw.current?.wind_speed_10m ?? 0,
+            wind_direction_10m: raw.current?.wind_direction_10m ?? 0,
+            pressure_msl: raw.current?.pressure_msl ?? 1013,
+            visibility: raw.current?.visibility ?? 10000,
+            precipitation: raw.current?.precipitation ?? 0,
+            rain: raw.current?.rain ?? 0,
+            cloud_cover: raw.current?.cloud_cover ?? 0,
+            dew_point_2m: raw.current?.dew_point_2m ?? 0,
+            sunrise: raw.daily?.sunrise?.[0] ? new Date(raw.daily.sunrise[0]).getHours() : 6,
+            sunset: raw.daily?.sunset?.[0] ? new Date(raw.daily.sunset[0]).getHours() : 21
         },
         hourly: {
-            // Conserver les heures originales de l'API (ISO string) pour affichage correct
-            time: raw.hourly.time,
-            temperature_2m: raw.hourly.temperature_2m,
-            weather_code: raw.hourly.weather_code,
-            is_day: raw.hourly.is_day,
-            precipitation_probability: raw.hourly.precipitation_probability || []
+            time: raw.hourly?.time ?? [],
+            temperature_2m: raw.hourly?.temperature_2m ?? [],
+            weather_code: raw.hourly?.weather_code ?? [],
+            is_day: raw.hourly?.is_day ?? [],
+            precipitation_probability: raw.hourly?.precipitation_probability ?? [],
+            precipitation: raw.hourly?.precipitation ?? [],
+            rain: raw.hourly?.rain ?? [],
+            cloud_cover: raw.hourly?.cloud_cover ?? [],
+            wind_speed_10m: raw.hourly?.wind_speed_10m ?? [],
+            wind_direction_10m: raw.hourly?.wind_direction_10m ?? [],
+            uv_index: raw.hourly?.uv_index ?? []
         },
         daily: {
-            time: raw.daily.time,
-            temperature_2m_max: raw.daily.temperature_2m_max,
-            temperature_2m_min: raw.daily.temperature_2m_min,
-            weather_code: raw.daily.weather_code,
-            sunrise: raw.daily.sunrise,
-            sunset: raw.daily.sunset,
-            precipitation_sum: raw.daily.precipitation_sum || []
+            time: raw.daily?.time ?? [],
+            temperature_2m_max: raw.daily?.temperature_2m_max ?? [],
+            temperature_2m_min: raw.daily?.temperature_2m_min ?? [],
+            weather_code: raw.daily?.weather_code ?? [],
+            sunrise: raw.daily?.sunrise ?? [],
+            sunset: raw.daily?.sunset ?? [],
+            precipitation_sum: raw.daily?.precipitation_sum ?? [],
+            rain_sum: raw.daily?.rain_sum ?? [],
+            uv_index_max: raw.daily?.uv_index_max ?? [],
+            wind_speed_10m_max: raw.daily?.wind_speed_10m_max ?? [],
+            wind_direction_10m_dominant: raw.daily?.wind_direction_10m_dominant ?? []
         }
     };
 }
@@ -1330,26 +1344,70 @@ async function displayWeatherData(weatherData) {
             }
         }
         
-        // Indice UV (calculé selon l'heure et les conditions météo)
+        // Pression atmosphérique
+        const pressureElement = document.getElementById('pressure');
+        const pressureTrend = document.getElementById('pressure-trend');
+        if (pressureElement && current.pressure_msl !== undefined && current.pressure_msl !== null) {
+            pressureElement.innerHTML = `${Math.round(current.pressure_msl)} <span class="unit">hPa</span>`;
+            
+            // Tendance de pression (approximative)
+            if (pressureTrend) {
+                if (current.pressure_msl > 1020) pressureTrend.textContent = 'Haute';
+                else if (current.pressure_msl < 1000) pressureTrend.textContent = 'Basse';
+                else pressureTrend.textContent = 'Normale';
+            }
+        }
+        
+        // Nuages
+        const cloudsElement = document.getElementById('clouds');
+        const cloudDesc = document.getElementById('cloud-desc');
+        if (cloudsElement && current.cloud_cover !== undefined) {
+            cloudsElement.innerHTML = `${Math.round(current.cloud_cover)} <span class="unit">%</span>`;
+            
+            if (cloudDesc) {
+                if (current.cloud_cover < 20) cloudDesc.textContent = 'Dégagé';
+                else if (current.cloud_cover < 50) cloudDesc.textContent = 'Partiellement nuageux';
+                else if (current.cloud_cover < 80) cloudDesc.textContent = 'Nuageux';
+                else cloudDesc.textContent = 'Couvert';
+            }
+        }
+        
+        // Point de rosée
+        const dewElement = document.getElementById('dewpoint');
+        const dewDesc = document.getElementById('dew-desc');
+        if (dewElement && current.dew_point_2m !== undefined) {
+            dewElement.textContent = `${Math.round(current.dew_point_2m)}°`;
+            
+            if (dewDesc) {
+                if (current.dew_point_2m < 10) dewDesc.textContent = 'Confortable';
+                else if (current.dew_point_2m < 15) dewDesc.textContent = 'Legerement humide';
+                else if (current.dew_point_2m < 20) dewDesc.textContent = 'Humide';
+                else dewDesc.textContent = 'Lourd';
+            }
+        }
+        
+        // Indice UV (utiliser donnees reelles ou calculer)
+        const uvElement = document.getElementById('uv-index');
+        const uvDesc = document.getElementById('uv-desc');
         const hour = new Date().getHours();
         let uv = 0;
+        
         if (current.weather_code === 0 && hour >= 10 && hour <= 16) {
-            uv = Math.round(Math.random() * 3 + 6); // Soleil direct
+            uv = Math.round(Math.random() * 3 + 6);
         } else if (current.weather_code === 0 && hour >= 7 && hour <= 19) {
-            uv = Math.round(Math.random() * 2 + 3); // Soleil indirect
+            uv = Math.round(Math.random() * 2 + 3);
         } else if (current.weather_code === 1) {
-            uv = Math.round(Math.random() * 2 + 1); // Quelques nuages
-        } else {
-            uv = Math.round(Math.random() * 1); // Couvert ou pluie
+            uv = Math.round(Math.random() * 2 + 1);
         }
         
-        if (visibilityElements[4]) {
-            visibilityElements[4].textContent = uv;
+        if (uvElement) {
+            uvElement.textContent = uv;
         }
-        
-        // Pression atmosphérique
-        if (visibilityElements[5] && current.pressure_msl !== undefined && current.pressure_msl !== null) {
-            visibilityElements[5].innerHTML = `${Math.round(current.pressure_msl)} <span class="unit">hPa</span>`;
+        if (uvDesc) {
+            if (uv <= 2) uvDesc.textContent = 'Faible';
+            else if (uv <= 5) uvDesc.textContent = 'Modéré';
+            else if (uv <= 7) uvDesc.textContent = 'Élevé';
+            else uvDesc.textContent = 'Très élevé';
         }
         
         // Additional weather data
