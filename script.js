@@ -2475,7 +2475,7 @@ function isMobileDevice() {
 }
 
 // Geolocalisation simple - GPS avec fallback recherche
-function requestAutoGeolocation() {
+function requestAutoGeolocation(loadingTimeout) {
     if (!navigator.geolocation) {
         // Pas de GPS, afficher message
         const cityElement = document.querySelector('.city');
@@ -2488,6 +2488,9 @@ function requestAutoGeolocation() {
     
     navigator.geolocation.getCurrentPosition(
         (position) => {
+            // Annuler le timeout sinon ca charge Paris quand meme
+            clearTimeout(loadingTimeout);
+            
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
             
@@ -2497,10 +2500,9 @@ function requestAutoGeolocation() {
             startAutoRefresh();
         },
         (error) => {
-            // GPS échoué - demander à l'utilisateur de chercher
+            // GPS échoué - garder le timeout actif
             if (cityElement) cityElement.textContent = 'Chercher une ville...';
-            updateWeather('Paris');
-            startAutoRefresh();
+            // Ne pas charger Paris automatiquement - laisser le timeout faire
         },
         {enableHighAccuracy: true, timeout: 15000, maximumAge: 600000}
     );
@@ -2528,7 +2530,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     //.Geolocalisation automatique sur mobile
     if (isMobileDevice()) {
-        requestAutoGeolocation();
+        requestAutoGeolocation(loadingTimeout);
     } else {
         // Sur desktop, essayer geolocation avec timeout
         if (navigator.geolocation) {
