@@ -1200,7 +1200,7 @@ function getSimulatedWeatherData() {
         const h = (hour + i) % 24;
         const temp = baseTemp + Math.sin(h * Math.PI / 12) * 8 + Math.random() * 3;
         return {
-            time: new Date(now.getTime() + i * 3600000).getTime() / 1000,
+            time: new Date(now.getTime() + i * 3600000).toISOString().replace('Z', '').split('.')[0],
             temperature_2m: temp,
             weather_code: Math.random() > 0.7 ? 0 : (Math.random() > 0.5 ? 51 : 1),
             is_day: h >= 6 && h <= 20 ? 1 : 0,
@@ -1216,8 +1216,9 @@ function getSimulatedWeatherData() {
     const dailyTemps = Array.from({length: 8}, (_, i) => {
         const tempMax = baseTemp + 5 + Math.random() * 5;
         const tempMin = baseTemp - 3 + Math.random() * 3;
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 12, 0, 0);
         return {
-            time: new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 12, 0, 0).getTime() / 1000,
+            time: d.toISOString().split('T')[0],
             temperature_2m_max: tempMax,
             temperature_2m_min: tempMin,
             weather_code: Math.random() > 0.6 ? 0 : (Math.random() > 0.5 ? 1 : 51),
