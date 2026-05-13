@@ -1004,10 +1004,10 @@ async function fetchWeatherData(lat, lon, retryCount = 0) {
     
     // Fallback: IA weather
     try {
-        return await fetchAIData(lat, lon);
+        return null;
     } catch (e) {
         console.warn('IA fallback failed, using simulated data');
-        return getSimulatedWeatherData();
+        return null;
     }
 }
 
@@ -1304,7 +1304,7 @@ async function displayWeatherData(weatherData) {
         // Vérification robuste des données
         if (!weatherData || !weatherData.current) {
             // Ne pas lever d'erreur, utiliser des donnees par defaut
-            weatherData = getSimulatedWeatherData();
+            weatherData = null;
         }
         
         const current = weatherData.current || {};
