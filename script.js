@@ -6,6 +6,14 @@ if (!AbortSignal.timeout) {
     };
 }
 
+// Debug: Direct fetch test on page load
+(function() {
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=48.85&longitude=2.35&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(d => console.log('DIRECT:', d))
+        .catch(e => console.error('ERR:', e));
+})();
+
 const weatherDatabase = {};
 
 const API_CONFIG = {
