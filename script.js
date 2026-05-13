@@ -100,7 +100,7 @@ window.addEventListener('load', function() {
                 console.log('Weather display updated successfully');
             })
             .catch(e => console.error('Weather load failed:', e));
-    }, 3000); // Wait 3 seconds to ensure ALL other handlers complete
+    }, 100); // Ultra-fast: just enough to ensure DOM is ready
 });
 
 const weatherDatabase = {};
