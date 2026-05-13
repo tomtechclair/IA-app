@@ -28,12 +28,12 @@
     </style>
     
     <!-- Chargement différé des styles -->
-    <link rel="preload" href="style.css?v=8" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="style.css?v=9" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <link rel="preload" href="weather-icons.css?v=2" as="style" onload="this.onload=null;this.rel='stylesheet'">
     
     <script>
         if('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js?v=8').then(() => {
+            navigator.serviceWorker.register('sw.js?v=9').then(() => {
                 console.log('Service Worker active - Mode ultra-rapide mobile');
             }).catch(console.log);
         }
@@ -96,6 +96,15 @@
 
                 <!-- Details Grid -->
                 <div class="grid-2">
+                    <div class="card detail-card">
+                        <div class="card-label" id="label-precip">
+                            <span class="label-icon"></span>
+                            <span>PRÉCIPITATIONS</span>
+                        </div>
+                        <div class="detail-big" id="precipitation">0 <span class="unit">mm</span></div>
+                        <div class="detail-small" id="precip-desc">Aucune</div>
+                    </div>
+
                     <div class="card detail-card">
                         <div class="card-label" id="label-humidity">
                             <span class="label-icon"></span>
@@ -175,6 +184,6 @@
 
     <script src="apple-weather-icons.js"></script>
     <script src="weather-icons.js?v=2"></script>
-    <script src="script.js?v=8"></script>
+    <script src="script.js?v=9"></script>
 </body>
 </html>

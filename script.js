@@ -1311,6 +1311,25 @@ async function displayWeatherData(weatherData) {
             visibilityElements[2].innerHTML = `${visibilityKm} <span class="unit">km</span>`;
         }
         
+        // Précipitations
+        const precipElement = document.getElementById('precipitation');
+        const precipDesc = document.getElementById('precip-desc');
+        const precip = current.precipitation || 0;
+        const rain = current.rain || 0;
+        const totalPrecip = precip + rain;
+        
+        if (precipElement && totalPrecip !== undefined) {
+            precipElement.innerHTML = `${totalPrecip.toFixed(1)} <span class="unit">mm</span>`;
+            
+            // Description selon quantité
+            if (precipDesc) {
+                if (totalPrecip === 0) precipDesc.textContent = 'Aucune';
+                else if (totalPrecip < 1) precipDesc.textContent = 'Faible';
+                else if (totalPrecip < 5) precipDesc.textContent = 'Modérée';
+                else precipDesc.textContent = 'Forte';
+            }
+        }
+        
         // Indice UV (calculé selon l'heure et les conditions météo)
         const hour = new Date().getHours();
         let uv = 0;
