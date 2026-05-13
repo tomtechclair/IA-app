@@ -935,7 +935,7 @@ async function fetchOpenMeteo(lat, lon) {
         forecast_days: 10
     });
 
-    const url = `${OPEN_METEO_BASE}?${params}`;
+    const url = `${OPEN_METEO_BASE}?${params}&_=${Date.now()}`;
     
     const response = await fetch(url, { 
         signal: AbortSignal.timeout(5000)
@@ -1418,7 +1418,7 @@ async function updateWeather(cityName) {
 }
 
 async function displayWeatherData(weatherData) {
-    console.log("DEBUG displayWeatherData: weatherData =", weatherData);
+    console.log("DEBUG displayWeatherData: weatherDataKeys =", weatherData ? Object.keys(weatherData) : 'undefined');
     const searchBtn = document.querySelector('.menu-btn');
     if (searchBtn) searchBtn.style.opacity = '0.5';
 
