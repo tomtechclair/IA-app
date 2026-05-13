@@ -10,7 +10,14 @@ if (!AbortSignal.timeout) {
 (function() {
     fetch('https://api.open-meteo.com/v1/forecast?latitude=48.85&longitude=2.35&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto', { cache: 'no-store' })
         .then(r => r.json())
-        .then(d => console.log('DIRECT:', d))
+        .then(d => {
+            console.log('DIRECT:', d);
+            // Direct DOM update for testing
+            const tempEl = document.querySelector('.big-temp');
+            const hlEl = document.querySelector('.high-low');
+            if(tempEl) tempEl.textContent = d.current.temperature_2m + '°';
+            if(hlEl) hlEl.innerHTML = '<span>H:' + d.daily.temperature_2m_max[0] + '°</span><span>L:' + d.daily.temperature_2m_min[0] + '°</span>';
+        })
         .catch(e => console.error('ERR:', e));
 })();
 
