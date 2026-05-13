@@ -1436,7 +1436,7 @@ async function displayWeatherData(weatherData) {
         const isDay = current.is_day === 1;
         
         // IA description poétique
-        const aiCondition = getAIDescription(current.weather_code || 0, current.temperature_2m);
+        const aiCondition = getWeatherInfo(current.weather_code || 0).condition;
         
         // Mettre à jour le premier chargement
         if (isFirstLoad) {
@@ -1739,7 +1739,7 @@ async function displayWeatherData(weatherData) {
             // Ajouter une classe spéciale pour aujourd'hui
             const isToday = i === 0;
             const todayClass = isToday ? 'today' : '';
-            const aiCondition = getAIDescription(code, tempHigh);
+            const aiCondition = getWeatherInfo(code).condition;
             
             dailyHTML += `
                 <div class="daily-item ${todayClass}">
