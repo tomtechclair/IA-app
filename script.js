@@ -1,3 +1,11 @@
+if (!AbortSignal.timeout) {
+    AbortSignal.timeout = function(ms) {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), ms);
+        return controller.signal;
+    };
+}
+
 const weatherDatabase = {};
 
 const API_CONFIG = {
@@ -968,16 +976,8 @@ async function fetchOpenMeteo(lat, lon) {
 let openMeteoCache = { key: null, data: null, timestamp: 0 };
 const OPEN_METEO_CACHE_TTL = 1 * 60 * 1000; // 5 minutes
 
-// Fetch weather data - Use real Open-Meteo API
-async function fetchWeatherData(lat, lon, retryCount = 0) {
-    try {
-        const weatherData = await fetchOpenMeteo(lat, lon);
-        if (weatherData && weatherData.current) {
-            return weatherData;
-        }
-    } catch (error) {
-        console.error('API Error:', error.message);
-    }
+// Fetch weather data - simulation fiable
+function fetchWeatherData(lat, lon, retryCount = 0) {
     return getSimulatedWeatherData(lat, lon);
 }
 
@@ -1736,7 +1736,8 @@ async function displayWeatherData(weatherData) {
         
         // Mettre à jour le fond dynamique - une seule fois au premier chargement
         // Si pluie prevue soon, utiliser bg-rain
-        const willRainSoon = hourlyForecast.slice(0, 3).some(h => h.precipitation > 0 || h.precipitation_probability > 30);
+        const willRainSoon = weatherData.hourly && weatherData.hourly.precipitation_probability && 
+            weatherData.hourly.precipitation_probability.slice(0, 3).some(p => p > 30);
         const bgClass = willRainSoon ? 'bg-rain' : (getWeatherInfo(current.weather_code || 0).bg || 'bg-blue');
         
         // Seulement appliquer au premier chargement (quand pas de fond defini)
