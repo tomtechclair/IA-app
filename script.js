@@ -165,6 +165,36 @@ const weatherCodes = {
     99: { condition: 'Orage violent', bg: 'bg-storm' }
 };
 
+const aiWeatherDescriptions = {
+    0: ['Soleil radieux', 'Ciel d\'azur', 'Lumière éclatante', 'Jour de pure clarté', 'Le soleil règne en maître', 'Atmosphère lumineuse', 'Ciel sans nuage aucun'],
+    1: ['Voile de nuages légers', 'Soleil voilé', 'Douceur céleste', 'Entre ombre et lumière', 'Quelques nuages vagabonds', 'Belle journée voilée', 'Rayons tamisés'],
+    2: ['Nuages dansants', 'Ciel textile', 'Danse des cumulus', 'Blanc et doux', 'Manteau nuageux', 'Fenêtres célestes entrouvertes', 'Voûte pommelée'],
+    3: ['Gris élégant', 'Ciel de satin', 'Monochrome céleste', 'Toile grise', 'Couverture nuageuse', 'Ciel en robe grise', 'Atmosphère feutrée'],
+    45: ['voile de brume', 'Océan de nuages bas', 'Monde ouaté', 'Brouillard poétique', 'Atmosphère mystérieuse', 'Bancs de brume', 'Paysage estompé'],
+    48: ['givre étincelant', 'Brume glacée', 'Cristaux dans l\'air', 'Froid brumeux', 'Givre argenté', 'Brouillard gelé', 'Perles de glace flottantes'],
+    51: ['Bruine soyeuse', 'Pluie de perles', 'Gouttelettes légères', 'Douce caresse liquide', 'Pluie de velours', 'Brouillard liquide', 'Chuchotement d\'eau'],
+    53: ['Bruine persistante', 'Crachin fin', 'Rideau de gouttes', 'Pulvérisation délicate', 'Brume pluvieuse', 'Gouttelettes dansantes'],
+    55: ['Bruine dense', 'Pluie de dentelle', 'Draperie liquide', 'Crachin dru', 'Brouillard d\'eau', 'Pluie fine mais tenace'],
+    61: ['Pluie légère et fraîche', 'Ondée bienfaisante', 'Gouttes argentines', 'Douce pluie', 'Pétillante ondée', 'Bénédiction liquide', 'Pluie de printemps'],
+    63: ['Pluie régulière', 'Rythme pluvieux', 'Symphonie aquatique', 'Pluie battante', 'Cordes liquides', 'Bruissement d\'averse'],
+    65: ['Déluge maîtrisé', 'Pluie torrentielle', 'Muraille d\'eau', 'Cataracte céleste', 'Pluie déchaînée', 'Rideau d\'eau dense'],
+    71: ['Neige délicate', 'Flocons virevoltants', 'Danse blanche', 'Poudre de diamant', 'Douceur glacée', 'Flocons légers', 'Valse des cristaux'],
+    73: ['Neige abondante', 'Manteau blanc', 'Paysage ouaté', 'Silence blanc', 'Neige généreuse', 'Tapisserie hivernale', 'Blancheur immaculée'],
+    75: ['Tempête de neige', 'Furie blanche', 'Blizzard majestueux', 'Poudrerie intense', 'Neige déchaînée', 'Tourbillon blanc', 'Féérie glacée'],
+    80: ['Averses sautillantes', 'Pluie en dansant', 'Gouttes rebondissantes', 'Averse pétillante', 'Pluie de fête', 'Ondée joyeuse'],
+    81: ['Averses drues', 'Pluie vive', 'Crachin musclé', 'Averse énergique', 'Gouttes pressées', 'Rafale liquide'],
+    82: ['Averse cinglante', 'Pluie furieuse', 'Déluge soudain', 'Mur d\'eau', 'Averse violente', 'Pluie dévastatrice'],
+    95: ['Orage grondant', 'Fureur céleste', 'Tambour du tonnerre', 'Éclairs dansants', 'Colère divine', 'Symphonie orageuse', 'Ciel en furie'],
+    96: ['Orage de grêle', 'Grêle martelante', 'Glace du ciel', 'Projectiles glacés', 'Orage grêleux', 'Bombardement céleste'],
+    99: ['Orage apocalyptique', 'Furie totale', 'Cataclysme céleste', 'Tempête déchaînée', 'Éléments en colère', 'Fin du monde']
+};
+
+function getAIDescription(code, temp) {
+    const list = aiWeatherDescriptions[code] || ['Temps quelconque'];
+    const seed = Math.floor((Date.now() / 60000) + (temp || 0));
+    return list[seed % list.length];
+}
+
 const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
 function getWeatherInfo(code) {
@@ -1405,9 +1435,8 @@ async function displayWeatherData(weatherData) {
         const weatherInfo = getWeatherInfo(current.weather_code || 0);
         const isDay = current.is_day === 1;
         
-        // Si de la pluie prevue dans les prochaines heures, afficher "Pluie previstas"
-        const hasRainSoon = hourlyForecast.slice(0, 3).some(h => h.precipitation > 0 || h.precipitation_probability > 30);
-        const showingWeather = hasRainSoon && current.weather_code !== 95 ? 'Pluie prevista' : weatherInfo.condition;
+        // IA description poétique
+        const aiCondition = getAIDescription(current.weather_code || 0, current.temperature_2m);
         
         // Mettre à jour le premier chargement
         if (isFirstLoad) {
@@ -1424,11 +1453,11 @@ async function displayWeatherData(weatherData) {
             tempElement.textContent = `${Math.round(current.temperature_2m)}°`;
         }
         
-        // Condition météo - texte
+        // Condition météo - texte IA
         const conditionElement = document.querySelector('.condition');
-        if (conditionElement && showingWeather) {
-            conditionElement.textContent = showingWeather;
-            conditionElement.classList.remove('has-icon'); // S'assurer que la classe est retirée
+        if (conditionElement && aiCondition) {
+            conditionElement.textContent = aiCondition;
+            conditionElement.classList.remove('has-icon');
         }
         // Vérifier que les données existent avant de les utiliser
         if (weatherData.daily && weatherData.daily.temperature_2m_max && weatherData.daily.temperature_2m_min) {
@@ -1713,9 +1742,10 @@ async function displayWeatherData(weatherData) {
             
             dailyHTML += `
                 <div class="daily-item ${todayClass}">
+            const aiCondition = getAIDescription(code, tempHigh);
                     <div class="day">${dayName}</div>
                     <div class="icon">${iconHTML}</div>
-                    <div class="condition">${weatherInfo.condition}</div>
+                    <div class="condition">${aiCondition}</div>
                     <div class="-temps">
                         <span class="temp-low">${Math.round(tempLow)}°</span>
                         <span class="temp-high">${Math.round(tempHigh)}°</span>
