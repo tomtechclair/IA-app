@@ -1748,10 +1748,14 @@ function searchCity() {
     const input = document.getElementById('city-input');
     const city = input.value.trim();
     
-    if (city) {
-        // Forcer la recherche manuelle même si on est en localisation
+    if (city && city.length > 1) {
+        // Arreter le rafraichissement auto pendant recherche
+        stopAutoRefresh();
+        
+        // Recherche manuelle - desactiver geolocation
         currentCity = city;
-        currentCoords = null; // Réinitialiser les coordonnées pour permettre la recherche manuelle
+        currentCoords = { lat: null, lon: null, manual: true };
+        
         updateWeather(city);
     }
 }
@@ -1867,7 +1871,13 @@ function startAutoRefresh() {
     // Arrêter les intervalles précédents
     stopAutoRefresh();
     
-    console.log('Démarrage rafraîchissement automatique temps réel 100% fiable');
+    // Ne pas démarrer auto-refresh si on a fait une recherche manuelle
+    if (currentCoords?.manual === true) {
+        console.log('Recherche manuelle - pas de auto-refresh');
+        return;
+    }
+    
+    console.log('Démarrage rafraîchissement automatique');
     
     // Intervalle de rafraîchissement optimisé pour temps réel
     const refreshInterval = API_CONFIG.realTimeConfig.refreshInterval; // 15 secondes
