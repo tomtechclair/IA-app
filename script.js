@@ -1423,6 +1423,7 @@ async function updateWeather(cityName) {
 }
 
 async function displayWeatherData(weatherData) {
+    console.log("DEBUG displayWeatherData: weatherData =", weatherData);
     const searchBtn = document.querySelector('.menu-btn');
     if (searchBtn) searchBtn.style.opacity = '0.5';
 
@@ -1606,9 +1607,9 @@ async function displayWeatherData(weatherData) {
             if (sunsetElement) sunsetElement.textContent = sunsetStr;
         }
         
-        console.log('DEBUG: weatherData.daily =', weatherData.daily);
+        console.log('DEBUG: weatherData.daily =', weatherData?.daily);
         // Temperature average (daily)
-        console.log('DEBUG: weatherData.daily =', weatherData.daily);
+        console.log('DEBUG temp-avg: calling');
         const tempAvgElement = document.getElementById('temp-avg');
         if (tempAvgElement && weatherData.daily) {
             const maxTemps = weatherData.daily.temperature_2m_max;
