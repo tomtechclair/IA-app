@@ -1348,20 +1348,28 @@ async function displayWeatherData(weatherData) {
         
         // Hourly forecast - 24h améliorée avec nouvelles icônes SVG
         const hourly = weatherData.hourly;
+        const nowMs = Date.now();
         const hourlyList = document.getElementById('hourly-list');
         
-        // Use API data as-is - it's already in local timezone
+        // Find current hour index
         let startIndex = 0;
+        for (let j = 0; j < hourly.time.length; j++) {
+            if (hourly.time[j] >= nowMs - 1800000) {
+                startIndex = j;
+                break;
+            }
+        }
         
         let hourlyHTML = '';
         for (let i = 0; i < 24; i++) {
             const hourIndex = startIndex + i;
             if (hourIndex >= hourly.time.length) break;
             
-            // Get hour directly from timestamp without timezone conversion
+            // Use timestamp as-is - API returns local time for the city
             const ts = hourly.time[hourIndex];
-            const hour = new Date(ts).getUTCHours(); // Use UTC to avoid local timezone
-            const hourMs = new Date(ts).getTime();
+            const localHour = new Date(ts);
+            const hour = localHour.getHours();
+            const isCurrentHour = i === 0;
             const code = hourly.weather_code[hourIndex];
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
             const temp = Math.round(hourly.temperature_2m[hourIndex]);
@@ -1373,7 +1381,6 @@ async function displayWeatherData(weatherData) {
             
             // Ajouter des détails supplémentaires
             const weatherInfo = getWeatherInfo(code);
-            const isCurrentHour = i === 0;
             const timeLabel = isCurrentHour ? 'Maint' : `${hour}h`;
             
             // Ajouter une classe spéciale pour l'heure actuelle
