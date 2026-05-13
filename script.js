@@ -913,7 +913,8 @@ async function fetchOpenMeteo(lat, lon) {
     
     const raw = await response.json();
     
-    // Normaliser au format attendu par l'application
+    // Conserver les timestamps originaux pour les heures (sans conversion de timezone)
+    // L'API retourne deja les heures dans le fuseau horaire de la ville
     return {
         current: {
             temperature_2m: raw.current.temperature_2m,
@@ -928,14 +929,14 @@ async function fetchOpenMeteo(lat, lon) {
             sunset: raw.daily?.sunset?.[0] || null
         },
         hourly: {
-            // Use times as-is - API returns local timezone with timezone:auto
-            time: raw.hourly.time.map(t => new Date(t).getTime()),
+            // Conserver les heures originales de l'API (ISO string) pour affichage correct
+            time: raw.hourly.time,
             temperature_2m: raw.hourly.temperature_2m,
             weather_code: raw.hourly.weather_code,
             is_day: raw.hourly.is_day
         },
         daily: {
-            time: raw.daily.time.map(t => new Date(t).getTime()),
+            time: raw.daily.time,
             temperature_2m_max: raw.daily.temperature_2m_max,
             temperature_2m_min: raw.daily.temperature_2m_min,
             weather_code: raw.daily.weather_code,
@@ -1371,10 +1372,14 @@ async function displayWeatherData(weatherData) {
         const nowMs = Date.now();
         const hourlyList = document.getElementById('hourly-list');
         
-        // Find current hour index
+        // Find current hour index - using the API hour strings
         let startIndex = 0;
+        const nowHour = new Date().getHours();
         for (let j = 0; j < hourly.time.length; j++) {
-            if (hourly.time[j] >= nowMs - 1800000) {
+            const ts = hourly.time[j];
+            const hourMatch = ts.match(/T(\d{2}):/);
+            const h = hourMatch ? parseInt(hourMatch[1]) : -1;
+            if (h === nowHour || h === nowHour - 1 || (nowHour === 0 && h === 23)) {
                 startIndex = j;
                 break;
             }
@@ -1387,8 +1392,9 @@ async function displayWeatherData(weatherData) {
             
             // Use timestamp as-is - API returns local time for the city
             const ts = hourly.time[hourIndex];
-            const localHour = new Date(ts);
-            const hour = localHour.getHours();
+            // Parse l'heure directement depuis la string ISO
+            const hourMatch = ts.match(/T(\d{2}):/);
+            const hour = hourMatch ? parseInt(hourMatch[1]) : 0;
             const isCurrentHour = i === 0;
             const code = hourly.weather_code[hourIndex];
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
