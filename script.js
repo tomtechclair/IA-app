@@ -1724,19 +1724,8 @@ async function displayWeatherData(weatherData) {
         const daily = weatherData.daily;
         const dailyList = document.getElementById('daily-list');
         
-        if (!daily || !daily.time || !daily.temperature_2m_min || !daily.temperature_2m_max || !daily.weather_code) {
-            console.error('Données quotidiennes manquantes');
-            // Generate placeholder data
-            daily.time = [];
-            daily.temperature_2m_min = [];
-            daily.temperature_2m_max = [];
-            daily.weather_code = [];
-            for(let i=0; i<7; i++) {
-                daily.time.push(new Date(Date.now() + i*86400000).toISOString().split('T')[0]);
-                daily.temperature_2m_min.push(15);
-                daily.temperature_2m_max.push(22);
-                daily.weather_code.push(0);
-            }
+        if (!daily || !daily.time || daily.time.length === 0 || !daily.temperature_2m_max) {
+            console.error('Données quotidiennes manquantes ou invalides, daily =', daily);
         }
         
         // Calculer les températures min/max pour l'échelle
