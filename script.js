@@ -968,9 +968,16 @@ async function fetchOpenMeteo(lat, lon) {
 let openMeteoCache = { key: null, data: null, timestamp: 0 };
 const OPEN_METEO_CACHE_TTL = 1 * 60 * 1000; // 5 minutes
 
-// Fetch weather data - ALWAYS use simulated realistic data
-function fetchWeatherData(lat, lon, retryCount = 0) {
-    // Generate realistic weather based on location, season and time
+// Fetch weather data - Use real Open-Meteo API
+async function fetchWeatherData(lat, lon, retryCount = 0) {
+    try {
+        const weatherData = await fetchOpenMeteo(lat, lon);
+        if (weatherData && weatherData.current) {
+            return weatherData;
+        }
+    } catch (error) {
+        console.error('API Error:', error.message);
+    }
     return getSimulatedWeatherData(lat, lon);
 }
 
