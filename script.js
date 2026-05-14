@@ -1652,13 +1652,35 @@ async function displayWeatherData(weatherData) {
         // Find current hour index - using the API hour strings
         let startIndex = 0;
         const nowHour = new Date().getHours();
+        let foundExact = false;
         for (let j = 0; j < hourly.time.length; j++) {
             const ts = hourly.time[j];
             const hourMatch = ts.match(/T(\d{2}):/);
             const h = hourMatch ? parseInt(hourMatch[1]) : -1;
-            if (h === nowHour || h === nowHour - 1 || (nowHour === 0 && h === 23)) {
+            if (h === nowHour) {
                 startIndex = j;
+                foundExact = true;
                 break;
+            }
+        }
+        if (!foundExact) {
+            for (let j = 0; j < hourly.time.length; j++) {
+                const ts = hourly.time[j];
+                const hourMatch = ts.match(/T(\d{2}):/);
+                const h = hourMatch ? parseInt(hourMatch[1]) : -1;
+                if (h === nowHour - 1 || (nowHour === 0 && h === 23)) {
+                    startIndex = j;
+                    break;
+                }
+            }
+        }
+        
+        // Sync main condition with hourly forecast for current hour
+        const currentHourCode = hourly.weather_code[startIndex];
+        if (currentHourCode !== undefined && currentHourCode !== current.weather_code) {
+            const conditionElement = document.querySelector('.condition');
+            if (conditionElement) {
+                conditionElement.textContent = getWeatherInfo(currentHourCode).condition;
             }
         }
         
