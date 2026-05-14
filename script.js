@@ -1763,7 +1763,7 @@ async function displayWeatherData(weatherData) {
         const range = maxTemp - minTemp || 1;
         
         let dailyHTML = '';
-        const maxDays = Math.min(daily.time.length, 8); // Limiter à 8 jours
+        const maxDays = Math.min(daily.time.length, 10);
         
         for (let i = 0; i < maxDays; i++) {
             const date = new Date(daily.time[i]);
@@ -1806,8 +1806,10 @@ async function displayWeatherData(weatherData) {
             dailyHTML += `
                 <div class="daily-item ${todayClass}">
                     <div class="day">${dayName}</div>
-                    <div class="icon">${iconHTML}${dailyPrecipDisplay}</div>
-                    <div class="condition">${dailyCondition}</div>
+                    <div class="daily-icon-wrap">
+                        <div class="icon">${iconHTML}</div>
+                        ${dailyPrecipDisplay}
+                    </div>
                     <div class="-temps">
                         <span class="temp-low">${Math.round(tempLow)}°</span>
                         <span class="temp-high">${Math.round(tempHigh)}°</span>

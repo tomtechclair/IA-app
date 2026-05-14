@@ -753,12 +753,25 @@ body {
     margin-right: 8px;
 }
 
+.daily-icon-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 55px;
+    margin: 0 5px;
+}
+
+.daily-icon-wrap .icon {
+    margin: 0;
+}
+
 .daily-precip {
     display: block;
     font-size: 11px;
     color: #64d2ff;
     text-align: center;
-    margin-top: 2px;
+    margin-top: 1px;
+    line-height: 1;
 }
 
 .daily-item .-temps {
