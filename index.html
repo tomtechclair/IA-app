@@ -33,7 +33,7 @@
     
     <script>
         if('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js?v=9').then(() => {
+            navigator.serviceWorker.register('sw.js?v=10').then(() => {
                 console.log('Service Worker active - Mode ultra-rapide mobile');
             }).catch(console.log);
         }
@@ -61,12 +61,12 @@
                 </div>
                 
                 <div class="weather-hero">
-                    <h1 class="city">Paris</h1>
-                    <div class="big-temp">--°</div>
-                    <div class="condition">Ensoleillé</div>
+                    <h1 class="city"></h1>
+                    <div class="big-temp"></div>
+                    <div class="condition"></div>
                     <div class="high-low">
-                        <span>H:--°</span>
-                        <span>L:--°</span>
+                        <span></span>
+                        <span></span>
                     </div>
                 </div>
 
@@ -195,6 +195,6 @@
 
     <script src="apple-weather-icons.js"></script>
     <script src="weather-icons.js?v=5"></script>
-    <script src="script.js?v=83"></script>
+    <script src="script.js?v=84"></script>
 </body>
 </html>

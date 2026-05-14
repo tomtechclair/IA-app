@@ -1331,7 +1331,6 @@ async function updateWeatherByCoords(lat, lon) {
         // Afficher "Chargement..." pendant la recherche
         const cityElement = document.querySelector('.city');
         const conditionElement = document.querySelector('.condition');
-        if (cityElement) cityElement.textContent = 'Chargement...';
         
         // Obtenir le nom réel de la ville avec geocoding
         const cityInfo = await getCityNameFromCoords(lat, lon);
@@ -1699,11 +1698,12 @@ async function displayWeatherData(weatherData) {
             const temp = Math.round(hourly.temperature_2m[hourIndex]);
             
             // Ajouter le % de pluie UNIQUEMENT s'il pleut (codes pluie)
-            const precipProb = hourly.precipitation_probability?.[hourIndex] || 0;
+            const rawPrecipProb = hourly.precipitation_probability?.[hourIndex] || 0;
+            const precipProb = rawPrecipProb > 0 ? Math.max(5, rawPrecipProb) : 0;
             // Codes pluie: 51-67 (bruine/pluie), 80-82 (averses), 95-99 (orage)
             const isRainCode = (code >= 51 && code <= 67) || (code >= 80 && code <= 99);
             const rainDisplay = isRainCode ? 
-                `<div class="rain">💧 ${precipProb}%</div>` : '';
+                `<div class="rain">💧 ${Math.max(5, precipProb)}%</div>` : '';
             
             // Créer l'icône SVG météo IA réaliste
             const iconHTML = typeof createWeatherIconSVG === 'function' 
@@ -2930,7 +2930,7 @@ function requestAutoGeolocation(loadingTimeout) {
     }
     
     const cityElement = document.querySelector('.city');
-    if (cityElement) cityElement.textContent = 'Localisation GPS...';
+
     
     navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -2963,9 +2963,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const tempElement = document.querySelector('.big-temp');
     const conditionElement = document.querySelector('.condition');
     
-    if (cityElement) cityElement.textContent = 'Localisation...';
-    if (tempElement) tempElement.textContent = '⏳';
-    if (conditionElement) conditionElement.textContent = 'Chargement...';
+    if (cityElement) cityElement.textContent = '';
+    if (tempElement) tempElement.textContent = '';
+    if (conditionElement) conditionElement.textContent = '';
 
     let locationResolved = false;
     
@@ -2999,7 +2999,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Geolocalisation - priorite absolue
     if (navigator.geolocation) {
-        if (cityElement && !locationResolved) cityElement.textContent = 'Localisation GPS...';
+
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 clearTimeout(loadingTimeout);
