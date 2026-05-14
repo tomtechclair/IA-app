@@ -527,8 +527,8 @@ async function searchCityCoords(cityName) {
 // Obtenir le nom de la ville - avec Nominatim OpenStreetMap
 async function getCityNameFromCoords(lat, lon) {
     // First check if we have a valid currentCity from search
-    if (currentCity && currentCity !== 'Votre position' && !currentCity.match(/^[0-9.]+$/)) {
-        return currentCity;
+    if (currentCity && currentCity !== 'Votre position' && currentCity !== 'Paris' && currentCity !== 'Chargement...' && !currentCity.match(/^[0-9.]+$/)) {
+        return { name: currentCity };
     }
     // Only then try reverse geocoding
     try {
@@ -2433,8 +2433,12 @@ function updateWeatherOptimized(city) {
 
 // Apple-style weather icons
 // ============================================
-// REALISTIC WEATHER ICONS with details
+// REALISTIC WEATHER ICONS - using weather-icons.js (Apple style)
+// createWeatherIconSVG is defined in weather-icons.js
 // ============================================
+
+// Fallback: simple icon if weather-icons.js not loaded
+if (typeof createWeatherIconSVG !== 'function') {
 function createWeatherIconSVG(code, isDay = true, size = 48) {
     const s = size;
     const cx = s / 2;
@@ -2599,6 +2603,7 @@ function createWeatherIconSVG(code, isDay = true, size = 48) {
         <path d="M${s*0.15},${s*0.55} Q${s*0.1},${s*0.4} ${s*0.3},${s*0.45} Q${s*0.35},${s*0.35} ${s*0.5},${s*0.38} Q${s*0.6},${s*0.3} ${s*0.75},${s*0.4} Q${s*0.9},${s*0.45} ${s*0.8},${s*0.55} Q${s*0.85},${s*0.65} ${s*0.65},${s*0.65} Q${s*0.5},${s*0.7} ${s*0.15},${s*0.55}" fill="#B8C4CE"/>
     </svg>`;
 }
+} // end if createWeatherIconSVG fallback
 
 // Fallback old weather icons
 function createOldWeatherIconSVG(weatherCode, isDay, size = 32) {
@@ -2958,130 +2963,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const tempElement = document.querySelector('.big-temp');
     const conditionElement = document.querySelector('.condition');
     
-    if (cityElement) cityElement.textContent = 'Chargement...';
-    if (tempElement) tempElement.textContent = '--°';
-    if (conditionElement) conditionElement.textContent = 'Chargement meteo...';
+    if (cityElement) cityElement.textContent = 'Localisation...';
+    if (tempElement) tempElement.textContent = '⏳';
+    if (conditionElement) conditionElement.textContent = 'Chargement...';
 
-    // DIRECT LOAD - skip geocoding
-    console.log('Direct load Paris - fetching real API data');
-    const cityElement2 = document.querySelector('.city');
-    if (cityElement2) cityElement2.textContent = 'Paris';
-    const tempElement2 = document.querySelector('.big-temp');
-    if (tempElement2) tempElement2.textContent = '⏳';
-    const conditionElement2 = document.querySelector('.condition');
-    if (conditionElement2) conditionElement2.textContent = 'Chargement...';
+    let locationResolved = false;
     
-    // Direct call with API - fetch REAL weather data from Open-Meteo
-    fetchOpenMeteo(48.8566, 2.3522).then(apiData => {
-        console.log('API data received:', apiData?.current);
-        
-        if (!apiData || !apiData.current) {
-            console.error('No API data');
-            return;
-        }
-        
-        // Update city
-        const cityEl = document.querySelector('.city');
-        if (cityEl) cityEl.textContent = 'Paris';
-        
-        // Update temperature
-        const tempEl = document.querySelector('.big-temp');
-        if (tempEl && apiData.current?.temperature_2m !== undefined) {
-            tempEl.textContent = Math.round(apiData.current.temperature_2m) + '°';
-        }
-        
-        // Update condition based on weather code
-        const condEl = document.querySelector('.condition');
-        if (condEl && apiData.current?.weather_code !== undefined) {
-            const condition = getWeatherInfo(apiData.current.weather_code).condition || 'Ensoleillé';
-            condEl.textContent = condition;
-        }
-        
-        // Update high/low
-        const highEl = document.querySelector('.high-low');
-        if (highEl && apiData.daily) {
-            const max = apiData.daily.temperature_2m_max?.[0];
-            const min = apiData.daily.temperature_2m_min?.[0];
-            if (max !== undefined && min !== undefined) {
-                highEl.innerHTML = `<span>H:${Math.round(max)}°</span><span>L:${Math.round(min)}°</span>`;
-            }
-        }
-        
-        // Update other details
-        const humEl = document.getElementById('humidity');
-        if (humEl && apiData.current?.relative_humidity_2m) {
-            humEl.textContent = apiData.current.relative_humidity_2m + '%';
-        }
-        
-        const cloudEl = document.getElementById('clouds');
-        if (cloudEl && apiData.current?.cloud_cover !== undefined) {
-            cloudEl.textContent = apiData.current.cloud_cover + '%';
-        }
-        
-        const presEl = document.getElementById('pressure');
-        if (presEl && apiData.current?.pressure_msl) {
-            presEl.textContent = Math.round(apiData.current.pressure_msl) + ' hPa';
-        }
-        
-        const windEl = document.getElementById('wind');
-        if (windEl && apiData.current?.wind_speed_10m) {
-            windEl.innerHTML = Math.round(apiData.current.wind_speed_10m) + ' <span class="unit">km/h</span>';
-        }
-        
-        const avgEl = document.getElementById('temp-avg');
-        if (avgEl && apiData.daily) {
-            const max = apiData.daily.temperature_2m_max?.[0];
-            const min = apiData.daily.temperature_2m_min?.[0];
-            if (max !== undefined && min !== undefined) {
-                avgEl.textContent = Math.round((max + min) / 2) + '°';
-            }
-        }
-        
-        console.log('Weather data displayed from API');
-    }).catch(e => {
-        console.error('API fetch error:', e);
-    });
+    function loadWithCoords(lat, lon) {
+        if (locationResolved) return;
+        locationResolved = true;
+        updateWeatherByCoords(lat, lon);
+        startAutoRefresh();
+    }
     
-    // Timeout fallback - charger Paris apres 5 secondes si pas de reponse
-    const loadingTimeout = setTimeout(() => {
-        console.log('Timeout - chargement Paris');
+    function loadParisFallback() {
+        if (locationResolved) return;
+        locationResolved = true;
         updateWeather('Paris');
         startAutoRefresh();
-    }, 5000);
+    }
     
-    //.Geolocalisation automatique sur mobile - avec fallback automatique
-    if (isMobileDevice()) {
-        // Essayer GPS, sinon charger directement
-        requestAutoGeolocation(loadingTimeout);
-        
-        // Fallback supplementaire si GPS echoue - charger sans attendre
-        setTimeout(() => {
-            if (document.querySelector('.city')?.textContent === 'Localisation GPS...') {
-                updateWeather('Paris');
-                startAutoRefresh();
-            }
-        }, 8000); // Timeout plus long pour GPS
-    } else {
-        // Sur desktop, essayer geolocation avec timeout
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    clearTimeout(loadingTimeout);
-                    updateWeatherByCoords(position.coords.latitude, position.coords.longitude);
-                    startAutoRefresh();
-                },
-                (error) => {
-                    clearTimeout(loadingTimeout);
-                    updateWeather('Paris');
-                    startAutoRefresh();
-                },
-                { timeout: 8000 }
-            );
-        } else {
-            clearTimeout(loadingTimeout);
-            updateWeather('Paris');
-            startAutoRefresh();
+    // Check cached coordinates first
+    try {
+        const cached = JSON.parse(localStorage.getItem('lastCoords'));
+        if (cached && cached.lat && cached.lon && (Date.now() - cached.timestamp < 3600000)) {
+            loadWithCoords(cached.lat, cached.lon);
         }
+    } catch (e) {}
+    
+    // Timeout fallback - charger Paris apres 8 secondes si pas de reponse
+    const loadingTimeout = setTimeout(() => {
+        console.log('Timeout - chargement Paris');
+        loadParisFallback();
+    }, 8000);
+    
+    // Geolocalisation - priorite absolue
+    if (navigator.geolocation) {
+        if (cityElement && !locationResolved) cityElement.textContent = 'Localisation GPS...';
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                clearTimeout(loadingTimeout);
+                localStorage.setItem('lastCoords', JSON.stringify({
+                    lat: position.coords.latitude,
+                    lon: position.coords.longitude,
+                    timestamp: Date.now()
+                }));
+                loadWithCoords(position.coords.latitude, position.coords.longitude);
+            },
+            (error) => {
+                clearTimeout(loadingTimeout);
+                console.log('Geolocation error:', error.message);
+                loadParisFallback();
+            },
+            { enableHighAccuracy: true, timeout: 7000, maximumAge: 600000 }
+        );
+    } else {
+        clearTimeout(loadingTimeout);
+        loadParisFallback();
     }
 });
 
@@ -3103,10 +3041,10 @@ if (!document.getElementById('weather-animations')) {
     style.id = 'weather-animations';
     style.textContent = `
         .weather-icon { display: inline-block; }
-        @keyframes rain-drop { 0% { transform: translateY(0); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(${s*0.2}); opacity: 0; } }
-        @keyframes snow-fall { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(${s*0.3}) rotate(360deg); } }
+        @keyframes rain-drop { 0% { transform: translateY(0); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(8px); opacity: 0; } }
+        @keyframes snow-fall { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(12px) rotate(360deg); } }
         @keyframes sun-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        @keyframes cloud-drift { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(${s*0.02}); } }
+        @keyframes cloud-drift { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(2px); } }
     `;
     document.head.appendChild(style);
 }
