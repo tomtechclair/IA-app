@@ -723,6 +723,7 @@ body {
     padding: 14px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     transition: all 0.3s ease;
+    justify-content: space-between;
 }
 
 .daily-item:last-child {
@@ -773,8 +774,9 @@ body {
 .daily-item .-temps {
     display: flex;
     gap: 12px;
-    min-width: 70px;
+    min-width: 90px;
     justify-content: flex-end;
+    margin-left: auto;
 }
 
 .daily-item .temp-low {
