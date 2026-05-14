@@ -2096,6 +2096,9 @@ function searchCity() {
     const conditionElement = document.querySelector('.condition');
     
     if (city && city.length > 1) {
+        // Bloquer la geolocalisation pour ne pas ecraser la recherche
+        window._locationResolved = true;
+        
         // Arreter le rafraichissement auto
         stopAutoRefresh();
         
@@ -2104,8 +2107,6 @@ function searchCity() {
             const cleanName = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
             cityElement.textContent = cleanName;
         }
-        if (tempElement) tempElement.textContent = '...';
-        if (conditionElement) conditionElement.textContent = 'Chargement...';
         
         // Recherche
         currentCity = city;
@@ -2967,18 +2968,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tempElement) tempElement.textContent = '';
     if (conditionElement) conditionElement.textContent = '';
 
-    let locationResolved = false;
-    
     function loadWithCoords(lat, lon) {
-        if (locationResolved) return;
-        locationResolved = true;
+        if (window._locationResolved) return;
+        window._locationResolved = true;
         updateWeatherByCoords(lat, lon);
         startAutoRefresh();
     }
     
     function loadParisFallback() {
-        if (locationResolved) return;
-        locationResolved = true;
+        if (window._locationResolved) return;
+        window._locationResolved = true;
         updateWeather('Paris');
         startAutoRefresh();
     }
