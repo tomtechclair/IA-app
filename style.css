@@ -1058,81 +1058,74 @@ body {
 }
 
 .ia-meteo-content {
-    padding: 8px 0;
+    padding: 4px 0;
 }
 
 .ia-summary {
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 12px;
+}
+
+.ia-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
     margin-bottom: 10px;
 }
 
-.ia-trend {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 8px;
-}
-
-.ia-trend-icon {
-    font-size: 16px;
-    color: #64d2ff;
-}
-
-.ia-comfort {
+.ia-stat {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 10px;
 }
 
-.ia-comfort-bar {
-    flex: 1;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 2px;
-    overflow: hidden;
-    max-width: 80px;
-}
-
-.ia-comfort-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ff453a, #ff9f0a, #30d158);
-    border-radius: 2px;
-    transition: width 0.5s ease;
-}
-
-.ia-recommendations {
+.ia-stat-icon {
+    font-size: 18px;
+    width: 24px;
+    height: 24px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 10px;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    flex-shrink: 0;
 }
 
-.ia-rec-tag {
-    font-size: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.8);
-    padding: 4px 10px;
-    border-radius: 12px;
+.ia-stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.ia-stat-label {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1;
+}
+
+.ia-stat-value {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+    line-height: 1.2;
 }
 
 .ia-alerts {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    margin-top: 4px;
 }
 
 .ia-alert {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
+    font-size: 12px;
     padding: 6px 10px;
     border-radius: 8px;
 }
@@ -1145,9 +1138,4 @@ body {
 .ia-alert-warning {
     background: rgba(255, 159, 10, 0.15);
     color: #ffb340;
-}
-
-.ia-alert-info {
-    background: rgba(100, 210, 255, 0.1);
-    color: #64d2ff;
 }

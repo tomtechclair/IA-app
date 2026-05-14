@@ -331,7 +331,7 @@ class IAMeteo {
 // Instance globale
 const iaMeteo = new IAMeteo();
 
-// Fonction pour afficher l'analyse IA dans l'interface
+// Fonction pour afficher l'analyse IA dans l'interface (style Weather mini)
 function displayIAAnalysis(weatherData, cityName) {
     const analysis = iaMeteo.analyze(weatherData, cityName);
     if (!analysis) return;
@@ -339,41 +339,68 @@ function displayIAAnalysis(weatherData, cityName) {
     const container = document.getElementById('ia-meteo-content');
     if (!container) return;
 
+    const current = weatherData.current || {};
+    const hourly = weatherData.hourly || {};
+    const now = new Date();
+    const hour = now.getHours();
+
+    // Données pour les stats
+    const precipitation = Math.round(current.precipitation || 0);
+    const cloudCover = Math.round(current.cloud_cover || 0);
+    const humidity = Math.round(current.relative_humidity_2m || 0);
+
+    // UV index depuis hourly
+    let uvIndex = 0;
+    if (hourly.uv_index && hourly.time) {
+        for (let i = 0; i < hourly.time.length; i++) {
+            const m = (hourly.time[i] || '').match(/T(\d{2}):/);
+            if (m && parseInt(m[1]) === hour) { uvIndex = Math.round(hourly.uv_index[i] || 0); break; }
+        }
+    }
+    const uvLabel = uvIndex <= 2 ? 'Faible' : uvIndex <= 5 ? 'Modéré' : uvIndex <= 7 ? 'Élevé' : 'Très élevé';
+
     let html = '';
 
-    // Résumé IA
+    // Résumé IA — texte simple et clean
     html += `<div class="ia-summary">${analysis.summary}</div>`;
 
-    // Tendance
-    const trend = analysis.trend;
-    html += `<div class="ia-trend">
-        <span class="ia-trend-icon">${trend.icon}</span>
-        <span>Tendance : ${trend.text}</span>
-    </div>`;
-
-    // Confort
-    const comfort = analysis.comfort;
-    html += `<div class="ia-comfort">
-        <span>${comfort.emoji}</span>
-        <span>Confort : ${comfort.label}</span>
-        <div class="ia-comfort-bar">
-            <div class="ia-comfort-fill" style="width: ${comfort.score}%"></div>
+    // Stats row — 4 items comme Weather mini
+    html += `<div class="ia-stats">
+        <div class="ia-stat">
+            <div class="ia-stat-icon">💧</div>
+            <div class="ia-stat-info">
+                <div class="ia-stat-label">Précipitations</div>
+                <div class="ia-stat-value">${precipitation} mm</div>
+            </div>
+        </div>
+        <div class="ia-stat">
+            <div class="ia-stat-icon">☁️</div>
+            <div class="ia-stat-info">
+                <div class="ia-stat-label">Couv. nuageuse</div>
+                <div class="ia-stat-value">${cloudCover}%</div>
+            </div>
+        </div>
+        <div class="ia-stat">
+            <div class="ia-stat-icon">💦</div>
+            <div class="ia-stat-info">
+                <div class="ia-stat-label">Humidité</div>
+                <div class="ia-stat-value">${humidity}%</div>
+            </div>
+        </div>
+        <div class="ia-stat">
+            <div class="ia-stat-icon">☀️</div>
+            <div class="ia-stat-info">
+                <div class="ia-stat-label">Indice UV</div>
+                <div class="ia-stat-value">${uvIndex} ${uvLabel}</div>
+            </div>
         </div>
     </div>`;
 
-    // Recommandations
-    if (analysis.recommendation.length > 0) {
-        html += `<div class="ia-recommendations">`;
-        analysis.recommendation.forEach(rec => {
-            html += `<span class="ia-rec-tag">${rec}</span>`;
-        });
-        html += `</div>`;
-    }
-
-    // Alertes
-    if (analysis.alerts.length > 0) {
+    // Alertes — subtiles, seulement si danger/warning
+    const importantAlerts = analysis.alerts.filter(a => a.level === 'danger' || a.level === 'warning');
+    if (importantAlerts.length > 0) {
         html += `<div class="ia-alerts">`;
-        analysis.alerts.forEach(alert => {
+        importantAlerts.forEach(alert => {
             html += `<div class="ia-alert ia-alert-${alert.level}">
                 <span>${alert.icon}</span>
                 <span>${alert.text}</span>
