@@ -737,12 +737,12 @@ body {
 }
 
 .daily-item .icon {
-    font-size: 52px;
-    margin: 0 10px;
+    font-size: 0;
+    margin: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 55px;
+    min-width: 42px;
 }
 
 .daily-item .condition {
@@ -757,12 +757,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 55px;
-    margin: 0 5px;
-}
-
-.daily-icon-wrap .icon {
-    margin: 0;
+    min-width: 50px;
+    margin: 0 4px;
 }
 
 .daily-precip {
@@ -1035,4 +1031,121 @@ body {
 .icon-temp-avg::before {
     content: "🌡";
     font-size: 18px;
+}
+
+/* IA Météo Card */
+.ia-card {
+    border: 1px solid rgba(100, 210, 255, 0.2);
+    background: rgba(100, 210, 255, 0.05);
+}
+
+.ia-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ia-badge {
+    background: linear-gradient(135deg, #64d2ff, #5e5ce6);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.ia-meteo-content {
+    padding: 8px 0;
+}
+
+.ia-summary {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 10px;
+}
+
+.ia-trend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+}
+
+.ia-trend-icon {
+    font-size: 16px;
+    color: #64d2ff;
+}
+
+.ia-comfort {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 10px;
+}
+
+.ia-comfort-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    max-width: 80px;
+}
+
+.ia-comfort-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff453a, #ff9f0a, #30d158);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+.ia-recommendations {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.ia-rec-tag {
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.ia-alerts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ia-alert {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 8px;
+}
+
+.ia-alert-danger {
+    background: rgba(255, 69, 58, 0.15);
+    color: #ff6961;
+}
+
+.ia-alert-warning {
+    background: rgba(255, 159, 10, 0.15);
+    color: #ffb340;
+}
+
+.ia-alert-info {
+    background: rgba(100, 210, 255, 0.1);
+    color: #64d2ff;
 }
