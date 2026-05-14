@@ -1,7 +1,7 @@
 // Service Worker pour performances ULTRA-RAPIDES sur mobile
-const CACHE_NAME = 'static-v14';
-const STATIC_CACHE = 'static-v14';
-const API_CACHE = 'api-v13';
+const CACHE_NAME = 'static-v15';
+const STATIC_CACHE = 'static-v15';
+const API_CACHE = 'api-v14';
 
 // Ressources critiques
 const CRITICAL_RESOURCES = [

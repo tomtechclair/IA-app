@@ -1705,7 +1705,10 @@ async function displayWeatherData(weatherData) {
             const isCurrentHour = i === 0;
             const code = hourly.weather_code[hourIndex];
             const hourlyIsDay = hourly.is_day[hourIndex] === 1;
-            const temp = Math.round(hourly.temperature_2m[hourIndex]);
+            // Pour "Maint", utiliser la température actuelle (current) pour cohérence avec le héro
+            const temp = isCurrentHour
+                ? Math.round(current.temperature_2m)
+                : Math.round(hourly.temperature_2m[hourIndex]);
             
             // Ajouter le % de pluie UNIQUEMENT s'il pleut (codes pluie)
             const rawPrecipProb = hourly.precipitation_probability?.[hourIndex] || 0;
