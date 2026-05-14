@@ -1,14 +1,15 @@
 // Service Worker pour performances ULTRA-RAPIDES sur mobile
-const CACHE_NAME = 'static-v13';
-const STATIC_CACHE = 'static-v13';
-const API_CACHE = 'api-v12';
+const CACHE_NAME = 'static-v14';
+const STATIC_CACHE = 'static-v14';
+const API_CACHE = 'api-v13';
 
 // Ressources critiques
 const CRITICAL_RESOURCES = [
     './',
     './index.html',
     './style.css',
-    './script.js'
+    './script.js',
+    './ia-meteo.js'
 ];
 
 // Installation du Service Worker

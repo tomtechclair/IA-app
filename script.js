@@ -1773,7 +1773,7 @@ async function displayWeatherData(weatherData) {
             
             // Créer l'icône SVG météo IA réaliste
             const iconHTML = typeof createWeatherIconSVG === 'function' 
-                ? createWeatherIconSVG(code, true, 52) 
+                ? createWeatherIconSVG(code, true, 36) 
                 : '';
             
             const tempLow = daily.temperature_2m_min[i];
@@ -1839,6 +1839,13 @@ async function displayWeatherData(weatherData) {
         
         // Réinitialiser le bouton de recherche
         if (searchBtn) searchBtn.style.opacity = '1';
+        
+        // Analyse IA Météo
+        if (typeof displayIAAnalysis === 'function') {
+            const cityEl = document.querySelector('.city');
+            const cityName = cityEl ? cityEl.textContent : '';
+            displayIAAnalysis(weatherData, cityName);
+        }
         
     } catch (error) {
         console.error('Erreur:', error);
