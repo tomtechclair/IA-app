@@ -141,30 +141,34 @@ const WEATHER_PATTERNS = {
 };
 
 const weatherCodes = {
-    0: { condition: 'Ensoleillé', bg: 'bg-sunny' },
-    1: { condition: 'Plutôt ensoleillé', bg: 'bg-blue' },
+    0: { condition: 'Dégagé', bg: 'bg-sunny' },
+    1: { condition: 'Majoritairement dégagé', bg: 'bg-blue' },
     2: { condition: 'Partiellement nuageux', bg: 'bg-cloudy' },
-    3: { condition: 'Couvert', bg: 'bg-cloudy' },
+    3: { condition: 'Nuageux', bg: 'bg-cloudy' },
     45: { condition: 'Brouillard', bg: 'bg-cloudy' },
     48: { condition: 'Brouillard givrant', bg: 'bg-cloudy' },
-    51: { condition: 'Bruine légère', bg: 'bg-rain' },
-    53: { condition: 'Bruine modérée', bg: 'bg-rain' },
-    55: { condition: 'Bruine forte', bg: 'bg-rain' },
-    61: { condition: 'Pluie légère', bg: 'bg-rain' },
-    63: { condition: 'Pluie modérée', bg: 'bg-rain' },
-    65: { condition: 'Pluie forte', bg: 'bg-rain' },
-    71: { condition: 'Neige légère', bg: 'bg-snow' },
-    73: { condition: 'Neige modérée', bg: 'bg-snow' },
-    75: { condition: 'Neige forte', bg: 'bg-snow' },
-    77: { condition: 'Grains de neige', bg: 'bg-snow' },
-    80: { condition: 'Averses légères', bg: 'bg-rain' },
-    81: { condition: 'Averses modérées', bg: 'bg-rain' },
-    82: { condition: 'Averses violentes', bg: 'bg-rain' },
+    51: { condition: 'Bruine', bg: 'bg-rain' },
+    53: { condition: 'Bruine', bg: 'bg-rain' },
+    55: { condition: 'Bruine verglaçante', bg: 'bg-rain' },
+    56: { condition: 'Bruine verglaçante', bg: 'bg-rain' },
+    57: { condition: 'Bruine verglaçante', bg: 'bg-rain' },
+    61: { condition: 'Pluie', bg: 'bg-rain' },
+    63: { condition: 'Pluie', bg: 'bg-rain' },
+    65: { condition: 'Fortes pluies', bg: 'bg-rain' },
+    66: { condition: 'Pluie verglaçante', bg: 'bg-rain' },
+    67: { condition: 'Pluie verglaçante', bg: 'bg-rain' },
+    71: { condition: 'Neige', bg: 'bg-snow' },
+    73: { condition: 'Neige', bg: 'bg-snow' },
+    75: { condition: 'Fortes chutes de neige', bg: 'bg-snow' },
+    77: { condition: 'Grésil', bg: 'bg-snow' },
+    80: { condition: 'Averses', bg: 'bg-rain' },
+    81: { condition: 'Averses', bg: 'bg-rain' },
+    82: { condition: 'Fortes averses', bg: 'bg-rain' },
     85: { condition: 'Averses de neige', bg: 'bg-snow' },
-    86: { condition: 'Averses de neige', bg: 'bg-snow' },
-    95: { condition: 'Orage', bg: 'bg-storm' },
-    96: { condition: 'Orage grêle', bg: 'bg-storm' },
-    99: { condition: 'Orage violent', bg: 'bg-storm' }
+    86: { condition: 'Fortes averses de neige', bg: 'bg-snow' },
+    95: { condition: 'Orages', bg: 'bg-storm' },
+    96: { condition: 'Orages de grêle', bg: 'bg-storm' },
+    99: { condition: 'Orages violents', bg: 'bg-storm' }
 };
 
 const aiWeatherDescriptions = {
@@ -931,7 +935,7 @@ async function fetchOpenMeteo(lat, lon) {
         // Donnees horaires completes
         hourly: 'temperature_2m,weather_code,is_day,precipitation_probability,precipitation,rain,cloud_cover,wind_speed_10m,wind_direction_10m,uv_index',
         // Donnees quotidiennes completes
-        daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,precipitation_sum,rain_sum,uv_index_max,wind_speed_10m_max,wind_direction_10m_dominant',
+        daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,precipitation_sum,rain_sum,uv_index_max,wind_speed_10m_max,wind_direction_10m_dominant,precipitation_probability_max',
         timezone: 'auto',
         timezoneOffset: 0,
         forecast_days: 10
@@ -993,7 +997,8 @@ async function fetchOpenMeteo(lat, lon) {
             rain_sum: raw.daily?.rain_sum ?? [],
             uv_index_max: raw.daily?.uv_index_max ?? [],
             wind_speed_10m_max: raw.daily?.wind_speed_10m_max ?? [],
-            wind_direction_10m_dominant: raw.daily?.wind_direction_10m_dominant ?? []
+            wind_direction_10m_dominant: raw.daily?.wind_direction_10m_dominant ?? [],
+            precipitation_probability_max: raw.daily?.precipitation_probability_max ?? []
         }
     };
 }
@@ -1350,23 +1355,8 @@ async function updateWeatherByCoords(lat, lon) {
             return;
         }
         
-        // Generate hourly with proper ISO format
         if (!weatherData.hourly || !weatherData.hourly.time) {
-            const now = new Date();
-            const h = [];
-            for (let i = 0; i < 48; i++) {
-                const d = new Date(now.getTime() + i*3600000);
-                h.push(d.toISOString().replace('Z', '').split('.')[0]);
-            }
-            const nh = now.getHours();
-            const base = 20;
-            weatherData.hourly = {
-                time: h,
-                temperature_2m: h.map((_,i) => base + Math.sin((nh+i)%24 * Math.PI/12) * 5),
-                weather_code: h.map(() => 0),
-                is_day: h.map((_,i) => (nh+i)%24 >= 6 && (nh+i)%24 <= 20 ? 1 : 0),
-                precipitation_probability: h.map(() => 0)
-            };
+            console.error('Données horaires manquantes de l\'API');
         }
         
         if (!weatherData.daily || !weatherData.daily.time || !weatherData.daily.temperature_2m_max) {
@@ -1476,12 +1466,24 @@ async function displayWeatherData(weatherData) {
         const humidityElement = document.getElementById('humidity');
         if (humidityElement && current.relative_humidity_2m !== undefined && current.relative_humidity_2m !== null) {
             humidityElement.textContent = `${Math.round(current.relative_humidity_2m)}%`;
+            const humidityDesc = humidityElement.nextElementSibling;
+            if (humidityDesc && current.dew_point_2m !== undefined) {
+                humidityDesc.textContent = `Le point de rosée est de ${Math.round(current.dew_point_2m)}°`;
+            }
         }
         
         // Vent
         const windElement = document.getElementById('wind');
         if (windElement && current.wind_speed_10m !== undefined && current.wind_speed_10m !== null) {
             windElement.innerHTML = `${Math.round(current.wind_speed_10m)} <span class="unit">km/h</span>`;
+        }
+        
+        const windDirElement = document.getElementById('wind-direction');
+        if (windDirElement && current.wind_direction_10m !== undefined) {
+            const deg = current.wind_direction_10m;
+            const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+            const dir = dirs[Math.round(deg / 45) % 8];
+            windDirElement.textContent = dir;
         }
         
         // Température ressentie
@@ -1492,9 +1494,16 @@ async function displayWeatherData(weatherData) {
         
         // Visibilité
         const visibilityElements = document.querySelectorAll('.detail-big');
+        const visibilityDescEl = document.getElementById('visibility-desc');
         if (visibilityElements[2] && current.visibility !== undefined && current.visibility !== null) {
             const visibilityKm = Math.round(current.visibility / 1000);
             visibilityElements[2].innerHTML = `${visibilityKm} <span class="unit">km</span>`;
+            if (visibilityDescEl) {
+                if (visibilityKm >= 10) visibilityDescEl.textContent = 'Excellente';
+                else if (visibilityKm >= 5) visibilityDescEl.textContent = 'Bonne';
+                else if (visibilityKm >= 2) visibilityDescEl.textContent = 'Moyenne';
+                else visibilityDescEl.textContent = 'Faible';
+            }
         }
         
         // Précipitations
@@ -1540,7 +1549,7 @@ async function displayWeatherData(weatherData) {
                 if (current.cloud_cover < 20) cloudDesc.textContent = 'Dégagé';
                 else if (current.cloud_cover < 50) cloudDesc.textContent = 'Partiellement nuageux';
                 else if (current.cloud_cover < 80) cloudDesc.textContent = 'Nuageux';
-                else cloudDesc.textContent = 'Couvert';
+                else cloudDesc.textContent = 'Très nuageux';
             }
         }
         
@@ -1551,25 +1560,26 @@ async function displayWeatherData(weatherData) {
             dewElement.textContent = `${Math.round(current.dew_point_2m)}°`;
             
             if (dewDesc) {
-                if (current.dew_point_2m < 10) dewDesc.textContent = 'Confortable';
-                else if (current.dew_point_2m < 15) dewDesc.textContent = 'Legerement humide';
-                else if (current.dew_point_2m < 20) dewDesc.textContent = 'Humide';
-                else dewDesc.textContent = 'Lourd';
+                if (current.dew_point_2m < 10) dewDesc.textContent = 'Air sec';
+                else if (current.dew_point_2m < 16) dewDesc.textContent = 'Confortable';
+                else if (current.dew_point_2m < 21) dewDesc.textContent = 'Humide';
+                else dewDesc.textContent = 'Oppressant';
             }
         }
         
-        // Indice UV (utiliser donnees reelles ou calculer)
+        // Indice UV - données réelles de l'API
         const uvElement = document.getElementById('uv-index');
         const uvDesc = document.getElementById('uv-desc');
-        const hour = new Date().getHours();
         let uv = 0;
         
-        if (current.weather_code === 0 && hour >= 10 && hour <= 16) {
-            uv = Math.round(Math.random() * 3 + 6);
-        } else if (current.weather_code === 0 && hour >= 7 && hour <= 19) {
-            uv = Math.round(Math.random() * 2 + 3);
-        } else if (current.weather_code === 1) {
-            uv = Math.round(Math.random() * 2 + 1);
+        if (weatherData.hourly && weatherData.hourly.uv_index) {
+            const nowH = new Date().getHours();
+            for (let j = 0; j < (weatherData.hourly.time || []).length; j++) {
+                const m = (weatherData.hourly.time[j] || '').match(/T(\d{2}):/);
+                if (m && parseInt(m[1]) === nowH) { uv = Math.round(weatherData.hourly.uv_index[j] || 0); break; }
+            }
+        } else if (weatherData.daily && weatherData.daily.uv_index_max) {
+            uv = Math.round(weatherData.daily.uv_index_max[0] || 0);
         }
         
         if (uvElement) {
@@ -1783,13 +1793,21 @@ async function displayWeatherData(weatherData) {
             // Ajouter une classe spéciale pour aujourd'hui
             const isToday = i === 0;
             const todayClass = isToday ? 'today' : '';
-            const aiCondition = getWeatherInfo(code).condition;
+            const dailyCondition = getWeatherInfo(code).condition;
+            
+            // Probabilité de précipitation quotidienne
+            const dailyPrecipProb = daily.precipitation_probability_max
+                ? Math.round(daily.precipitation_probability_max[i] || 0)
+                : 0;
+            const dailyIsRain = (code >= 51 && code <= 67) || (code >= 80 && code <= 99);
+            const dailyPrecipDisplay = dailyIsRain && dailyPrecipProb > 0
+                ? `<span class="daily-precip">${Math.max(5, dailyPrecipProb)}%</span>` : '';
             
             dailyHTML += `
                 <div class="daily-item ${todayClass}">
                     <div class="day">${dayName}</div>
-                    <div class="icon">${iconHTML}</div>
-                    <div class="condition">${aiCondition}</div>
+                    <div class="icon">${iconHTML}${dailyPrecipDisplay}</div>
+                    <div class="condition">${dailyCondition}</div>
                     <div class="-temps">
                         <span class="temp-low">${Math.round(tempLow)}°</span>
                         <span class="temp-high">${Math.round(tempHigh)}°</span>
