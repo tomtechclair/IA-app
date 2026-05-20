@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Météo - Icônes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .weather-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        .weather-card:hover {
+            transform: translateY(-5px);
+        }
+        .weather-card img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+        .weather-card h3 {
+            color: #333;
+            font-size: 1.1em;
+            text-transform: capitalize;
+        }
+        .weather-card .condition {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌤️ Icônes Météo</h1>
+        <div class="weather-grid">
+            <div class="weather-card">
+                <img src="icons/sunny.png" alt="Ensoleillé">
+                <h3>Ensoleillé</h3>
+                <div class="condition">sunny</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/partly-cloudy.png" alt="Partiellement nuageux">
+                <h3>Partiellement nuageux</h3>
+                <div class="condition">partly-cloudy</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/cloudy.png" alt="Nuageux">
+                <h3>Nuageux</h3>
+                <div class="condition">cloudy</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/fog.png" alt="Brouillard">
+                <h3>Brouillard</h3>
+                <div class="condition">fog</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/cloudy-fog.png" alt="Nuageux avec brouillard">
+                <h3>Nuageux avec brouillard</h3>
+                <div class="condition">cloudy-fog</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/mist.png" alt="Brume">
+                <h3>Brume</h3>
+                <div class="condition">mist</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/windy.png" alt="Venteux">
+                <h3>Venteux</h3>
+                <div class="condition">windy</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/rainy.png" alt="Pluie">
+                <h3>Pluie</h3>
+                <div class="condition">rainy</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/showers.png" alt="Averses">
+                <h3>Averses</h3>
+                <div class="condition">showers</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/heavy-rain.png" alt="Forte pluie">
+                <h3>Forte pluie</h3>
+                <div class="condition">heavy-rain</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/thunderstorm.png" alt="Orage">
+                <h3>Orage</h3>
+                <div class="condition">thunderstorm</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/heavy-thunderstorm.png" alt="Fort orage">
+                <h3>Fort orage</h3>
+                <div class="condition">heavy-thunderstorm</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/snowy.png" alt="Neige">
+                <h3>Neige</h3>
+                <div class="condition">snowy</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/night-clear.png" alt="Nuit claire">
+                <h3>Nuit claire</h3>
+                <div class="condition">night-clear</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/night-cloudy.png" alt="Nuit nuageuse">
+                <h3>Nuit nuageuse</h3>
+                <div class="condition">night-cloudy</div>
+            </div>
+            <div class="weather-card">
+                <img src="icons/night-partly-cloudy.png" alt="Nuit partiellement nuageuse">
+                <h3>Nuit partiellement nuageuse</h3>
+                <div class="condition">night-partly-cloudy</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
