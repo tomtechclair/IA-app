@@ -18,7 +18,7 @@
             width: 100%;
             height: 100%;
             overflow-x: hidden;
-            background: black;
+            background: #000;
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
@@ -57,7 +57,7 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            z-index: 0;
             overflow: hidden;
             background-size: cover;
             background-position: center;
@@ -216,7 +216,7 @@
         .current { text-align: center; padding: 30px 0; }
         .city { font-size: 28px; font-weight: 500; margin-bottom: 10px; }
         .icon { padding: 10px 0; display: flex; justify-content: center; }
-        .icon .lucide { width: 100px; height: 100px; stroke-width: 1.5; }
+        .icon img { width: 120px; height: 120px; object-fit: contain; }
         .temp { font-size: 80px; font-weight: 200; letter-spacing: -3px; }
         .desc { font-size: 20px; opacity: 0.85; margin-bottom: 8px; }
         .hl { font-size: 18px; opacity: 0.7; }
@@ -228,7 +228,7 @@
         .hour { min-width: 60px; border-radius: 16px; padding: 14px 10px; text-align: center; }
         .hour-time { font-size: 13px; opacity: 0.7; margin-bottom: 8px; }
         .hour-icon { display: flex; justify-content: center; margin-bottom: 5px; }
-        .hour-icon .lucide { width: 28px; height: 28px; stroke-width: 2; }
+        .hour-icon img { width: 32px; height: 32px; object-fit: contain; }
         .precip { font-size: 11px; color: #00d2ff; font-weight: 700; margin-top: -2px; margin-bottom: 2px; height: 14px; }
         .hour-temp { font-size: 15px; }
         
@@ -236,7 +236,7 @@
         .day-item { display: flex; align-items: center; border-radius: 14px; padding: 16px; margin-bottom: 8px; }
         .day-name { width: 90px; font-size: 16px; }
         .day-icon { display: flex; justify-content: center; }
-        .day-icon .lucide { width: 28px; height: 28px; stroke-width: 2; }
+        .day-icon img { width: 32px; height: 32px; object-fit: contain; }
         .day-high { margin-left: auto; font-size: 16px; font-weight: 500; padding: 0 15px; }
         .day-low { font-size: 16px; opacity: 0.5; }
         
@@ -946,39 +946,39 @@
         }
 
         const icons = {
-            0: {d:'sun', n:'moon', td:'Ensoleillé', tn:'Nuit claire'},
-            1: {d:'sun', n:'moon', td:'Belles éclaircies', tn:'Surtout clair'},
-            2: {d:'cloud-sun', n:'cloud-moon', td:'Éclaircies', tn:'Quelques nuages'},
-            3: {d:'cloud', n:'cloud', td:'Nuages prédominants', tn:'Nuages prédominants'},
-            45:{d:'cloud-fog', n:'cloud-fog', td:'Brouillard', tn:'Brouillard'},
-            48:{d:'cloud-fog', n:'cloud-fog', td:'Brouillard givrant', tn:'Brouillard givrant'},
-            51:{d:'cloud-drizzle', n:'cloud-drizzle', td:'Légère bruine', tn:'Légère bruine'},
-            53:{d:'cloud-drizzle', n:'cloud-drizzle', td:'Bruine', tn:'Bruine'},
-            55:{d:'cloud-drizzle', n:'cloud-drizzle', td:'Forte bruine', tn:'Forte bruine'},
-            56:{d:'cloud-snow', n:'cloud-snow', td:'Bruine verglaçante', tn:'Bruine verglaçante'},
-            57:{d:'cloud-snow', n:'cloud-snow', td:'Bruine verglaçante intense', tn:'Bruine verglaçante intense'},
-            61:{d:'cloud-rain', n:'cloud-rain', td:'Légère pluie', tn:'Légère pluie'},
-            63:{d:'cloud-rain', n:'cloud-rain', td:'Pluie modérée', tn:'Pluie modérée'},
-            65:{d:'cloud-rain-wind', n:'cloud-rain-wind', td:'Forte pluie', tn:'Forte pluie'},
-            66:{d:'cloud-snow', n:'cloud-snow', td:'Pluie verglaçante', tn:'Pluie verglaçante'},
-            67:{d:'cloud-snow', n:'cloud-snow', td:'Pluie verglaçante forte', tn:'Pluie verglaçante forte'},
-            71:{d:'snowflake', n:'snowflake', td:'Neige légère', tn:'Neige légère'},
-            73:{d:'snowflake', n:'snowflake', td:'Neige modérée', tn:'Neige modérée'},
-            75:{d:'cloud-snow', n:'cloud-snow', td:'Neige forte', tn:'Neige forte'},
-            77:{d:'snowflake', n:'snowflake', td:'Grains de neige', tn:'Grains de neige'},
-            80:{d:'cloud-rain', n:'cloud-rain', td:'Averses de pluie légères', tn:'Averses de pluie légères'},
-            81:{d:'cloud-rain', n:'cloud-rain', td:'Averses de pluie', tn:'Averses de pluie'},
-            82:{d:'cloud-lightning', n:'cloud-lightning', td:'Averses de pluie violentes', tn:'Averses de pluie violentes'},
-            85:{d:'cloud-snow', n:'cloud-snow', td:'Averses de neige légères', tn:'Averses de neige légères'},
-            86:{d:'cloud-snow', n:'cloud-snow', td:'Averses de neige', tn:'Averses de neige'},
-            95:{d:'cloud-lightning', n:'cloud-lightning', td:'Orage', tn:'Orage'},
-            96:{d:'cloud-lightning', n:'cloud-lightning', td:'Orage avec grêle', tn:'Orage avec grêle'},
-            99:{d:'cloud-lightning', n:'cloud-lightning', td:'Orage violent avec grêle', tn:'Orage violent avec grêle'}
+            0: {d:'sunny.png', n:'night-clear.png', td:'Ensoleillé', tn:'Nuit claire'},
+            1: {d:'sunny.png', n:'night-clear.png', td:'Belles éclaircies', tn:'Surtout clair'},
+            2: {d:'partly-cloudy.png', n:'night-partly-cloudy.png', td:'Éclaircies', tn:'Quelques nuages'},
+            3: {d:'cloudy.png', n:'night-cloudy.png', td:'Nuages prédominants', tn:'Nuages prédominants'},
+            45:{d:'fog.png', n:'cloudy-fog.png', td:'Brouillard', tn:'Brouillard'},
+            48:{d:'fog.png', n:'cloudy-fog.png', td:'Brouillard givrant', tn:'Brouillard givrant'},
+            51:{d:'rainy.png', n:'rainy.png', td:'Légère bruine', tn:'Légère bruine'},
+            53:{d:'rainy.png', n:'rainy.png', td:'Bruine', tn:'Bruine'},
+            55:{d:'rainy.png', n:'rainy.png', td:'Forte bruine', tn:'Forte bruine'},
+            56:{d:'snowy.png', n:'snowy.png', td:'Bruine verglaçante', tn:'Bruine verglaçante'},
+            57:{d:'snowy.png', n:'snowy.png', td:'Bruine verglaçante intense', tn:'Bruine verglaçante intense'},
+            61:{d:'rainy.png', n:'rainy.png', td:'Légère pluie', tn:'Légère pluie'},
+            63:{d:'rainy.png', n:'rainy.png', td:'Pluie modérée', tn:'Pluie modérée'},
+            65:{d:'heavy-rain.png', n:'heavy-rain.png', td:'Forte pluie', tn:'Forte pluie'},
+            66:{d:'snowy.png', n:'snowy.png', td:'Pluie verglaçante', tn:'Pluie verglaçante'},
+            67:{d:'snowy.png', n:'snowy.png', td:'Pluie verglaçante forte', tn:'Pluie verglaçante forte'},
+            71:{d:'snowy.png', n:'snowy.png', td:'Neige légère', tn:'Neige légère'},
+            73:{d:'snowy.png', n:'snowy.png', td:'Neige modérée', tn:'Neige modérée'},
+            75:{d:'snowy.png', n:'snowy.png', td:'Neige forte', tn:'Neige forte'},
+            77:{d:'snowy.png', n:'snowy.png', td:'Grains de neige', tn:'Grains de neige'},
+            80:{d:'showers.png', n:'showers.png', td:'Averses de pluie légères', tn:'Averses de pluie légères'},
+            81:{d:'showers.png', n:'showers.png', td:'Averses de pluie', tn:'Averses de pluie'},
+            82:{d:'thunderstorm.png', n:'thunderstorm.png', td:'Averses de pluie violentes', tn:'Averses de pluie violentes'},
+            85:{d:'snowy.png', n:'snowy.png', td:'Averses de neige légères', tn:'Averses de neige légères'},
+            86:{d:'snowy.png', n:'snowy.png', td:'Averses de neige', tn:'Averses de neige'},
+            95:{d:'thunderstorm.png', n:'thunderstorm.png', td:'Orage', tn:'Orage'},
+            96:{d:'heavy-thunderstorm.png', n:'heavy-thunderstorm.png', td:'Orage avec grêle', tn:'Orage avec grêle'},
+            99:{d:'heavy-thunderstorm.png', n:'heavy-thunderstorm.png', td:'Orage violent avec grêle', tn:'Orage violent avec grêle'}
         };
         
         function getIcon(code, isDay) {
-            const iconName = icons[code]? (isDay? icons[code].d : icons[code].n) : (isDay ? 'sun' : 'moon');
-            return `<i data-lucide="${iconName}"></i>`;
+            const iconName = icons[code]? (isDay? icons[code].d : icons[code].n) : (isDay ? 'sunny.png' : 'night-clear.png');
+            return `<img src="icons/${iconName}" alt="Weather Icon">`;
         }
 
         function getDesc(code, isDay) {
