@@ -174,9 +174,8 @@ function renderWeatherDetail(cityData, data) {
   setText('air-quality', '—');
   setText('air-quality-desc', 'Données bientôt');
 
-  // --- Alertes (placeholder) ---
-  setText('alert-title', 'Aucune alerte');
-  setText('alert-desc', '—');
+  // --- Alertes météo dynamiques (style Météo France) ---
+  checkWeatherAlerts(current, daily);
 
   // --- Horaire ---
   renderHourly(hourly, data.utc_offset_seconds);
@@ -290,16 +289,165 @@ function renderDaily(daily) {
 }
 
 // ---- Pluie prochaine heure ----
+// ---- Alertes météo dynamiques (style Météo France) ----
+function checkWeatherAlerts(current, daily) {
+  const container = $('alerts-container');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  const alerts = [];
+  const code = current.weather_code;
+  const wind = current.wind_speed_10m || 0;
+  
+  // Orages
+  if (code >= 95 && code <= 99) {
+    alerts.push({
+      type: 'danger',
+      icon: '⛈',
+      title: '⚠ Orages',
+      desc: 'Orages violents en cours. Restez à l\'abri et évitez les activités extérieures.'
+    });
+  }
+  
+  // Pluie forte
+  if (code == 65 || code == 82) {
+    alerts.push({
+      type: 'warning',
+      icon: '🌧',
+      title: '⚠ Pluie-inondation',
+      desc: 'Fortes précipitations en cours. Soyez prudent, risque d\'inondations locales.'
+    });
+  }
+  
+  // Vent violent
+  if (wind > 70) {
+    alerts.push({
+      type: 'danger',
+      icon: '💨',
+      title: '⚠ Vent violent',
+      desc: 'Rafales dangereuses détectées. Limitez vos déplacements.'
+    });
+  } else if (wind > 50) {
+    alerts.push({
+      type: 'warning',
+      icon: '💨',
+      title: '⚠ Vent fort',
+      desc: 'Vent fort en cours, soyez prudents lors de vos déplacements.'
+    });
+  }
+  
+  // Neige / Verglas
+  if (code >= 71 && code <= 77) {
+    alerts.push({
+      type: 'warning',
+      icon: '❄️',
+      title: '⚠ Neige-verglas',
+      desc: 'Chutes de neige attendues. Routes glissantes, soyez prudents.'
+    });
+  }
+  
+  // Canicule
+  if (daily && daily.temperature_2m_max && daily.temperature_2m_max[0] > 35) {
+    alerts.push({
+      type: 'danger',
+      icon: '🌡',
+      title: '⚠ Canicule',
+      desc: 'Températures très élevées. Hydratez-vous et évitez les efforts.'
+    });
+  } else if (daily && daily.temperature_2m_max && daily.temperature_2m_max[0] > 30) {
+    alerts.push({
+      type: 'warning',
+      icon: '🌡',
+      title: '⚠ Forte chaleur',
+      desc: 'Températures élevées. Restez hydraté et à l\'ombre si possible.'
+    });
+  }
+  
+  // Brouillard
+  if (code == 45 || code == 48) {
+    alerts.push({
+      type: 'warning',
+      icon: '🌫',
+      title: '⚠ Brouillard',
+      desc: 'Visibilité réduite par brume ou brouillard. Prudence sur les routes.'
+    });
+  }
+  
+  // Afficher les alertes
+  if (alerts.length > 0) {
+    const alertTitle = $('alert-title');
+    const alertDesc = $('alert-desc');
+    if (alertTitle) alertTitle.textContent = alerts[0].title.replace('⚠ ', '');
+    if (alertDesc) alertDesc.textContent = alerts[0].desc;
+    
+    // Ajouter dans le container
+    alerts.forEach(a => {
+      const card = document.createElement('div');
+      card.className = 'alert-card ' + a.type;
+      card.style.cssText = 'background:rgba(255,255,255,0.08);backdrop-filter:blur(20px);border-radius:12px;padding:12px 16px;margin-bottom:8px;border-left:4px solid ' + (a.type === 'danger' ? '#ff4444' : '#ffa726') + ';';
+      card.innerHTML = '<div style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px"><span>' + a.icon + '</span><span>' + a.title + '</span></div><div style="font-size:13px;opacity:0.8;margin-top:4px">' + a.desc + '</div>';
+      container.appendChild(card);
+    });
+  } else {
+    // Pas d'alerte
+    const alertTitle = $('alert-title');
+    const alertDesc = $('alert-desc');
+    if (alertTitle) alertTitle.textContent = 'Aucune alerte';
+    if (alertDesc) alertDesc.textContent = 'Conditions normales';
+  }
+}
+
+// ---- Prévision pluie améliorée (style Météo France) ----
 function updateNextHourRain(hourly) {
   const probEl = $('next-hour-rain-prob');
   const textEl = $('next-hour-rain-text');
+  const barEl = $('rain-bar-fill');
   if (!probEl || !textEl) return;
   const probs = hourly.precipitation_probability || [];
+  
+  // Trouver la probabilité max dans les 6 prochaines heures
+  let maxProb = 0;
+  for (let i = 0; i < Math.min(6, probs.length); i++) {
+    if (probs[i] > maxProb) maxProb = probs[i];
+  }
   const nextProb = probs[0] || 0;
+  
   probEl.textContent = `${nextProb}%`;
-  if (nextProb > 50) textEl.textContent = 'Risque de pluie';
-  else if (nextProb > 20) textEl.textContent = 'Pluie possible';
+  
+  // Barre de progression
+  if (barEl) {
+    barEl.style.width = `${maxProb}%`;
+    if (maxProb > 70) barEl.style.background = 'linear-gradient(90deg, #4fc3f7, #1565c0)';
+    else if (maxProb > 40) barEl.style.background = 'linear-gradient(90deg, #4fc3f7, #29b6f6)';
+    else barEl.style.background = 'linear-gradient(90deg, #4fc3f7, #81d4fa)';
+  }
+  
+  // Texte descriptif
+  if (nextProb > 70) textEl.textContent = 'Pluie forte probable';
+  else if (nextProb > 40) textEl.textContent = 'Risque de pluie';
+  else if (nextProb > 15) textEl.textContent = 'Pluie possible';
   else textEl.textContent = 'Pas de pluie prévue';
+  
+  // Ajouter les prévisions des 6 prochaines heures
+  const timelineEl = $('rain-timeline');
+  if (timelineEl) {
+    timelineEl.innerHTML = '';
+    const labels = ['Maintenant', '+1h', '+2h', '+3h', '+4h', '+5h'];
+    for (let i = 0; i < Math.min(6, probs.length); i++) {
+      const p = probs[i] || 0;
+      const dot = document.createElement('div');
+      dot.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;flex:1';
+      const bar = document.createElement('div');
+      const h = Math.max(4, p * 0.4);
+      bar.style.cssText = `width:8px;height:${h}px;border-radius:4px;background:${p > 70 ? '#1565c0' : p > 40 ? '#4fc3f7' : '#81d4fa'};opacity:${0.3 + p/100 * 0.7}`;
+      const label = document.createElement('span');
+      label.style.cssText = 'font-size:10px;opacity:0.6';
+      label.textContent = labels[i] || '';
+      dot.appendChild(bar);
+      dot.appendChild(label);
+      timelineEl.appendChild(dot);
+    }
+  }
 }
 
 // ---- Chargement météo ----

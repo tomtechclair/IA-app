@@ -145,6 +145,7 @@
                         <div class="cards cards-main">
                             <!-- Alerte (au-dessus des prévisions horaires) -->
                             <div class="card alert-card">
+                                <div id="alerts-container"></div>
                                 <div class="card-label">
                                     <span class="label-icon"><svg class="ui-icon-svg" viewBox="0 0 24 24" width="20" height="20"><use href="apple-ui-icons.svg#icon-warning"></use></svg>️</span>
                                     <span>ALERTE MÉTÉO</span>
@@ -191,6 +192,10 @@
                                         <div class="rain-percentage" id="next-hour-rain-prob">--%</div>
                                         <div class="rain-text" id="next-hour-rain-text">Chargement…</div>
                                     </div>
+                                    <div class="rain-bar" style="margin-top:8px;height:6px;border-radius:3px;background:rgba(255,255,255,0.15);overflow:hidden">
+                                        <div id="rain-bar-fill" style="height:100%;width:0%;border-radius:3px;background:linear-gradient(90deg,#4fc3f7,#1565c0);transition:width 0.5s ease"></div>
+                                    </div>
+                                    <div id="rain-timeline" style="display:flex;justify-content:space-between;margin-top:6px;height:24px"></div>
                                 </div>
                             </div>
 
