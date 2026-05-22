@@ -354,7 +354,7 @@
         // ---- Horaire - FUSEAU LOCAL de la ville ----
         // Open-Meteo avec timezone=auto retourne les heures en temps local
         // On extrait l'heure depuis la chaîne ISO, PAS via new Date() qui utiliserait le fuseau navigateur
-        var nowLocalH = extractHour(hh.time[0]); // heure locale actuelle = première entrée
+        var utcOffH = Math.floor((data.utc_offset_seconds||0)/3600); var nowLocalH = ((new Date().getUTCHours()+utcOffH)%24+24)%24;
         var hs=$("hourlyScroll");hs.innerHTML="";
         for(var i=0;i<24;i++){
             if(!hh.time[i])break;
