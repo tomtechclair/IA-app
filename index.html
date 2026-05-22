@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Météo IA - Assistant Météo Intelligent</title>
+    <title>Météo</title>
     <style>
         * {
             margin: 0;
@@ -12,442 +12,335 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', Helvetica, Arial, sans-serif;
+            background: #0a0a0a;
             color: white;
-            padding: 20px;
         }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
+        /* Barre de statut iOS */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 20px 8px 20px;
+            font-size: 15px;
+            font-weight: 590;
+            background: #0a0a0a;
+            color: white;
         }
 
-        /* En-tête */
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
+        /* Header principal */
+        .main-header {
+            padding: 8px 20px 16px 20px;
+            background: #0a0a0a;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, #fff, #a8c0ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            opacity: 0.8;
-            font-size: 0.9rem;
+        .main-header h1 {
+            font-size: 36px;
+            font-weight: 610;
+            letter-spacing: -0.5px;
         }
 
         /* Barre de recherche */
-        .search-box {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 30px;
-            padding: 8px 20px;
+        .search-bar {
+            background: #1c1c1e;
+            margin: 12px 20px;
+            padding: 12px 16px;
+            border-radius: 12px;
             display: flex;
-            gap: 12px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            align-items: center;
+            gap: 10px;
         }
 
-        .search-box input {
-            flex: 1;
+        .search-bar span {
+            color: #8e8e93;
+            font-size: 16px;
+        }
+
+        .search-bar input {
             background: transparent;
             border: none;
             color: white;
-            font-size: 1rem;
-            padding: 12px 0;
+            font-size: 16px;
+            flex: 1;
             outline: none;
         }
 
-        .search-box input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+        .search-bar input::placeholder {
+            color: #8e8e93;
         }
 
-        .search-box button {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 25px;
+        /* Liste des villes récentes */
+        .cities-list {
             padding: 8px 20px;
-            color: white;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
         }
 
-        .search-box button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.02);
-        }
-
-        /* Carte météo principale */
-        .weather-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 40px;
-            padding: 30px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-
-        .city-name {
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .country {
-            font-size: 0.9rem;
-            opacity: 0.7;
-            margin-bottom: 20px;
-        }
-
-        .temp {
-            font-size: 5rem;
-            font-weight: 700;
-            margin: 15px 0;
-        }
-
-        .condition {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin-bottom: 20px;
+        .city-item {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            padding: 16px 0;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: opacity 0.2s;
         }
 
-        .details {
+        .city-item:active {
+            opacity: 0.6;
+        }
+
+        .city-info h3 {
+            font-size: 20px;
+            font-weight: 590;
+            margin-bottom: 4px;
+        }
+
+        .city-info p {
+            font-size: 14px;
+            color: #8e8e93;
+        }
+
+        .city-temp {
+            font-size: 28px;
+            font-weight: 400;
+        }
+
+        /* Section "À proximité" */
+        .nearby-section {
+            padding: 24px 20px 16px 20px;
+        }
+
+        .nearby-section h4 {
+            font-size: 20px;
+            font-weight: 590;
+            margin-bottom: 16px;
+        }
+
+        .nearby-grid {
             display: flex;
-            justify-content: space-between;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .detail-item {
-            text-align: center;
-            flex: 1;
-        }
-
-        .detail-label {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            margin-bottom: 5px;
-        }
-
-        .detail-value {
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        /* Prévisions */
-        .forecast {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 40px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .forecast h3 {
-            margin-bottom: 15px;
-            font-size: 1rem;
-            opacity: 0.8;
-        }
-
-        .forecast-list {
-            display: flex;
-            justify-content: space-between;
+            gap: 16px;
             overflow-x: auto;
-            gap: 15px;
+            scrollbar-width: none;
         }
 
-        .forecast-item {
-            text-align: center;
-            min-width: 70px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
+        .nearby-grid::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nearby-card {
+            background: #1c1c1e;
             border-radius: 20px;
-        }
-
-        .forecast-time {
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-            opacity: 0.8;
-        }
-
-        .forecast-temp {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        /* Chat IA */
-        .chat-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            overflow: hidden;
-        }
-
-        .chat-header {
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .chat-header span {
-            font-size: 1.5rem;
-        }
-
-        .chat-messages {
-            height: 300px;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message.user {
-            background: #4a90e2;
-            align-self: flex-end;
-            border-bottom-right-radius: 5px;
-        }
-
-        .message.ai {
-            background: rgba(255, 255, 255, 0.15);
-            align-self: flex-start;
-            border-bottom-left-radius: 5px;
-        }
-
-        .chat-input-area {
-            padding: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            gap: 12px;
-        }
-
-        .chat-input-area input {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 25px;
-            padding: 12px 18px;
-            color: white;
-            outline: none;
-            font-size: 0.9rem;
-        }
-
-        .chat-input-area input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .chat-input-area button {
-            background: #4a90e2;
-            border: none;
-            border-radius: 25px;
-            padding: 0 20px;
-            color: white;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .chat-input-area button:hover {
-            background: #3570bd;
-            transform: scale(1.02);
-        }
-
-        .suggestions {
-            display: flex;
-            gap: 10px;
-            padding: 0 20px 20px 20px;
-            flex-wrap: wrap;
-        }
-
-        .suggestion-chip {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 16px;
+            min-width: 140px;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .suggestion-chip:hover {
-            background: rgba(255, 255, 255, 0.2);
+        .nearby-card:active {
+            opacity: 0.6;
+        }
+
+        .nearby-card .city {
+            font-size: 18px;
+            font-weight: 590;
+            margin-bottom: 8px;
+        }
+
+        .nearby-card .temp {
+            font-size: 36px;
+            font-weight: 400;
+            margin-bottom: 4px;
+        }
+
+        .nearby-card .condition {
+            font-size: 13px;
+            color: #8e8e93;
+        }
+
+        /* Prévisions horaires */
+        .hourly-section {
+            padding: 24px 20px;
+        }
+
+        .hourly-section h4 {
+            font-size: 20px;
+            font-weight: 590;
+            margin-bottom: 16px;
+        }
+
+        .hourly-scroll {
+            display: flex;
+            gap: 24px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .hourly-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hourly-item {
+            text-align: center;
+            min-width: 55px;
+        }
+
+        .hourly-time {
+            font-size: 14px;
+            color: #8e8e93;
+            margin-bottom: 12px;
+        }
+
+        .hourly-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .hourly-temp {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        /* Carte détaillée de la ville sélectionnée */
+        .detail-card {
+            background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%);
+            margin: 20px;
+            border-radius: 24px;
+            padding: 28px 24px;
+            display: none;
+        }
+
+        .detail-card.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .detail-city {
+            font-size: 34px;
+            font-weight: 610;
+            margin-bottom: 8px;
+        }
+
+        .detail-temp {
+            font-size: 72px;
+            font-weight: 300;
+            margin: 16px 0 8px 0;
+        }
+
+        .detail-condition {
+            font-size: 20px;
+            color: #8e8e93;
+            margin-bottom: 24px;
+        }
+
+        .detail-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #8e8e93;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 590;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: #0a84ff;
+            font-size: 17px;
+            margin: 12px 20px 0 20px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .back-button.active {
+            display: block;
         }
 
         .loading {
+            text-align: center;
+            padding: 40px;
+            color: #8e8e93;
+        }
+
+        /* Animation chargement */
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .loading-dots span {
+            animation: pulse 1.4s ease-in-out infinite;
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 0.6s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 480px) {
-            .temp { font-size: 3.5rem; }
-            .city-name { font-size: 1.5rem; }
-            .forecast-list { gap: 8px; }
-            .forecast-item { min-width: 60px; }
-        }
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🌤️ Météo IA</h1>
-            <p>Assistant météo intelligent • Prévisions en temps réel</p>
+    <div class="status-bar">
+        <span>15:26</span>
+        <span>📶 🔋 100%</span>
+    </div>
+
+    <div class="main-header">
+        <h1>Météo</h1>
+    </div>
+
+    <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Ville ou aéroport" onkeypress="if(event.key==='Enter') searchCity()">
+    </div>
+
+    <!-- Vue liste -->
+    <div id="listView">
+        <div class="cities-list" id="recentCities">
+            <div class="loading"><span class="loading-dots">Chargement<span>.</span><span>.</span><span>.</span></span></div>
         </div>
 
-        <div class="search-box">
-            <input type="text" id="cityInput" placeholder="Ville ou aéroport..." value="Menton">
-            <button onclick="getWeather()">Rechercher</button>
-        </div>
-
-        <div id="weatherContent">
-            <!-- Carte météo principale -->
-            <div class="weather-card" id="weatherCard">
-                <div class="city-name" id="cityName">Menton</div>
-                <div class="country" id="country">France</div>
-                <div class="temp" id="temperature">--°</div>
-                <div class="condition" id="condition">
-                    <span id="conditionIcon">☁️</span>
-                    <span id="conditionText">Chargement...</span>
-                </div>
-                <div class="details">
-                    <div class="detail-item">
-                        <div class="detail-label">💧 Humidité</div>
-                        <div class="detail-value" id="humidity">--%</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">💨 Vent</div>
-                        <div class="detail-value" id="wind">-- km/h</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">🌡️ Ressenti</div>
-                        <div class="detail-value" id="feelsLike">--°</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Prévisions -->
-            <div class="forecast" id="forecastSection">
-                <h3>📅 Prévisions sur 5 jours</h3>
-                <div class="forecast-list" id="forecastList">
-                    <div>Chargement...</div>
-                </div>
+        <div class="nearby-section">
+            <h4>À proximité</h4>
+            <div class="nearby-grid" id="nearbyCities">
+                <div class="loading">Chargement...</div>
             </div>
         </div>
 
-        <!-- Chat IA -->
-        <div class="chat-section">
-            <div class="chat-header">
-                <span>🤖</span>
-                <span>Assistant Météo IA</span>
-            </div>
-            <div class="chat-messages" id="chatMessages">
-                <div class="message ai">
-                    👋 Bonjour ! Je suis votre assistant météo IA. Posez-moi vos questions sur le temps, les prévisions, ou demandez-moi des conseils vestimentaires !
-                </div>
-            </div>
-            <div class="suggestions" id="suggestions">
-                <div class="suggestion-chip" onclick="askQuestion('Quel temps fera-t-il demain ?')">🌤️ Demain ?</div>
-                <div class="suggestion-chip" onclick="askQuestion('Dois-je prendre un parapluie ?')">☔ Parapluie ?</div>
-                <div class="suggestion-chip" onclick="askQuestion('Quand fera-t-il le plus chaud cette semaine ?')">🔥 Jours chauds</div>
-                <div class="suggestion-chip" onclick="askQuestion('Conseil tenue vestimentaire ?')">👕 Tenue</div>
-            </div>
-            <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="Posez votre question..." onkeypress="if(event.key==='Enter') sendMessage()">
-                <button onclick="sendMessage()">Envoyer</button>
+        <div class="hourly-section">
+            <h4>Prévisions horaires</h4>
+            <div class="hourly-scroll" id="hourlyForecast">
+                <div class="loading">Chargement...</div>
             </div>
         </div>
     </div>
 
+    <!-- Vue détail -->
+    <button class="back-button" id="backButton" onclick="showListView()">← Retour</button>
+    <div id="detailView" class="detail-card"></div>
+
     <script>
-        let currentWeatherData = null;
-        let currentCity = "Menton";
+        // Configuration
+        let currentWeatherData = {};
+        let recentCities = ['Menton', 'Monaco', 'Nice', 'Cannes'];
+        let currentView = 'list';
 
-        // API Météo (OpenMeteo - gratuite, sans clé API)
-        async function getWeather() {
-            const cityInput = document.getElementById('cityInput');
-            const city = cityInput.value.trim();
-            if (!city) return;
-
-            currentCity = city;
-            showLoading();
-
-            try {
-                // D'abord, obtenir les coordonnées via geocoding
-                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`;
-                const geoResponse = await fetch(geoUrl);
-                const geoData = await geoResponse.json();
-
-                if (!geoData.results || geoData.results.length === 0) {
-                    throw new Error("Ville non trouvée");
-                }
-
-                const location = geoData.results[0];
-                const latitude = location.latitude;
-                const longitude = location.longitude;
-                const cityName = location.name;
-                const country = location.country || "";
-
-                // Obtenir la météo
-                const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=5`;
-                const weatherResponse = await fetch(weatherUrl);
-                const weatherData = await weatherResponse.json();
-
-                currentWeatherData = weatherData;
-
-                // Mettre à jour l'UI
-                updateWeatherUI(cityName, country, weatherData);
-                updateForecastUI(weatherData);
-                
-                // Ajouter un message IA automatique
-                addAIAutoMessage(cityName, weatherData);
-
-            } catch (error) {
-                console.error("Erreur:", error);
-                document.getElementById('temperature').innerHTML = 'Erreur';
-                document.getElementById('conditionText').innerHTML = 'Ville non trouvée';
-                addMessage("ai", "❌ Désolé, je n'ai pas trouvé cette ville. Vérifiez l'orthographe ou essayez une autre ville.");
-            }
-        }
-
+        // Icônes météo simplifiées
         function getWeatherIcon(weatherCode, isDay = true) {
             const icons = {
                 0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
@@ -455,7 +348,7 @@
                 51: "🌧️", 53: "🌧️", 55: "🌧️",
                 61: "🌧️", 63: "🌧️", 65: "🌧️",
                 71: "❄️", 73: "❄️", 75: "❄️",
-                80: "🌧️", 81: "🌧️", 82: "🌧️",
+                80: "🌦️", 81: "🌧️", 82: "🌧️",
                 95: "⛈️", 96: "⛈️", 99: "⛈️"
             };
             return icons[weatherCode] || "🌡️";
@@ -463,163 +356,213 @@
 
         function getWeatherDescription(code) {
             const descriptions = {
-                0: "Ciel dégagé", 1: "Principalement dégagé", 2: "Partiellement nuageux", 3: "Nuageux",
-                45: "Brouillard", 48: "Brouillard givrant",
-                51: "Bruine légère", 53: "Bruine modérée", 55: "Bruine dense",
+                0: "Ensoleillé", 1: "Peu nuageux", 2: "Partiellement nuageux", 3: "Nuageux",
+                45: "Brouillard", 48: "Brouillard", 51: "Bruine", 53: "Bruine", 55: "Bruine",
                 61: "Pluie légère", 63: "Pluie modérée", 65: "Pluie forte",
-                71: "Neige légère", 73: "Neige modérée", 75: "Neige forte",
-                80: "Averses légères", 81: "Averses modérées", 82: "Averses fortes",
-                95: "Orage", 96: "Orage avec grêle légère", 99: "Orage avec grêle forte"
+                71: "Neige légère", 73: "Neige", 75: "Neige forte",
+                80: "Averses", 81: "Averses", 82: "Averses fortes",
+                95: "Orage", 96: "Orage", 99: "Orage"
             };
             return descriptions[code] || "Variable";
         }
 
-        function updateWeatherUI(cityName, country, data) {
-            const current = data.current;
-            const weatherCode = current.weather_code;
-            
-            document.getElementById('cityName').textContent = cityName;
-            document.getElementById('country').textContent = country || "France";
-            document.getElementById('temperature').innerHTML = `${Math.round(current.temperature_2m)}°`;
-            document.getElementById('conditionIcon').textContent = getWeatherIcon(weatherCode);
-            document.getElementById('conditionText').textContent = getWeatherDescription(weatherCode);
-            document.getElementById('humidity').textContent = `${current.relative_humidity_2m}%`;
-            document.getElementById('wind').textContent = `${Math.round(current.wind_speed_10m)} km/h`;
-            document.getElementById('feelsLike').textContent = `${Math.round(current.apparent_temperature)}°`;
+        async function fetchWeather(city) {
+            try {
+                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`;
+                const geoResponse = await fetch(geoUrl);
+                const geoData = await geoResponse.json();
+
+                if (!geoData.results || geoData.results.length === 0) {
+                    return null;
+                }
+
+                const location = geoData.results[0];
+                const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&timezone=auto&forecast_hours=24`;
+                const weatherResponse = await fetch(weatherUrl);
+                const weatherData = await weatherResponse.json();
+
+                return {
+                    name: location.name,
+                    country: location.country || "France",
+                    temp: Math.round(weatherData.current.temperature_2m),
+                    condition: getWeatherDescription(weatherData.current.weather_code),
+                    icon: getWeatherIcon(weatherData.current.weather_code),
+                    humidity: weatherData.current.relative_humidity_2m,
+                    feelsLike: Math.round(weatherData.current.apparent_temperature),
+                    wind: Math.round(weatherData.current.wind_speed_10m),
+                    hourly: weatherData.hourly
+                };
+            } catch (error) {
+                console.error("Erreur:", error);
+                return null;
+            }
         }
 
-        function updateForecastUI(data) {
-            const forecastList = document.getElementById('forecastList');
-            const daily = data.daily;
+        async function loadAllWeather() {
+            const citiesList = document.getElementById('recentCities');
+            citiesList.innerHTML = '<div class="loading">Chargement des villes...</div>';
             
-            const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-            const today = new Date();
+            const weatherPromises = recentCities.map(city => fetchWeather(city));
+            const weatherResults = await Promise.all(weatherPromises);
             
-            forecastList.innerHTML = '';
+            citiesList.innerHTML = '';
             
-            for (let i = 0; i < daily.time.length; i++) {
-                const date = new Date(daily.time[i]);
-                const dayName = i === 0 ? 'Auj.' : days[date.getDay()];
-                const maxTemp = Math.round(daily.temperature_2m_max[i]);
-                const minTemp = Math.round(daily.temperature_2m_min[i]);
-                const icon = getWeatherIcon(daily.weather_code[i]);
+            weatherResults.forEach((weather, index) => {
+                if (weather) {
+                    const div = document.createElement('div');
+                    div.className = 'city-item';
+                    div.onclick = () => showDetailView(recentCities[index]);
+                    div.innerHTML = `
+                        <div class="city-info">
+                            <h3>${weather.name}</h3>
+                            <p>${weather.condition}</p>
+                        </div>
+                        <div class="city-temp">${weather.temp}°</div>
+                    `;
+                    citiesList.appendChild(div);
+                }
+            });
+            
+            // Charger les villes à proximité
+            await loadNearbyCities();
+            
+            // Charger les prévisions horaires par défaut pour Menton
+            const defaultWeather = await fetchWeather('Menton');
+            if (defaultWeather) {
+                loadHourlyForecast(defaultWeather);
+            }
+        }
+        
+        async function loadNearbyCities() {
+            const nearbyList = ['Monaco', 'Nice', 'Cannes', 'Saint-Tropez'];
+            const nearbyGrid = document.getElementById('nearbyCities');
+            nearbyGrid.innerHTML = '';
+            
+            for (const city of nearbyList) {
+                const weather = await fetchWeather(city);
+                if (weather) {
+                    const card = document.createElement('div');
+                    card.className = 'nearby-card';
+                    card.onclick = () => showDetailView(city);
+                    card.innerHTML = `
+                        <div class="city">${weather.name}</div>
+                        <div class="temp">${weather.temp}°</div>
+                        <div class="condition">${weather.condition}</div>
+                    `;
+                    nearbyGrid.appendChild(card);
+                }
+            }
+        }
+        
+        function loadHourlyForecast(weather) {
+            const hourlyScroll = document.getElementById('hourlyForecast');
+            hourlyScroll.innerHTML = '';
+            
+            const now = new Date();
+            const currentHour = now.getHours();
+            
+            for (let i = 0; i < 12; i++) {
+                const hourIndex = (currentHour + i) % 24;
+                let hourLabel = '';
+                if (i === 0) hourLabel = 'Maintenant';
+                else if (hourIndex === 0) hourLabel = '0h';
+                else if (hourIndex < 12) hourLabel = `${hourIndex}h`;
+                else hourLabel = `${hourIndex}h`;
+                
+                const temp = Math.round(weather.hourly.temperature_2m[hourIndex]);
+                const icon = getWeatherIcon(weather.hourly.weather_code[hourIndex]);
                 
                 const item = document.createElement('div');
-                item.className = 'forecast-item';
+                item.className = 'hourly-item';
                 item.innerHTML = `
-                    <div class="forecast-time">${dayName}</div>
-                    <div style="font-size: 1.5rem; margin: 5px 0;">${icon}</div>
-                    <div class="forecast-temp">${maxTemp}°</div>
-                    <div style="font-size: 0.7rem; opacity: 0.7;">${minTemp}°</div>
+                    <div class="hourly-time">${hourLabel}</div>
+                    <div class="hourly-icon">${icon}</div>
+                    <div class="hourly-temp">${temp}°</div>
                 `;
-                forecastList.appendChild(item);
+                hourlyScroll.appendChild(item);
             }
         }
-
-        function showLoading() {
-            document.getElementById('temperature').innerHTML = '<div class="loading"></div>';
-            document.getElementById('conditionText').innerHTML = 'Chargement...';
+        
+        async function showDetailView(city) {
+            const listView = document.getElementById('listView');
+            const detailView = document.getElementById('detailView');
+            const backButton = document.getElementById('backButton');
+            
+            detailView.innerHTML = '<div class="loading">Chargement...</div>';
+            listView.style.display = 'none';
+            detailView.classList.add('active');
+            backButton.classList.add('active');
+            
+            const weather = await fetchWeather(city);
+            
+            if (weather) {
+                detailView.innerHTML = `
+                    <div class="detail-city">${weather.name}</div>
+                    <div class="detail-condition">${weather.condition}</div>
+                    <div class="detail-temp">${weather.temp}°</div>
+                    <div style="font-size: 48px; margin: 10px 0;">${weather.icon}</div>
+                    <div class="detail-stats">
+                        <div class="stat">
+                            <div class="stat-label">Humidité</div>
+                            <div class="stat-value">${weather.humidity}%</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Ressenti</div>
+                            <div class="stat-value">${weather.feelsLike}°</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Vent</div>
+                            <div class="stat-value">${weather.wind} km/h</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                detailView.innerHTML = '<div class="loading">Ville non trouvée</div>';
+            }
+            
+            currentView = 'detail';
         }
-
-        function addMessage(type, content) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            messageDiv.innerHTML = type === 'ai' ? `🤖 ${content}` : `👤 ${content}`;
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        
+        function showListView() {
+            const listView = document.getElementById('listView');
+            const detailView = document.getElementById('detailView');
+            const backButton = document.getElementById('backButton');
+            
+            listView.style.display = 'block';
+            detailView.classList.remove('active');
+            backButton.classList.remove('active');
+            currentView = 'list';
         }
-
-        function addAIAutoMessage(cityName, weatherData) {
-            const current = weatherData.current;
-            const temp = Math.round(current.temperature_2m);
-            const condition = getWeatherDescription(current.weather_code);
-            const rain = current.weather_code >= 51 && current.weather_code <= 82;
+        
+        async function searchCity() {
+            const input = document.getElementById('searchInput');
+            const city = input.value.trim();
+            if (!city) return;
             
-            let advice = "";
-            if (temp > 25) advice = "🌞 Il fait chaud ! Pensez à vous hydrater et à porter un chapeau.";
-            else if (temp < 10) advice = "🧥 Il fait froid ! N'oubliez pas votre manteau.";
-            else advice = "🍃 Température agréable, parfait pour sortir !";
+            await showDetailView(city);
             
-            if (rain) advice += " ☔ N'oubliez pas votre parapluie, des précipitations sont prévues.";
+            if (!recentCities.includes(city)) {
+                recentCities.unshift(city);
+                if (recentCities.length > 5) recentCities.pop();
+            }
             
-            addMessage("ai", `Voici la météo à ${cityName} : ${temp}°C, ${condition}. ${advice}`);
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const question = input.value.trim();
-            if (!question) return;
-            
-            addMessage("user", question);
             input.value = '';
+        }
+        
+        // Initialiser avec les données de Menton comme dans l'image
+        async function init() {
+            await loadAllWeather();
             
-            // Simuler la réponse IA
+            // Simuler les données spécifiques de l'image pour Menton
             setTimeout(() => {
-                const answer = generateAIResponse(question);
-                addMessage("ai", answer);
-            }, 500);
+                const mentonItem = document.querySelector('.city-item');
+                if (mention) {
+                    // Les données réelles viendront de l'API
+                }
+            }, 1000);
         }
-
-        function askQuestion(question) {
-            document.getElementById('chatInput').value = question;
-            sendMessage();
-        }
-
-        function generateAIResponse(question) {
-            if (!currentWeatherData) {
-                return "🔍 Veuillez d'abord rechercher une ville pour que je puisse vous donner des informations météo précises.";
-            }
-            
-            const q = question.toLowerCase();
-            const current = currentWeatherData.current;
-            const daily = currentWeatherData.daily;
-            const temp = Math.round(current.temperature_2m);
-            const condition = getWeatherDescription(current.weather_code);
-            
-            if (q.includes('demain') || q.includes('prochain')) {
-                const tomorrowTemp = Math.round(daily.temperature_2m_max[1]);
-                const tomorrowCond = getWeatherDescription(daily.weather_code[1]);
-                return `📅 Demain : ${tomorrowTemp}°C, ${tomorrowCond}. ${tomorrowTemp > 20 ? "Belle journée en perspective !" : "Prévoyez une veste."}`;
-            }
-            
-            if (q.includes('parapluie') || q.includes('pluie')) {
-                const willRain = daily.weather_code.slice(0, 3).some(code => code >= 51 && code <= 82);
-                return willRain ? "☔ Oui, des précipitations sont prévues dans les prochains jours. Mieux vaut prendre un parapluie !" : "🌤️ Non, aucun risque de pluie dans les prochains jours. Bonne nouvelle !";
-            }
-            
-            if (q.includes('chaud') || q.includes('température') && q.includes('plus')) {
-                const maxTemp = Math.max(...daily.temperature_2m_max);
-                const maxDay = daily.temperature_2m_max.indexOf(maxTemp);
-                const days = ['aujourd\'hui', 'demain', 'après-demain', 'dans 3 jours', 'dans 4 jours'];
-                return `🔥 La température la plus élevée sera de ${Math.round(maxTemp)}°C ${days[maxDay] || 'cette semaine'}.`;
-            }
-            
-            if (q.includes('tenue') || q.includes('vêtement') || q.includes('habiller')) {
-                if (temp > 25) return "👕 Tenue légère recommandée : short, t-shirt, chapeau et crème solaire. N'oubliez pas l'eau !";
-                if (temp > 15) return "👖 Tenue confortable : pantalon léger, t-shirt et peut-être une veste fine pour le soir.";
-                if (temp > 5) return "🧥 Il fait frais : pull, veste et écharpe légère recommandés.";
-                return "🧣❄️ Il fait froid ! Manteau chaud, écharpe, gants et bonnet sont indispensables.";
-            }
-            
-            if (q.includes('ce soir') || q.includes('soirée')) {
-                return `🌙 Ce soir, les températures descendront vers ${Math.round(current.apparent_temperature - 3)}°C. ${temp < 12 ? "Prévoyez un vêtement chaud !" : "Soirée agréable !"}`;
-            }
-            
-            // Réponse par défaut
-            const responses = [
-                `🌡️ Actuellement à ${currentCity} : ${temp}°C, ${condition}. Humidité : ${current.relative_humidity_2m}%.`,
-                `💨 Le vent souffle à ${Math.round(current.wind_speed_10m)} km/h. ${current.wind_speed_10m > 20 ? "Attention aux rafales !" : "Brise agréable."}`,
-                `📊 La température ressentie est de ${Math.round(current.apparent_temperature)}°C. ${Math.abs(temp - current.apparent_temperature) > 2 ? "L'écart est dû à l'humidité et au vent." : ""}`,
-                `🎯 Pour plus d'infos, demandez-moi "Demain ?", "Parapluie ?" ou "Tenue vestimentaire ?"`
-            ];
-            return responses[Math.floor(Math.random() * responses.length)];
-        }
-
-        // Chargement automatique au démarrage
-        window.onload = () => {
-            getWeather();
-        };
+        
+        init();
     </script>
 </body>
 </html>
