@@ -778,19 +778,30 @@ function renderWeather(data,aqi,city){
     // Alerte
     renderAlert(c,dd);
 
-    // Horaire 48h
+    // Horaire 48h — commencer à l'heure actuelle
     var hs=$('hourlyScroll'); hs.innerHTML='';
-    for(var i=0;i<Math.min(48,hh.time.length);i++){
+    // Trouver l'index de l'heure actuelle dans les données horaires
+    var nowISO = new Date().toISOString().slice(0,13); // ex: "2026-05-22T14"
+    var startIdx = 0;
+    for(var s=0; s<hh.time.length; s++){
+        if(hh.time[s] && hh.time[s].slice(0,13) === nowISO){
+            startIdx = s;
+            break;
+        }
+    }
+    var count=0;
+    for(var i=startIdx; i<hh.time.length && count<48; i++){
         if(!hh.time[i]) break;
         var hi=getWeatherInfo(hh.weather_code[i],hh.is_day[i]);
         var it=document.createElement('div'); it.className='hour-item';
-        if(i===0) it.classList.add('hour-now');
+        if(i===startIdx) it.classList.add('hour-now');
         var pp=hh.precipitation_probability[i]||0;
-        it.innerHTML='<div class="hour-time" style="'+(i===0?'font-weight:700;opacity:1;':'')+'">'+( i===0?'Maint.':extractTime(hh.time[i]))+'</div>'
+        it.innerHTML='<div class="hour-time" style="'+(i===startIdx?'font-weight:700;opacity:1;':'')+'">'+( i===startIdx?'Maint.':extractTime(hh.time[i]))+'</div>'
             +'<div class="hour-icon">'+(WX[hi.icon]||WX.cloudy)+'</div>'
             +'<div class="hour-temp">'+Math.round(hh.temperature_2m[i])+'°</div>'
             +(pp>10?'<div class="hour-precip">'+pp+'%</div>':'');
         hs.appendChild(it);
+        count++;
     }
 
     // Graphique précipitations 7j
@@ -876,7 +887,7 @@ function renderWeather(data,aqi,city){
     $('sunriseTime').textContent=sr;
     $('sunsetTime').textContent=ss;
     var srH=extractHour(dd.sunrise[0]), ssH=extractHour(dd.sunset[0]);
-    var nowH=extractHour(hh.time[0]);
+    var nowH=new Date().getHours();
     var sp=nowH>srH&&nowH<ssH?((nowH-srH)/(ssH-srH))*100:nowH>=ssH?100:0;
     $('sunDot').style.left=sp+'%';
     $('sunDot').style.bottom=Math.max(-1,Math.sin((sp/100)*Math.PI)*38-1)+'px';
