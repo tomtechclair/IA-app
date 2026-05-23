@@ -596,19 +596,16 @@ function renderWeather(data,aqi,city){
     var startIdx=0;
     for(var s=0;s<hh.time.length;s++){if(hh.time[s]&&hh.time[s].slice(0,13)===nowLocalStr){startIdx=s;break;}}
     
-    // ---- Hourly summary (condition changes in next hours) ----
+    // ---- Hourly summary (short condition phrase) ----
     var summaryEl=$('hourlySummary');
     if(summaryEl){
-        var summaries=[];var lastDesc='';
-        for(var j=startIdx;j<Math.min(startIdx+12,hh.time.length);j++){
+        var curDesc=wi.desc;
+        var nextChange='';
+        for(var j=startIdx+1;j<Math.min(startIdx+12,hh.time.length);j++){
             var hInfo=getWeatherInfo(hh.weather_code[j],hh.is_day[j]);
-            if(hInfo.desc!==lastDesc){
-                var tStr=j===startIdx?'Maint.':extractTime(hh.time[j]);
-                summaries.push(hInfo.desc+' dès '+tStr);
-                lastDesc=hInfo.desc;
-            }
+            if(hInfo.desc!==curDesc){nextChange=hInfo.desc+' vers '+extractTime(hh.time[j]);break;}
         }
-        summaryEl.textContent=summaries.length?summaries.join('. ')+'.':wi.desc;
+        summaryEl.textContent=nextChange?curDesc+', puis '+nextChange:curDesc;
     }
     
     var hourlyTemps=[];
