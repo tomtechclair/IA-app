@@ -18,7 +18,8 @@
             --text-tertiary:rgba(255,255,255,0.35);
             --blue:#64D2FF;--green:#30D158;--yellow:#FFD60A;--orange:#FF9F0A;--red:#FF453A;
         }
-        html{scroll-behavior:smooth;}
+        html{scroll-behavior:smooth;scrollbar-width:none;}
+        html::-webkit-scrollbar{width:0;height:0;}
         body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',sans-serif;color:var(--text-primary);overflow-x:hidden;min-height:100vh;background:#000;}
 
         /* ===== DYNAMIC BG ===== */
@@ -237,8 +238,6 @@
         /* ===== FOOTER ===== */
         .app-footer{text-align:center;padding:20px 0 10px;color:rgba(255,255,255,0.2);font-size:11px;}
         .app-footer a{color:rgba(255,255,255,0.3);text-decoration:none;}
-
-        ::-webkit-scrollbar{width:0;height:0;}
     </style>
 </head>
 <body>
