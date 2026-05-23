@@ -61,12 +61,16 @@
         .search-section{padding-top:54px;margin-bottom:20px;position:relative;}
         .search-box{position:relative;background:rgba(255,255,255,0.10);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);border-radius:14px;border:1px solid rgba(255,255,255,0.12);transition:all .3s ease;}
         .search-box:focus-within{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.3);}
-        .search-input{width:100%;padding:12px 88px 12px 16px;background:transparent;border:none;color:white;font-size:17px;font-family:inherit;outline:none;}
+        .search-input{width:100%;padding:12px 120px 12px 16px;background:transparent;border:none;color:white;font-size:17px;font-family:inherit;outline:none;}
         .search-input::placeholder{color:rgba(255,255,255,0.35);}
         .search-btn,.settings-btn{position:absolute;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.5);width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease;}
         .search-btn:hover,.settings-btn:hover{color:white;background:rgba(255,255,255,0.1);}
-        .search-btn{right:6px;}.settings-btn{right:42px;}
-        .search-btn svg,.settings-btn svg{width:17px;height:17px;}
+        .search-btn{right:6px;}.voice-btn{right:42px;}.settings-btn{right:78px;}
+        .search-btn svg,.settings-btn svg,.voice-btn svg{width:17px;height:17px;}
+        .voice-btn{position:absolute;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.5);width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease;}
+        .voice-btn:hover{color:white;background:rgba(255,255,255,0.1);}
+        .voice-btn.listening{color:#FF453A;background:rgba(255,69,58,0.15);animation:voicePulse 1.2s ease infinite;}
+        @keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(255,69,58,0.35);}50%{box-shadow:0 0 0 10px rgba(255,69,58,0);}}
         .search-results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(20,20,30,0.95);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border-radius:14px;max-height:280px;overflow-y:auto;display:none;z-index:200;border:1px solid rgba(255,255,255,0.08);box-shadow:0 20px 60px rgba(0,0,0,0.5);}
         .search-results.active{display:block;animation:fadeDown .2s ease;}
         @keyframes fadeDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
@@ -260,6 +264,9 @@
                 <input type="text" id="searchInput" class="search-input" placeholder="Rechercher une ville…" autocomplete="off">
                 <button class="settings-btn" id="settingsBtn" title="Paramètres">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
+                <button class="voice-btn" id="voiceBtn" title="Recherche vocale">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                 </button>
                 <button class="search-btn" id="searchBtn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -860,6 +867,41 @@ function renderAlert(c,dd){
     else if(wc===45||wc===48){title='Brouillard';desc='Visibilité réduite — prudence sur la route.';icon='🌫';}
     if(title){$('alertIcon').textContent=icon;$('alertTitle').textContent=title;$('alertDesc').textContent=desc;card.classList.add('visible');}else{card.classList.remove('visible');}
 }
+
+// ---- Voice Search ----
+(function setupVoiceSearch(){
+    var VoiceRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!VoiceRecognition) return;
+    var recognizer = new VoiceRecognition();
+    recognizer.lang = 'fr-FR';
+    recognizer.interimResults = false;
+    recognizer.maxAlternatives = 1;
+    var voiceBtn = $('voiceBtn');
+    if(!voiceBtn) return;
+    voiceBtn.addEventListener('click', function(){
+        if(voiceBtn.classList.contains('listening')){
+            recognizer.stop();
+            voiceBtn.classList.remove('listening');
+        } else {
+            try{ recognizer.start(); voiceBtn.classList.add('listening'); }
+            catch(e){ showToast('Micro indisponible'); }
+        }
+    });
+    recognizer.onresult = function(event){
+        var transcript = event.results[0][0].transcript;
+        $('searchInput').value = transcript;
+        voiceBtn.classList.remove('listening');
+        if(transcript.trim().length >= 2) searchCities(transcript.trim());
+    };
+    recognizer.onerror = function(event){
+        voiceBtn.classList.remove('listening');
+        if(event.error === 'no-speech') showToast('Aucune parole détectée');
+        else if(event.error === 'audio-capture') showToast('Micro non accessible');
+        else if(event.error === 'not-allowed') showToast('Autorisez l\'accès au micro');
+        else showToast('Erreur vocale');
+    };
+    recognizer.onend = function(){ voiceBtn.classList.remove('listening'); };
+})();
 
 // ---- Start ----
 switchRadar('pluie');
