@@ -1,568 +1,173 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Météo</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', Helvetica, Arial, sans-serif;
-            background: #0a0a0a;
-            color: white;
-        }
-
-        /* Barre de statut iOS */
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 20px 8px 20px;
-            font-size: 15px;
-            font-weight: 590;
-            background: #0a0a0a;
-            color: white;
-        }
-
-        /* Header principal */
-        .main-header {
-            padding: 8px 20px 16px 20px;
-            background: #0a0a0a;
-        }
-
-        .main-header h1 {
-            font-size: 36px;
-            font-weight: 610;
-            letter-spacing: -0.5px;
-        }
-
-        /* Barre de recherche */
-        .search-bar {
-            background: #1c1c1e;
-            margin: 12px 20px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .search-bar span {
-            color: #8e8e93;
-            font-size: 16px;
-        }
-
-        .search-bar input {
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 16px;
-            flex: 1;
-            outline: none;
-        }
-
-        .search-bar input::placeholder {
-            color: #8e8e93;
-        }
-
-        /* Liste des villes récentes */
-        .cities-list {
-            padding: 8px 20px;
-        }
-
-        .city-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 0;
-            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .city-item:active {
-            opacity: 0.6;
-        }
-
-        .city-info h3 {
-            font-size: 20px;
-            font-weight: 590;
-            margin-bottom: 4px;
-        }
-
-        .city-info p {
-            font-size: 14px;
-            color: #8e8e93;
-        }
-
-        .city-temp {
-            font-size: 28px;
-            font-weight: 400;
-        }
-
-        /* Section "À proximité" */
-        .nearby-section {
-            padding: 24px 20px 16px 20px;
-        }
-
-        .nearby-section h4 {
-            font-size: 20px;
-            font-weight: 590;
-            margin-bottom: 16px;
-        }
-
-        .nearby-grid {
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-
-        .nearby-grid::-webkit-scrollbar {
-            display: none;
-        }
-
-        .nearby-card {
-            background: #1c1c1e;
-            border-radius: 20px;
-            padding: 16px;
-            min-width: 140px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .nearby-card:active {
-            opacity: 0.6;
-        }
-
-        .nearby-card .city {
-            font-size: 18px;
-            font-weight: 590;
-            margin-bottom: 8px;
-        }
-
-        .nearby-card .temp {
-            font-size: 36px;
-            font-weight: 400;
-            margin-bottom: 4px;
-        }
-
-        .nearby-card .condition {
-            font-size: 13px;
-            color: #8e8e93;
-        }
-
-        /* Prévisions horaires */
-        .hourly-section {
-            padding: 24px 20px;
-        }
-
-        .hourly-section h4 {
-            font-size: 20px;
-            font-weight: 590;
-            margin-bottom: 16px;
-        }
-
-        .hourly-scroll {
-            display: flex;
-            gap: 24px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-
-        .hourly-scroll::-webkit-scrollbar {
-            display: none;
-        }
-
-        .hourly-item {
-            text-align: center;
-            min-width: 55px;
-        }
-
-        .hourly-time {
-            font-size: 14px;
-            color: #8e8e93;
-            margin-bottom: 12px;
-        }
-
-        .hourly-icon {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .hourly-temp {
-            font-size: 18px;
-            font-weight: 500;
-        }
-
-        /* Carte détaillée de la ville sélectionnée */
-        .detail-card {
-            background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%);
-            margin: 20px;
-            border-radius: 24px;
-            padding: 28px 24px;
-            display: none;
-        }
-
-        .detail-card.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .detail-city {
-            font-size: 34px;
-            font-weight: 610;
-            margin-bottom: 8px;
-        }
-
-        .detail-temp {
-            font-size: 72px;
-            font-weight: 300;
-            margin: 16px 0 8px 0;
-        }
-
-        .detail-condition {
-            font-size: 20px;
-            color: #8e8e93;
-            margin-bottom: 24px;
-        }
-
-        .detail-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 0.5px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #8e8e93;
-            margin-bottom: 6px;
-        }
-
-        .stat-value {
-            font-size: 16px;
-            font-weight: 590;
-        }
-
-        .back-button {
-            background: none;
-            border: none;
-            color: #0a84ff;
-            font-size: 17px;
-            margin: 12px 20px 0 20px;
-            cursor: pointer;
-            display: none;
-        }
-
-        .back-button.active {
-            display: block;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #8e8e93;
-        }
-
-        /* Animation chargement */
-        @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
-
-        .loading-dots span {
-            animation: pulse 1.4s ease-in-out infinite;
-            display: inline-block;
-        }
-
-        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Météo iOS</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="status-bar">
-        <span>15:26</span>
-        <span>📶 🔋 100%</span>
-    </div>
 
-    <div class="main-header">
-        <h1>Météo</h1>
-    </div>
+  <div id="app-container">
+    
+    <!-- ================= VUE 1 : LISTE DES VILLES (SOMBRE) ================= -->
+    <div id="list-screen" class="screen active">
+      <header class="list-header">
+        <div class="header-top">
+          <h1>Météo</h1>
+          <button class="menu-btn">•••</button>
+        </div>
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Ville ou aéroport">
+          <span class="mic-icon">🎙️</span>
+        </div>
+      </header>
 
-    <div class="search-bar">
-        <span>🔍</span>
-        <input type="text" id="searchInput" placeholder="Ville ou aéroport" onkeypress="if(event.key==='Enter') searchCity()">
-    </div>
-
-    <!-- Vue liste -->
-    <div id="listView">
-        <div class="cities-list" id="recentCities">
-            <div class="loading"><span class="loading-dots">Chargement<span>.</span><span>.</span><span>.</span></span></div>
+      <main class="cards-container">
+        <!-- Carte Menton -->
+        <div class="weather-card menton-card" onclick="showDetail('menton')">
+          <div class="card-left">
+            <span class="city-name">Menton</span>
+            <span class="city-time">15:25 • Domicile</span>
+            <span class="weather-condition">Belles éclaircies</span>
+          </div>
+          <div class="card-right">
+            <span class="current-temp">24°</span>
+            <span class="temp-range">↑ 25°  ↓ 17°</span>
+          </div>
         </div>
 
-        <div class="nearby-section">
-            <h4>À proximité</h4>
-            <div class="nearby-grid" id="nearbyCities">
-                <div class="loading">Chargement...</div>
+        <!-- Carte Monaco -->
+        <div class="weather-card monaco-card" onclick="showDetail('monaco')">
+          <div class="card-left">
+            <span class="city-name">Monaco</span>
+            <span class="city-time">15:25 • Bureau</span>
+            <span class="weather-condition">Ensoleillé</span>
+          </div>
+          <div class="card-right">
+            <span class="current-temp">25°</span>
+            <span class="temp-range">↑ 25°  ↓ 18°</span>
+          </div>
+        </div>
+
+        <!-- Carte Phare Le Mean Ruz -->
+        <div class="weather-card ruz-card" onclick="showDetail('ruz')">
+          <div class="card-left">
+            <span class="city-name">Phare Le Mean Ruz</span>
+            <span class="city-time">15:26 • Perros-Guirec</span>
+            <span class="weather-condition">Brumeux</span>
+          </div>
+          <div class="card-right">
+            <span class="current-temp">20°</span>
+            <span class="temp-range">↑ 20°  ↓ 15°</span>
+          </div>
+        </div>
+
+        <!-- Carte Cardan -->
+        <div class="weather-card cardan-card" onclick="showDetail('cardan')">
+          <div class="card-left">
+            <span class="city-name">Cardan</span>
+            <span class="city-time">15:25</span>
+            <span class="weather-condition">Ensoleillé</span>
+          </div>
+          <div class="card-right">
+            <span class="current-temp">26°</span>
+            <span class="temp-range">↑ 28°  ↓ 11°</span>
+          </div>
+        </div>
+      </main>
+      
+      <footer class="list-footer">
+        <p>En savoir plus sur les <a href="#">données météo</a> et les <a href="#">données de pluie</a>.</p>
+      </footer>
+    </div>
+
+    <!-- ================= VUE 2 : DÉTAIL D'UNE VILLE (BLEU DYNAMIQUE) ================= -->
+    <div id="detail-screen" class="screen">
+      <div class="detail-scroll-container">
+        
+        <header class="detail-header">
+          <span class="location-type" id="detail-loc-type">🏠 DOMICILE</span>
+          <h2 class="detail-city" id="detail-city-name">Menton</h2>
+          <span class="detail-temp" id="detail-current-temp">24°</span>
+          <span class="detail-desc" id="detail-condition">Belles éclaircies</span>
+          <span class="detail-range" id="detail-temp-range">↑ 25°  ↓ 17°</span>
+        </header>
+
+        <!-- Panneau Qualité de l'Air -->
+        <section class="glass-panel air-quality">
+          <span class="panel-tag">🍃 QUALITÉ DE L'AIR</span>
+          <h3 class="aqi-status">Dégradée</h3>
+          <div class="aqi-bar">
+            <div class="aqi-indicator" style="left: 45%;"></div>
+          </div>
+          <p class="aqi-desc">La qualité de l'air est la même qu'hier à peu près à la même heure.</p>
+        </section>
+
+        <!-- Panneau Prévisions Heures -->
+        <section class="glass-panel hourly-forecast">
+          <span class="panel-tag">🕒 PRÉVISIONS HEURE PAR HEURE</span>
+          <div class="hourly-scroll">
+            <div class="hour-col">
+              <span>Maint.</span>
+              <span class="weather-icon">🌤️</span>
+              <span class="hour-temp">24°</span>
             </div>
-        </div>
-
-        <div class="hourly-section">
-            <h4>Prévisions horaires</h4>
-            <div class="hourly-scroll" id="hourlyForecast">
-                <div class="loading">Chargement...</div>
+            <div class="hour-col">
+              <span>16 h</span>
+              <span class="weather-icon">🌤️</span>
+              <span class="hour-temp">24°</span>
             </div>
+            <div class="hour-col">
+              <span>17 h</span>
+              <span class="weather-icon">🌤️</span>
+              <span class="hour-temp">24°</span>
+            </div>
+            <div class="hour-col">
+              <span>18 h</span>
+              <span class="weather-icon">☁️</span>
+              <span class="hour-temp">24°</span>
+            </div>
+            <div class="hour-col">
+              <span>19 h</span>
+              <span class="weather-icon">☁️</span>
+              <span class="hour-temp">23°</span>
+            </div>
+            <div class="hour-col">
+              <span>20 h</span>
+              <span class="weather-icon">☁️</span>
+              <span class="hour-temp">22°</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Panneau Carte -->
+        <section class="glass-panel map-panel">
+          <span class="panel-tag">🗺️ CARTE QUALITÉ DE L'AIR</span>
+          <div class="mock-map">
+            <div class="map-label label-1">Lantosque</div>
+            <div class="map-label label-2">Sospel</div>
+            <div class="map-label label-3">Dolceacqua</div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Barre de navigation fixe en bas -->
+      <footer class="detail-nav">
+        <button class="nav-icon-btn">🗺️</button>
+        <div class="page-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
         </div>
+        <button class="nav-icon-btn" onclick="showList()">☰</button>
+      </footer>
     </div>
 
-    <!-- Vue détail -->
-    <button class="back-button" id="backButton" onclick="showListView()">← Retour</button>
-    <div id="detailView" class="detail-card"></div>
+  </div>
 
-    <script>
-        // Configuration
-        let currentWeatherData = {};
-        let recentCities = ['Menton', 'Monaco', 'Nice', 'Cannes'];
-        let currentView = 'list';
-
-        // Icônes météo simplifiées
-        function getWeatherIcon(weatherCode, isDay = true) {
-            const icons = {
-                0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
-                45: "🌫️", 48: "🌫️",
-                51: "🌧️", 53: "🌧️", 55: "🌧️",
-                61: "🌧️", 63: "🌧️", 65: "🌧️",
-                71: "❄️", 73: "❄️", 75: "❄️",
-                80: "🌦️", 81: "🌧️", 82: "🌧️",
-                95: "⛈️", 96: "⛈️", 99: "⛈️"
-            };
-            return icons[weatherCode] || "🌡️";
-        }
-
-        function getWeatherDescription(code) {
-            const descriptions = {
-                0: "Ensoleillé", 1: "Peu nuageux", 2: "Partiellement nuageux", 3: "Nuageux",
-                45: "Brouillard", 48: "Brouillard", 51: "Bruine", 53: "Bruine", 55: "Bruine",
-                61: "Pluie légère", 63: "Pluie modérée", 65: "Pluie forte",
-                71: "Neige légère", 73: "Neige", 75: "Neige forte",
-                80: "Averses", 81: "Averses", 82: "Averses fortes",
-                95: "Orage", 96: "Orage", 99: "Orage"
-            };
-            return descriptions[code] || "Variable";
-        }
-
-        async function fetchWeather(city) {
-            try {
-                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`;
-                const geoResponse = await fetch(geoUrl);
-                const geoData = await geoResponse.json();
-
-                if (!geoData.results || geoData.results.length === 0) {
-                    return null;
-                }
-
-                const location = geoData.results[0];
-                const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&timezone=auto&forecast_hours=24`;
-                const weatherResponse = await fetch(weatherUrl);
-                const weatherData = await weatherResponse.json();
-
-                return {
-                    name: location.name,
-                    country: location.country || "France",
-                    temp: Math.round(weatherData.current.temperature_2m),
-                    condition: getWeatherDescription(weatherData.current.weather_code),
-                    icon: getWeatherIcon(weatherData.current.weather_code),
-                    humidity: weatherData.current.relative_humidity_2m,
-                    feelsLike: Math.round(weatherData.current.apparent_temperature),
-                    wind: Math.round(weatherData.current.wind_speed_10m),
-                    hourly: weatherData.hourly
-                };
-            } catch (error) {
-                console.error("Erreur:", error);
-                return null;
-            }
-        }
-
-        async function loadAllWeather() {
-            const citiesList = document.getElementById('recentCities');
-            citiesList.innerHTML = '<div class="loading">Chargement des villes...</div>';
-            
-            const weatherPromises = recentCities.map(city => fetchWeather(city));
-            const weatherResults = await Promise.all(weatherPromises);
-            
-            citiesList.innerHTML = '';
-            
-            weatherResults.forEach((weather, index) => {
-                if (weather) {
-                    const div = document.createElement('div');
-                    div.className = 'city-item';
-                    div.onclick = () => showDetailView(recentCities[index]);
-                    div.innerHTML = `
-                        <div class="city-info">
-                            <h3>${weather.name}</h3>
-                            <p>${weather.condition}</p>
-                        </div>
-                        <div class="city-temp">${weather.temp}°</div>
-                    `;
-                    citiesList.appendChild(div);
-                }
-            });
-            
-            // Charger les villes à proximité
-            await loadNearbyCities();
-            
-            // Charger les prévisions horaires par défaut pour Menton
-            const defaultWeather = await fetchWeather('Menton');
-            if (defaultWeather) {
-                loadHourlyForecast(defaultWeather);
-            }
-        }
-        
-        async function loadNearbyCities() {
-            const nearbyList = ['Monaco', 'Nice', 'Cannes', 'Saint-Tropez'];
-            const nearbyGrid = document.getElementById('nearbyCities');
-            nearbyGrid.innerHTML = '';
-            
-            for (const city of nearbyList) {
-                const weather = await fetchWeather(city);
-                if (weather) {
-                    const card = document.createElement('div');
-                    card.className = 'nearby-card';
-                    card.onclick = () => showDetailView(city);
-                    card.innerHTML = `
-                        <div class="city">${weather.name}</div>
-                        <div class="temp">${weather.temp}°</div>
-                        <div class="condition">${weather.condition}</div>
-                    `;
-                    nearbyGrid.appendChild(card);
-                }
-            }
-        }
-        
-        function loadHourlyForecast(weather) {
-            const hourlyScroll = document.getElementById('hourlyForecast');
-            hourlyScroll.innerHTML = '';
-            
-            const now = new Date();
-            const currentHour = now.getHours();
-            
-            for (let i = 0; i < 12; i++) {
-                const hourIndex = (currentHour + i) % 24;
-                let hourLabel = '';
-                if (i === 0) hourLabel = 'Maintenant';
-                else if (hourIndex === 0) hourLabel = '0h';
-                else if (hourIndex < 12) hourLabel = `${hourIndex}h`;
-                else hourLabel = `${hourIndex}h`;
-                
-                const temp = Math.round(weather.hourly.temperature_2m[hourIndex]);
-                const icon = getWeatherIcon(weather.hourly.weather_code[hourIndex]);
-                
-                const item = document.createElement('div');
-                item.className = 'hourly-item';
-                item.innerHTML = `
-                    <div class="hourly-time">${hourLabel}</div>
-                    <div class="hourly-icon">${icon}</div>
-                    <div class="hourly-temp">${temp}°</div>
-                `;
-                hourlyScroll.appendChild(item);
-            }
-        }
-        
-        async function showDetailView(city) {
-            const listView = document.getElementById('listView');
-            const detailView = document.getElementById('detailView');
-            const backButton = document.getElementById('backButton');
-            
-            detailView.innerHTML = '<div class="loading">Chargement...</div>';
-            listView.style.display = 'none';
-            detailView.classList.add('active');
-            backButton.classList.add('active');
-            
-            const weather = await fetchWeather(city);
-            
-            if (weather) {
-                detailView.innerHTML = `
-                    <div class="detail-city">${weather.name}</div>
-                    <div class="detail-condition">${weather.condition}</div>
-                    <div class="detail-temp">${weather.temp}°</div>
-                    <div style="font-size: 48px; margin: 10px 0;">${weather.icon}</div>
-                    <div class="detail-stats">
-                        <div class="stat">
-                            <div class="stat-label">Humidité</div>
-                            <div class="stat-value">${weather.humidity}%</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-label">Ressenti</div>
-                            <div class="stat-value">${weather.feelsLike}°</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-label">Vent</div>
-                            <div class="stat-value">${weather.wind} km/h</div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                detailView.innerHTML = '<div class="loading">Ville non trouvée</div>';
-            }
-            
-            currentView = 'detail';
-        }
-        
-        function showListView() {
-            const listView = document.getElementById('listView');
-            const detailView = document.getElementById('detailView');
-            const backButton = document.getElementById('backButton');
-            
-            listView.style.display = 'block';
-            detailView.classList.remove('active');
-            backButton.classList.remove('active');
-            currentView = 'list';
-        }
-        
-        async function searchCity() {
-            const input = document.getElementById('searchInput');
-            const city = input.value.trim();
-            if (!city) return;
-            
-            await showDetailView(city);
-            
-            if (!recentCities.includes(city)) {
-                recentCities.unshift(city);
-                if (recentCities.length > 5) recentCities.pop();
-            }
-            
-            input.value = '';
-        }
-        
-        // Initialiser avec les données de Menton comme dans l'image
-        async function init() {
-            await loadAllWeather();
-            
-            // Simuler les données spécifiques de l'image pour Menton
-            setTimeout(() => {
-                const mentonItem = document.querySelector('.city-item');
-                if (mention) {
-                    // Les données réelles viendront de l'API
-                }
-            }, 1000);
-        }
-        
-        init();
-    </script>
+  <script src="app.js"></script>
 </body>
 </html>
