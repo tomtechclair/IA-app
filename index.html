@@ -115,10 +115,7 @@
         .hour-temp{font-size:16px;font-weight:500;}
         .hour-precip{font-size:10px;font-weight:600;color:var(--blue);}
 
-        /* Hourly temp graph */
-        .hourly-graph-wrap{margin-top:10px;padding:0 2px;position:relative;}
-        .hourly-graph-canvas{width:100%;height:80px;display:block;}
-
+        
         /* ===== 10-DAY ===== */
         .day-row{display:flex;align-items:center;padding:9px 0;border-bottom:.5px solid rgba(255,255,255,0.06);}
         .day-row:last-child{border-bottom:none;}
@@ -272,7 +269,7 @@
             </div>
             <div class="hourly-summary" id="hourlySummary" style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;line-height:1.4;"></div>
             <div class="hourly-scroll" id="hourlyScroll"></div>
-            <div class="hourly-graph-wrap"><canvas class="hourly-graph-canvas" id="hourlyGraph"></canvas></div>
+
         </div>
 
         <!-- PRECIP 7J -->
@@ -493,44 +490,6 @@ function updateStars(isDay){var stars=$('starsContainer');if(!isDay){stars.inner
 // ---- Moon Phase ----
 function getMoonPhase(){var knownNew=new Date('2000-01-06').getTime();var cycle=29.530588853*24*3600*1000;var phase=((Date.now()-knownNew)%cycle+cycle)%cycle/cycle;var illum=Math.round((1-Math.cos(phase*2*Math.PI))/2*100);var phases=[{max:0.03,name:'Nouvelle Lune',emoji:'🌑'},{max:0.22,name:'Premier croissant',emoji:'🌒'},{max:0.28,name:'Premier quartier',emoji:'🌓'},{max:0.47,name:'Gibbeuse croissante',emoji:'🌔'},{max:0.53,name:'Pleine Lune',emoji:'🌕'},{max:0.72,name:'Gibbeuse décroissante',emoji:'🌖'},{max:0.78,name:'Dernier quartier',emoji:'🌗'},{max:0.97,name:'Dernier croissant',emoji:'🌘'},{max:1.01,name:'Nouvelle Lune',emoji:'🌑'}];var p=phases.find(function(x){return phase<=x.max;})||phases[phases.length-1];return{emoji:p.emoji,name:p.name,illumination:illum};}
 
-// ---- Hourly Temperature Curve Graph ----
-function drawHourlyGraph(temps){
-    var canvas=$('hourlyGraph');if(!canvas)return;
-    var dpr=window.devicePixelRatio||1;
-    var rect=canvas.getBoundingClientRect();
-    canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
-    var ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
-    var W=rect.width,H=rect.height,padT=16,padB=16;
-    var minT=Math.min.apply(null,temps),maxT=Math.max.apply(null,temps);
-    var range=maxT-minT||1;
-    var pts=temps.map(function(t,i){return{x:(i/(temps.length-1))*W,y:padT+(1-(t-minT)/range)*(H-padT-padB)};});
-
-    // Gradient fill
-    var grad=ctx.createLinearGradient(0,0,0,H);
-    grad.addColorStop(0,'rgba(255,255,255,0.12)');
-    grad.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.beginPath();ctx.moveTo(pts[0].x,H);pts.forEach(function(p){ctx.lineTo(p.x,p.y);});ctx.lineTo(pts[pts.length-1].x,H);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
-
-    // Curve line
-    ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
-    for(var i=1;i<pts.length;i++){
-        var xc=(pts[i-1].x+pts[i].x)/2,yc=(pts[i-1].y+pts[i].y)/2;
-        ctx.quadraticCurveTo(pts[i-1].x,pts[i-1].y,xc,yc);
-    }
-    ctx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y);
-    ctx.strokeStyle='rgba(255,255,255,0.7)';ctx.lineWidth=1.5;ctx.stroke();
-
-    // Dots at each temp
-    pts.forEach(function(p,i){
-        ctx.beginPath();ctx.arc(p.x,p.y,2.5,0,Math.PI*2);ctx.fillStyle='white';ctx.fill();
-    });
-
-    // Temp labels at key points (every 3 hours)
-    for(var i=0;i<temps.length;i+=3){
-        ctx.fillStyle='rgba(255,255,255,0.55)';ctx.font='500 9px -apple-system,sans-serif';ctx.textAlign='center';
-        ctx.fillText(Math.round(temps[i])+'°',pts[i].x,pts[i].y-7);
-    }
-}
 
 // ---- Radar Windy ----
 var _radarLat=48.8566,_radarLon=2.3522,_radarLayer='pluie';
@@ -608,7 +567,6 @@ function renderWeather(data,aqi,city){
         summaryEl.textContent=nextChange?curDesc+', puis '+nextChange:curDesc;
     }
     
-    var hourlyTemps=[];
     var count=0;
     for(var i=startIdx;i<hh.time.length&&count<48;i++){
         if(!hh.time[i])break;
@@ -622,14 +580,9 @@ function renderWeather(data,aqi,city){
             +'<div class="hour-temp">'+showTemp+'°</div>'
             +(pp>10?'<div class="hour-precip">'+pp+'%</div>':'');
         hs.appendChild(it);
-        hourlyTemps.push(i===startIdx?c.temperature_2m:hh.temperature_2m[i]);
         count++;
     }
 
-    // Draw temp curve graph
-    if(hourlyTemps.length>2){
-        setTimeout(function(){drawHourlyGraph(hourlyTemps);},50);
-    }
 
     // ---- Precip chart 7j ----
     var chart=$('precipChart');chart.innerHTML='';var maxP=0;
