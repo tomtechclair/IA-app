@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Météo</title>
+    <title>Météo - Prévisions en temps réel</title>
     <style>
         * {
             margin: 0;
@@ -18,7 +18,6 @@
             min-height: 100vh;
         }
 
-        /* Barre de statut */
         .status-bar {
             display: flex;
             justify-content: space-between;
@@ -28,7 +27,6 @@
             background: transparent;
         }
 
-        /* Header */
         .header {
             padding: 8px 24px 16px 24px;
             display: flex;
@@ -65,7 +63,6 @@
             transform: scale(0.96);
         }
 
-        /* Barre de recherche */
         .search-container {
             position: relative;
             padding: 0 24px;
@@ -97,7 +94,6 @@
             color: #8e8e93;
         }
 
-        /* Suggestions */
         .suggestions-list {
             position: absolute;
             top: 55px;
@@ -121,12 +117,10 @@
             background: #2c2c2e;
         }
 
-        /* Contenu principal */
         .main-content {
             padding-bottom: 40px;
         }
 
-        /* Carte météo principale */
         .weather-card {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             margin: 20px 24px;
@@ -167,7 +161,6 @@
             opacity: 0.9;
         }
 
-        /* Détails météo */
         .details-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -193,14 +186,12 @@
             font-weight: 600;
         }
 
-        /* Section titres */
         .section-title {
             font-size: 20px;
             font-weight: 590;
             margin: 24px 24px 16px 24px;
         }
 
-        /* Prévisions horaires */
         .hourly-scroll {
             display: flex;
             gap: 20px;
@@ -237,7 +228,6 @@
             font-weight: 600;
         }
 
-        /* Prévisions 5 jours */
         .forecast-list {
             margin: 0 24px;
         }
@@ -274,7 +264,6 @@
             color: #8e8e93;
         }
 
-        /* Message géolocalisation */
         .geo-message {
             background: #1c1c1e;
             margin: 16px 24px;
@@ -294,7 +283,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Loading */
         .loading {
             text-align: center;
             padding: 60px 24px;
@@ -315,7 +303,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Erreur */
         .error {
             text-align: center;
             padding: 60px 24px;
@@ -364,7 +351,6 @@
         let currentCity = "";
         let suggestionsTimeout;
 
-        // Mettre à jour l'heure
         function updateTime() {
             const now = new Date();
             const hours = now.getHours().toString().padStart(2, '0');
@@ -374,8 +360,7 @@
         updateTime();
         setInterval(updateTime, 1000);
 
-        // Icônes météo
-        function getWeatherIcon(code, isDay = true) {
+        function getWeatherIcon(code) {
             const icons = {
                 0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
                 45: "🌫️", 48: "🌫️",
@@ -400,7 +385,6 @@
             return descriptions[code] || "Variable";
         }
 
-        // Formater la date
         function formatDate() {
             const now = new Date();
             const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
@@ -408,21 +392,16 @@
             return `${jours[now.getDay()]} ${now.getDate()} ${mois[now.getMonth()]}`;
         }
 
-        // Récupérer la météo par coordonnées
         async function fetchWeatherByCoords(lat, lon) {
             try {
                 const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7`;
                 const response = await fetch(weatherUrl);
                 const data = await response.json();
                 
-                // Récupérer le nom de la ville via reverse geocoding
-                const geoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=fr`;
-                const geoResponse = await fetch(geoUrl);
-                const geoData = await geoResponse.json();
-                const cityName = geoData.city || geoData.locality || "Ville actuelle";
-                
                 return {
-                    name: cityName,
+                    name: "Ma position",
+                    lat: lat,
+                    lon: lon,
                     temp: Math.round(data.current.temperature_2m),
                     condition: getWeatherDescription(data.current.weather_code),
                     icon: getWeatherIcon(data.current.weather_code),
@@ -439,7 +418,6 @@
             }
         }
 
-        // Récupérer la météo par nom de ville
         async function fetchWeatherByCity(city) {
             try {
                 const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`;
@@ -474,7 +452,6 @@
             }
         }
 
-        // Générer les prévisions horaires
         function generateHourlyForecast(weather) {
             if (!weather.hourly || !weather.hourly.temperature_2m) return '<div>Aucune donnée</div>';
             
@@ -499,7 +476,6 @@
             return html;
         }
 
-        // Générer les prévisions 7 jours
         function generateForecast(weather) {
             if (!weather.daily) return '<div>Aucune donnée</div>';
             
@@ -527,7 +503,6 @@
             return html;
         }
 
-        // Afficher la météo
         function displayWeather(weather) {
             const mainContent = document.getElementById('mainContent');
             
@@ -573,7 +548,6 @@
             `;
         }
 
-        // Charger la météo
         async function loadWeather(cityName) {
             const mainContent = document.getElementById('mainContent');
             mainContent.innerHTML = '<div class="loading"><div class="spinner"></div><div>Chargement de la météo...</div></div>';
@@ -589,14 +563,14 @@
             displayWeather(weather);
         }
 
-        // Géolocalisation
         async function getUserLocation() {
             const geoMessage = document.getElementById('geoMessage');
             geoMessage.classList.remove('show');
             
             if (!navigator.geolocation) {
-                geoMessage.textContent = "❌ La géolocalisation n'est pas supportée par votre navigateur";
+                geoMessage.textContent = "❌ La géolocalisation n'est pas supportée";
                 geoMessage.classList.add('show');
+                setTimeout(() => geoMessage.classList.remove('show'), 3000);
                 return;
             }
             
@@ -605,37 +579,29 @@
             
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const { latitude, longitude } = position.coords;
-                geoMessage.textContent = "📍 Météo de votre position actuelle";
                 
                 const mainContent = document.getElementById('mainContent');
-                mainContent.innerHTML = '<div class="loading"><div class="spinner"></div><div>Chargement de votre météo locale...</div></div>';
+                mainContent.innerHTML = '<div class="loading"><div class="spinner"></div><div>Chargement de votre météo...</div></div>';
                 
                 const weather = await fetchWeatherByCoords(latitude, longitude);
                 
                 if (weather) {
-                    currentCity = weather.name;
+                    weather.name = "Ma position";
                     displayWeather(weather);
-                    document.getElementById('searchInput').value = weather.name;
+                    document.getElementById('searchInput').value = "";
                     
-                    setTimeout(() => {
-                        geoMessage.classList.remove('show');
-                    }, 3000);
+                    geoMessage.textContent = "📍 Météo de votre position actuelle";
+                    setTimeout(() => geoMessage.classList.remove('show'), 2000);
                 } else {
-                    mainContent.innerHTML = '<div class="error">❌ Impossible de récupérer la météo pour votre position</div>';
+                    mainContent.innerHTML = '<div class="error">❌ Impossible de récupérer la météo</div>';
                 }
             }, (error) => {
-                console.error("Erreur géolocalisation:", error);
-                let errorMsg = "❌ Impossible d'obtenir votre position. ";
-                if (error.code === 1) errorMsg += "Veuillez autoriser l'accès à votre position.";
-                else errorMsg += "Vérifiez vos paramètres de localisation.";
+                let errorMsg = "❌ Position non autorisée. Activez la localisation.";
                 geoMessage.textContent = errorMsg;
-                setTimeout(() => {
-                    geoMessage.classList.remove('show');
-                }, 4000);
+                setTimeout(() => geoMessage.classList.remove('show'), 3000);
             });
         }
 
-        // Suggestions de villes
         async function showSuggestions() {
             clearTimeout(suggestionsTimeout);
             const input = document.getElementById('searchInput');
@@ -670,29 +636,26 @@
                         suggestionsList.style.display = 'none';
                     }
                 } catch (error) {
-                    console.error("Erreur suggestions:", error);
                     document.getElementById('suggestionsList').style.display = 'none';
                 }
             }, 300);
         }
 
-        async function searchCity() {
+        function searchCity() {
             const input = document.getElementById('searchInput');
             const city = input.value.trim();
             if (city) {
                 document.getElementById('suggestionsList').style.display = 'none';
-                await loadWeather(city);
+                loadWeather(city);
             }
         }
 
-        // Cacher les suggestions
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.search-container')) {
                 document.getElementById('suggestionsList').style.display = 'none';
             }
         });
 
-        // Charger Paris par défaut
         loadWeather("Paris");
     </script>
 </body>
