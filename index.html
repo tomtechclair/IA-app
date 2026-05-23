@@ -110,7 +110,7 @@ body{min-height:100vh;color:#fff;overflow-x:hidden;transition:background .8s eas
     <div class="search-bar">
       <span style="opacity:.5;font-size:16px">🔍</span>
       <input type="text" id="searchInput" placeholder="Rechercher une ville..." autocomplete="off">
-      <button id="locateBtn">📍</button>
+      
     </div>
     <div class="suggestions" id="suggestions"></div>
   </div>
@@ -349,24 +349,8 @@ async function doSearch(q){
 }
 document.addEventListener('click',function(e){if(!e.target.closest('.search-wrap'))$('suggestions').classList.remove('show')});
 
-// ---- Geolocation ----
-$('locateBtn').onclick=function(){
-  if(!navigator.geolocation){alert('Géolocalisation non disponible');return}
-  showSpin();$('spin').querySelector('.spin-text').textContent='Recherche de votre position...';
-  navigator.geolocation.getCurrentPosition(
-    function(pos){
-      fetch('https://nominatim.openstreetmap.org/reverse?lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&format=json&accept-language=fr',{headers:{'User-Agent':'MeteoApp/1.0'}})
-      .then(function(r){return r.json()})
-      .then(function(d){loadWeather(pos.coords.latitude,pos.coords.longitude,d.address.city||d.address.town||d.address.village||'Ma position')})
-      .catch(function(){loadWeather(pos.coords.latitude,pos.coords.longitude,'Ma position')})
-    },
-    function(){hideSpin();alert('Position non obtenue');loadWeather(48.8566,2.3522,'Paris')},
-    {timeout:10000}
-  )
-};
-
 // ---- Start ----
-loadWeather(48.8566,2.3522,'Paris');
+if(navigator.geolocation){navigator.geolocation.getCurrentPosition(function(p){fetch('https://nominatim.openstreetmap.org/reverse?lat='+p.coords.latitude+'&lon='+p.coords.longitude+'&format=json&accept-language=fr',{headers:{'User-Agent':'MeteoApp/1.0'}}).then(function(r){return r.json()}).then(function(d){loadWeather(p.coords.latitude,p.coords.longitude,d.address.city||d.address.town||d.address.village||'Ma position')}).catch(function(){loadWeather(48.8566,2.3522,'Paris')})},function(){loadWeather(48.8566,2.3522,'Paris')},{timeout:5000,maximumAge:300000})}else{loadWeather(48.8566,2.3522,'Paris')}
 </script>
 </body>
 </html>
