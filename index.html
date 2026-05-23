@@ -1,173 +1,562 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Météo iOS</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Météo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', Helvetica, Arial, sans-serif;
+            background: #101012;
+            color: white;
+        }
+
+        /* Barre de statut iOS */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 24px 8px 24px;
+            font-size: 15px;
+            font-weight: 590;
+            background: #101012;
+            color: white;
+        }
+
+        .time-left {
+            font-weight: 590;
+        }
+
+        .status-icons {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* Header principal */
+        .main-header {
+            padding: 8px 24px 16px 24px;
+            background: #101012;
+        }
+
+        .main-header h1 {
+            font-size: 36px;
+            font-weight: 610;
+            letter-spacing: -0.5px;
+        }
+
+        /* Barre de recherche */
+        .search-bar {
+            background: #1c1c1e;
+            margin: 12px 24px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-bar .search-icon {
+            color: #8e8e93;
+            font-size: 16px;
+        }
+
+        .search-bar input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            flex: 1;
+            outline: none;
+        }
+
+        .search-bar input::placeholder {
+            color: #8e8e93;
+        }
+
+        /* Ville principale */
+        .main-city {
+            background: linear-gradient(135deg, #1c1c1e 0%, #2a2a2c 100%);
+            margin: 16px 24px;
+            border-radius: 20px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .main-city:active {
+            opacity: 0.7;
+        }
+
+        .main-city-name {
+            font-size: 24px;
+            font-weight: 590;
+            margin-bottom: 8px;
+        }
+
+        .main-city-temp {
+            font-size: 56px;
+            font-weight: 300;
+            margin: 8px 0;
+        }
+
+        .main-city-condition {
+            font-size: 16px;
+            color: #8e8e93;
+        }
+
+        /* Section "À proximité" */
+        .nearby-section {
+            padding: 24px 24px 16px 24px;
+        }
+
+        .nearby-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 16px;
+        }
+
+        .nearby-header h4 {
+            font-size: 20px;
+            font-weight: 590;
+        }
+
+        .nearby-header span {
+            font-size: 14px;
+            color: #0a84ff;
+        }
+
+        .nearby-grid {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .nearby-grid::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nearby-card {
+            background: #1c1c1e;
+            border-radius: 20px;
+            padding: 16px;
+            min-width: 140px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nearby-card:active {
+            opacity: 0.7;
+        }
+
+        .nearby-card .city {
+            font-size: 18px;
+            font-weight: 590;
+            margin-bottom: 8px;
+        }
+
+        .nearby-card .temp {
+            font-size: 34px;
+            font-weight: 300;
+            margin-bottom: 4px;
+        }
+
+        .nearby-card .condition {
+            font-size: 13px;
+            color: #8e8e93;
+        }
+
+        /* Prévisions horaires */
+        .hourly-section {
+            padding: 16px 24px;
+        }
+
+        .hourly-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 16px;
+        }
+
+        .hourly-header h4 {
+            font-size: 20px;
+            font-weight: 590;
+        }
+
+        .hourly-scroll {
+            display: flex;
+            gap: 24px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .hourly-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hourly-item {
+            text-align: center;
+            min-width: 55px;
+        }
+
+        .hourly-time {
+            font-size: 14px;
+            color: #8e8e93;
+            margin-bottom: 12px;
+        }
+
+        .hourly-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .hourly-temp {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        /* Prévisions 10 jours */
+        .ten-day-section {
+            padding: 16px 24px 32px 24px;
+        }
+
+        .ten-day-header {
+            margin-bottom: 16px;
+        }
+
+        .ten-day-header h4 {
+            font-size: 20px;
+            font-weight: 590;
+        }
+
+        .day-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .day-name {
+            font-size: 16px;
+            font-weight: 500;
+            width: 80px;
+        }
+
+        .day-icon {
+            font-size: 22px;
+            width: 40px;
+            text-align: center;
+        }
+
+        .day-temps {
+            display: flex;
+            gap: 12px;
+        }
+
+        .day-temp-max {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .day-temp-min {
+            font-size: 16px;
+            color: #8e8e93;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #8e8e93;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .loading-dots span {
+            animation: pulse 1.4s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    </style>
 </head>
 <body>
-
-  <div id="app-container">
-    
-    <!-- ================= VUE 1 : LISTE DES VILLES (SOMBRE) ================= -->
-    <div id="list-screen" class="screen active">
-      <header class="list-header">
-        <div class="header-top">
-          <h1>Météo</h1>
-          <button class="menu-btn">•••</button>
+    <div class="status-bar">
+        <span class="time-left">15:26</span>
+        <div class="status-icons">
+            <span>📶</span>
+            <span>🔋 100%</span>
         </div>
-        <div class="search-bar">
-          <span class="search-icon">🔍</span>
-          <input type="text" placeholder="Ville ou aéroport">
-          <span class="mic-icon">🎙️</span>
-        </div>
-      </header>
-
-      <main class="cards-container">
-        <!-- Carte Menton -->
-        <div class="weather-card menton-card" onclick="showDetail('menton')">
-          <div class="card-left">
-            <span class="city-name">Menton</span>
-            <span class="city-time">15:25 • Domicile</span>
-            <span class="weather-condition">Belles éclaircies</span>
-          </div>
-          <div class="card-right">
-            <span class="current-temp">24°</span>
-            <span class="temp-range">↑ 25°  ↓ 17°</span>
-          </div>
-        </div>
-
-        <!-- Carte Monaco -->
-        <div class="weather-card monaco-card" onclick="showDetail('monaco')">
-          <div class="card-left">
-            <span class="city-name">Monaco</span>
-            <span class="city-time">15:25 • Bureau</span>
-            <span class="weather-condition">Ensoleillé</span>
-          </div>
-          <div class="card-right">
-            <span class="current-temp">25°</span>
-            <span class="temp-range">↑ 25°  ↓ 18°</span>
-          </div>
-        </div>
-
-        <!-- Carte Phare Le Mean Ruz -->
-        <div class="weather-card ruz-card" onclick="showDetail('ruz')">
-          <div class="card-left">
-            <span class="city-name">Phare Le Mean Ruz</span>
-            <span class="city-time">15:26 • Perros-Guirec</span>
-            <span class="weather-condition">Brumeux</span>
-          </div>
-          <div class="card-right">
-            <span class="current-temp">20°</span>
-            <span class="temp-range">↑ 20°  ↓ 15°</span>
-          </div>
-        </div>
-
-        <!-- Carte Cardan -->
-        <div class="weather-card cardan-card" onclick="showDetail('cardan')">
-          <div class="card-left">
-            <span class="city-name">Cardan</span>
-            <span class="city-time">15:25</span>
-            <span class="weather-condition">Ensoleillé</span>
-          </div>
-          <div class="card-right">
-            <span class="current-temp">26°</span>
-            <span class="temp-range">↑ 28°  ↓ 11°</span>
-          </div>
-        </div>
-      </main>
-      
-      <footer class="list-footer">
-        <p>En savoir plus sur les <a href="#">données météo</a> et les <a href="#">données de pluie</a>.</p>
-      </footer>
     </div>
 
-    <!-- ================= VUE 2 : DÉTAIL D'UNE VILLE (BLEU DYNAMIQUE) ================= -->
-    <div id="detail-screen" class="screen">
-      <div class="detail-scroll-container">
+    <div class="main-header">
+        <h1>Météo</h1>
+    </div>
+
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Ville ou aéroport" onkeypress="if(event.key==='Enter') searchCity()">
+    </div>
+
+    <!-- Contenu principal -->
+    <div id="mainContent">
+        <div class="loading"><span class="loading-dots">Chargement<span>.</span><span>.</span><span>.</span></span></div>
+    </div>
+
+    <script>
+        // Configuration
+        let currentWeatherData = {};
         
-        <header class="detail-header">
-          <span class="location-type" id="detail-loc-type">🏠 DOMICILE</span>
-          <h2 class="detail-city" id="detail-city-name">Menton</h2>
-          <span class="detail-temp" id="detail-current-temp">24°</span>
-          <span class="detail-desc" id="detail-condition">Belles éclaircies</span>
-          <span class="detail-range" id="detail-temp-range">↑ 25°  ↓ 17°</span>
-        </header>
+        // Villes par défaut (comme dans l'image)
+        const defaultCities = [
+            { name: "Menton", temp: 24, condition: "Belles éclaircies", icon: "🌤️" },
+            { name: "Monaco", temp: 25, condition: "Dégradée", icon: "☁️" },
+            { name: "Nice", temp: 23, condition: "Ensoleillé", icon: "☀️" },
+            { name: "Cannes", temp: 24, condition: "Peu nuageux", icon: "⛅" }
+        ];
 
-        <!-- Panneau Qualité de l'Air -->
-        <section class="glass-panel air-quality">
-          <span class="panel-tag">🍃 QUALITÉ DE L'AIR</span>
-          <h3 class="aqi-status">Dégradée</h3>
-          <div class="aqi-bar">
-            <div class="aqi-indicator" style="left: 45%;"></div>
-          </div>
-          <p class="aqi-desc">La qualité de l'air est la même qu'hier à peu près à la même heure.</p>
-        </section>
+        // Icônes météo
+        function getWeatherIcon(code, isDay = true) {
+            const icons = {
+                0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
+                45: "🌫️", 48: "🌫️",
+                51: "🌧️", 53: "🌧️", 55: "🌧️",
+                61: "🌧️", 63: "🌧️", 65: "🌧️",
+                71: "❄️", 73: "❄️", 75: "❄️",
+                80: "🌦️", 81: "🌧️", 82: "🌧️",
+                95: "⛈️", 96: "⛈️", 99: "⛈️"
+            };
+            return icons[code] || "🌡️";
+        }
 
-        <!-- Panneau Prévisions Heures -->
-        <section class="glass-panel hourly-forecast">
-          <span class="panel-tag">🕒 PRÉVISIONS HEURE PAR HEURE</span>
-          <div class="hourly-scroll">
-            <div class="hour-col">
-              <span>Maint.</span>
-              <span class="weather-icon">🌤️</span>
-              <span class="hour-temp">24°</span>
-            </div>
-            <div class="hour-col">
-              <span>16 h</span>
-              <span class="weather-icon">🌤️</span>
-              <span class="hour-temp">24°</span>
-            </div>
-            <div class="hour-col">
-              <span>17 h</span>
-              <span class="weather-icon">🌤️</span>
-              <span class="hour-temp">24°</span>
-            </div>
-            <div class="hour-col">
-              <span>18 h</span>
-              <span class="weather-icon">☁️</span>
-              <span class="hour-temp">24°</span>
-            </div>
-            <div class="hour-col">
-              <span>19 h</span>
-              <span class="weather-icon">☁️</span>
-              <span class="hour-temp">23°</span>
-            </div>
-            <div class="hour-col">
-              <span>20 h</span>
-              <span class="weather-icon">☁️</span>
-              <span class="hour-temp">22°</span>
-            </div>
-          </div>
-        </section>
+        function getWeatherDescription(code) {
+            const descriptions = {
+                0: "Ensoleillé", 1: "Peu nuageux", 2: "Partiellement nuageux", 3: "Nuageux",
+                45: "Brouillard", 48: "Brouillard", 51: "Bruine légère", 53: "Bruine", 55: "Bruine",
+                61: "Pluie légère", 63: "Pluie", 65: "Pluie forte",
+                71: "Neige légère", 73: "Neige", 75: "Neige forte",
+                80: "Averses", 81: "Averses", 82: "Averses fortes",
+                95: "Orage", 96: "Orage", 99: "Orage"
+            };
+            return descriptions[code] || "Variable";
+        }
 
-        <!-- Panneau Carte -->
-        <section class="glass-panel map-panel">
-          <span class="panel-tag">🗺️ CARTE QUALITÉ DE L'AIR</span>
-          <div class="mock-map">
-            <div class="map-label label-1">Lantosque</div>
-            <div class="map-label label-2">Sospel</div>
-            <div class="map-label label-3">Dolceacqua</div>
-          </div>
-        </section>
+        async function fetchWeather(city) {
+            try {
+                // Géocodage
+                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`;
+                const geoResponse = await fetch(geoUrl);
+                const geoData = await geoResponse.json();
 
-      </div>
+                if (!geoData.results || geoData.results.length === 0) {
+                    return null;
+                }
 
-      <!-- Barre de navigation fixe en bas -->
-      <footer class="detail-nav">
-        <button class="nav-icon-btn">🗺️</button>
-        <div class="page-dots">
-          <span class="dot active"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </div>
-        <button class="nav-icon-btn" onclick="showList()">☰</button>
-      </footer>
-    </div>
+                const location = geoData.results[0];
+                
+                // Météo actuelle + prévisions
+                const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=10&forecast_hours=24`;
+                const weatherResponse = await fetch(weatherUrl);
+                const weatherData = await weatherResponse.json();
 
-  </div>
+                return {
+                    name: location.name,
+                    country: location.country || "France",
+                    temp: Math.round(weatherData.current.temperature_2m),
+                    condition: getWeatherDescription(weatherData.current.weather_code),
+                    icon: getWeatherIcon(weatherData.current.weather_code),
+                    humidity: weatherData.current.relative_humidity_2m,
+                    feelsLike: Math.round(weatherData.current.apparent_temperature),
+                    wind: Math.round(weatherData.current.wind_speed_10m),
+                    hourly: weatherData.hourly,
+                    daily: weatherData.daily
+                };
+            } catch (error) {
+                console.error("Erreur:", error);
+                return null;
+            }
+        }
 
-  <script src="app.js"></script>
+        async function loadWeatherData(cityName = "Menton") {
+            const mainContent = document.getElementById('mainContent');
+            mainContent.innerHTML = '<div class="loading">Chargement des données météo...</div>';
+            
+            // Charger la météo pour la ville principale
+            const mainWeather = await fetchWeather(cityName);
+            
+            if (!mainWeather) {
+                mainContent.innerHTML = '<div class="loading">❌ Ville non trouvée</div>';
+                return;
+            }
+            
+            // Charger les villes à proximité
+            const nearbyCities = [
+                { name: "Monaco", lat: 43.7384, lon: 7.4246 },
+                { name: "Nice", lat: 43.7102, lon: 7.2620 },
+                { name: "Cannes", lat: 43.5528, lon: 7.0174 },
+                { name: "Saint-Tropez", lat: 43.2693, lon: 6.6386 }
+            ];
+            
+            const nearbyWeather = [];
+            for (const city of nearbyCities) {
+                const weather = await fetchWeather(city.name);
+                if (weather) {
+                    nearbyWeather.push(weather);
+                }
+            }
+            
+            // Générer le HTML
+            mainContent.innerHTML = `
+                <!-- Ville principale -->
+                <div class="main-city" onclick="searchAndShow('${mainWeather.name}')">
+                    <div class="main-city-name">${mainWeather.name}</div>
+                    <div class="main-city-temp">${mainWeather.temp}°</div>
+                    <div class="main-city-condition">${mainWeather.condition}</div>
+                </div>
+                
+                <!-- Section À proximité -->
+                <div class="nearby-section">
+                    <div class="nearby-header">
+                        <h4>À proximité</h4>
+                        <span>${nearbyWeather.length} villes</span>
+                    </div>
+                    <div class="nearby-grid" id="nearbyGrid">
+                        ${nearbyWeather.map(weather => `
+                            <div class="nearby-card" onclick="searchAndShow('${weather.name}')">
+                                <div class="city">${weather.name}</div>
+                                <div class="temp">${weather.temp}°</div>
+                                <div class="condition">${weather.condition}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <!-- Prévisions horaires -->
+                <div class="hourly-section">
+                    <div class="hourly-header">
+                        <h4>Prévisions horaires</h4>
+                    </div>
+                    <div class="hourly-scroll" id="hourlyScroll">
+                        ${generateHourlyForecast(mainWeather)}
+                    </div>
+                </div>
+                
+                <!-- Prévisions 10 jours -->
+                <div class="ten-day-section">
+                    <div class="ten-day-header">
+                        <h4>Prévisions sur 10 jours</h4>
+                    </div>
+                    <div id="tenDayForecast">
+                        ${generateTenDayForecast(mainWeather)}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function generateHourlyForecast(weather) {
+            if (!weather.hourly) return '<div class="loading">Données horaires indisponibles</div>';
+            
+            const now = new Date();
+            const currentHour = now.getHours();
+            let html = '';
+            
+            // Heures comme dans l'image : 18h, 19h, 20h, etc.
+            const hoursToShow = [18, 19, 20, 21, 22, 23, 0, 1, 2];
+            
+            for (let i = 0; i < hoursToShow.length; i++) {
+                const hour = hoursToShow[i];
+                let hourLabel = '';
+                if (hour === 0) hourLabel = '0h';
+                else if (hour === currentHour) hourLabel = 'Maintenant';
+                else hourLabel = `${hour}h`;
+                
+                // Trouver la température pour cette heure
+                let temp = weather.temp;
+                let icon = weather.icon;
+                
+                if (weather.hourly && weather.hourly.temperature_2m && weather.hourly.temperature_2m[hour]) {
+                    temp = Math.round(weather.hourly.temperature_2m[hour]);
+                }
+                if (weather.hourly && weather.hourly.weather_code && weather.hourly.weather_code[hour]) {
+                    icon = getWeatherIcon(weather.hourly.weather_code[hour]);
+                }
+                
+                html += `
+                    <div class="hourly-item">
+                        <div class="hourly-time">${hourLabel}</div>
+                        <div class="hourly-icon">${icon}</div>
+                        <div class="hourly-temp">${temp}°</div>
+                    </div>
+                `;
+            }
+            
+            return html;
+        }
+        
+        function generateTenDayForecast(weather) {
+            if (!weather.daily) return '<div class="loading">Prévisions indisponibles</div>';
+            
+            const days = ['Aujourd\'hui', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+            const today = new Date().getDay();
+            let html = '';
+            
+            for (let i = 0; i < Math.min(10, weather.daily.time.length); i++) {
+                let dayName = '';
+                if (i === 0) dayName = 'Aujourd\'hui';
+                else {
+                    const dayIndex = (today + i) % 7;
+                    dayName = days[dayIndex];
+                }
+                
+                const maxTemp = Math.round(weather.daily.temperature_2m_max[i]);
+                const minTemp = Math.round(weather.daily.temperature_2m_min[i]);
+                const icon = getWeatherIcon(weather.daily.weather_code[i]);
+                
+                html += `
+                    <div class="day-item">
+                        <div class="day-name">${dayName}</div>
+                        <div class="day-icon">${icon}</div>
+                        <div class="day-temps">
+                            <span class="day-temp-max">${maxTemp}°</span>
+                            <span class="day-temp-min">${minTemp}°</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            return html;
+        }
+        
+        async function searchAndShow(cityName) {
+            if (!cityName) return;
+            await loadWeatherData(cityName);
+            
+            // Mettre à jour la barre de recherche
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = cityName;
+        }
+        
+        async function searchCity() {
+            const input = document.getElementById('searchInput');
+            const city = input.value.trim();
+            if (city) {
+                await loadWeatherData(city);
+            }
+        }
+        
+        // Initialiser avec Menton (comme dans l'image)
+        loadWeatherData("Menton");
+    </script>
 </body>
 </html>
