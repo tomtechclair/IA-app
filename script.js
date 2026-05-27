@@ -185,7 +185,7 @@ function getWindDir(degrees) {
 }
 
 // ---- Weekly Forecast ----
-function renderWeekly(daily) {
+function renderWeekly(daily, currentCode) {
     const container = $('weekly-list');
     if (!container || !daily) return;
 
@@ -200,7 +200,8 @@ function renderWeekly(daily) {
     for (let i = 0; i < Math.min(10, times.length); i++) {
         const date = new Date(times[i] + 'T12:00:00');
         const dayName = i === 0 ? "Aujourd'hui" : i === 1 ? 'Demain' : days[date.getDay()] || '';
-        const icon = createWeatherIconSVG ? createWeatherIconSVG(codes[i], true, 28) : '';
+        const wmoCode = i === 0 && currentCode != null ? currentCode : codes[i];
+        const icon = createWeatherIconSVG ? createWeatherIconSVG(wmoCode, true, 28) : '';
         const precip = precips[i] ? `${precips[i]}mm` : '';
 
         html += `
@@ -287,7 +288,7 @@ function renderWeather(data) {
     }
 
     // Weekly
-    renderWeekly(d);
+    renderWeekly(d, c.weather_code);
 
     // Hero icon
     const hero = document.querySelector('.weather-hero');
